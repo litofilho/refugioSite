@@ -10,7 +10,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # Builds e Saídas
-dist/
 build/
 out/
 .next/
