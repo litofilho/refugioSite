@@ -1,38 +1,79 @@
 
   # Refúgio Tech — Website
 
-  Este repositório reúne os artefatos de site institucional da Refúgio Tech.
-  A partir de 2026-10-02, por convenção organizacional, todo projeto técnico
-  da Refúgio Tech vive em `/home/lito/projects/Refúgio Tech/` — este
-  repositório é o destino correto para o código do site (nunca o repositório
-  de estratégia/decisão `Consultoria`).
+  Site institucional de página única da Refúgio Tech. Repositório git dedicado
+  — por convenção organizacional (ver `docs/convencoes-tecnicas.md` e
+  `docs/infra-site-dominio-hospedagem.md` no repositório `Consultoria`), todo
+  projeto técnico da Refúgio Tech vive em `/home/lito/projects/Refúgio Tech/`,
+  nunca no repositório de estratégia/decisão.
 
-  ## Estado atual — dois sites no mesmo repositório, decisão pendente
+  ## Reconstrução de 2026-10-02 — site atual
 
-  | | Localização | Stack | Status |
-  |---|---|---|---|
-  | **Site Premium (Figma Make)** | raiz (`src/`, `public/`, `dist/`, `package.json`) | React + Vite + Tailwind + MUI + Radix | Completo, com fonte Balgin da marca já embutida (`public/fonts/`). Commits anteriores à migração de 2026-10-02 (`Site inicial`, `github pages`). **Não está publicado em produção hoje** (sem domínio customizado, sem workflow de GitHub Pages configurado — o commit "github pages" apenas versionou o `dist/`, não configurou o Pages). Copy/conteúdo ainda não revisado pelo fundador para publicação pública. |
-  | **static-site/** | `static-site/` | HTML + CSS puro, sem build | Minimalista. **É o que está publicado hoje** em `https://refugio-tech.web.app` (Firebase Hosting, projeto GCP `refugio-tech`). Construído pelo Diretor de Engenharia (Hermes) e migrado para este repositório em 2026-10-02 — antes vivia, incorretamente, no repositório de estratégia `Consultoria`. |
+  Até 2026-10-02 este repositório tinha dois sites concorrentes, sem definição
+  de qual era o definitivo (um "site premium" em React/Vite/Tailwind feito via
+  Figma Make, e um `static-site/` HTML+CSS mínimo). Por decisão do fundador,
+  **nenhum dos dois** virou o definitivo — o site foi refeito do zero porque a
+  execução visual de ambos estava amadora/simplória demais para a marca
+  (boutique, qualidade, solidez).
 
-  `firebase.json` (raiz deste repositório) aponta o Hosting para `static-site/`,
-  preservando exatamente o que já estava no ar no momento da migração.
+  O conteúdo publicado hoje vive em `site/` (HTML + CSS + um pouco de JS
+  vanilla, sem build, sem framework). Escopo de conteúdo mantido idêntico ao
+  anterior — hero, parágrafo honesto sobre o projeto estar em construção,
+  contato, footer — só a execução visual (tipografia, composição, paleta,
+  responsividade) foi elevada. Copy e design desta versão foram produzidos por
+  dois agentes efêmeros (conteúdo e design/frontend), orquestrados e revisados
+  pelo Diretor de Engenharia antes do deploy. Detalhe completo da execução,
+  dos bugs encontrados/corrigidos na revisão e da verificação pós-deploy em
+  `docs/infra-site-dominio-hospedagem.md` (repositório `Consultoria`), seção
+  "Reconstrução visual do site — 2026-10-02".
 
-  **Qual dos dois vira o site institucional definitivo é uma decisão do
-  fundador, ainda em aberto.** Contexto completo da investigação, recomendação
-  e histórico em `docs/infra-site-dominio-hospedagem.md` no repositório
-  `Consultoria`.
+  ### Onde ficou o conteúdo anterior
 
-  ## Site Premium (Figma Make) — como rodar
+  Os dois sites anteriores (premium Figma Make e `static-site/`) foram movidos
+  para `_obsoleto-pre-reconstrucao-2026-10-02/` nesta mesma pasta, **fora do
+  controle de versão** (está em `.gitignore` — inclui `node_modules/`, ~370MB).
+  Isso preserva os arquivos como rede de segurança local, mas o histórico real
+  e auditável está no git: o estado completo de ambos os sites antes desta
+  reconstrução continua acessível em qualquer commit anterior a
+  2026-10-02 (`git log`), por exemplo `git show <commit>:index.html`.
 
-  Projeto original disponível em
-  https://www.figma.com/design/P4f9VRyQ6if4aIgUQo485h/Premium-Website-for-Ref%C3%BAgio-Tech.
+  ## Estrutura
 
-  Run `npm i` to install the dependencies.
+  ```
+  site/
+    index.html
+    assets/
+      css/styles.css
+      js/main.js
+      refugio-tech.svg      (logo oficial, ativos/marca/ do repositório Consultoria)
+      favicon.png
+      fonts/
+        balgin-light.otf        (fonte principal da marca — recuperada do
+        balgin-extralight.otf   site premium antes de ser arquivado)
+  firebase.json   — Hosting aponta para site/
+  .firebaserc     — projeto Firebase/GCP: refugio-tech
+  ```
 
-  Run `npm run dev` to start the development server.
+  ## Como rodar localmente
 
-  ## static-site/ — como rodar
+  Página estática pura — não precisa de build nem servidor específico:
 
-  Página única estática: abra `static-site/index.html` direto no navegador.
-  Deploy: `firebase deploy --only hosting --project refugio-tech` (a partir
-  da raiz deste repositório). Detalhes em `static-site/README.md`.
+  ```
+  cd site && python3 -m http.server 8080
+  # abrir http://localhost:8080
+  ```
+
+  (ou abrir `site/index.html` direto no navegador — funciona igual, exceto
+  que alguns navegadores restringem `fetch`/fontes locais via `file://`; usar
+  um servidor local evita isso)
+
+  ## Deploy
+
+  ```
+  cd "/home/lito/projects/Refúgio Tech/Website"
+  firebase deploy --only hosting --project refugio-tech
+  ```
+
+  Publica em `https://refugio-tech.web.app` e, via domínio customizado já
+  configurado, em `https://refugio.tech`. Detalhe de domínios/DNS/certificado
+  em `docs/infra-site-dominio-hospedagem.md` no repositório `Consultoria`.

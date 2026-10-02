@@ -1,0 +1,494 @@
+/* ===================================================================
+   Refúgio Tech — styles.css
+   Boutique técnica · refúgio sólido e calmo para PMEs.
+   Paleta oficial, grid 8px, tipografia Balgin (títulos) + Roboto (corpo).
+   =================================================================== */
+
+/* ---------- Fontes locais: Balgin (apenas light / extralight) ---------- */
+@font-face {
+  font-family: "Balgin";
+  src: url("../fonts/balgin-light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Balgin";
+  src: url("../fonts/balgin-extralight.otf") format("opentype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- Design tokens ---------- */
+:root {
+  /* paleta oficial — hex exatos, não alterar */
+  --verde-pastel: #B2C2B9;   /* primária — o refúgio, calma */
+  --cinza-chumbo: #455259;   /* secundária — textos / estrutura, solidez */
+  --amarelo-suave: #D9C583;  /* acento — CTA e destaques pontuais, uso moderado */
+  --preto-antifragil: #262E33; /* títulos, contraste, fundo de seção escura */
+  --off-white: #F2F2F2;      /* fundos de seção, respiro visual */
+
+  /* tons de apoio derivados do próprio logo, só para ornamentos decorativos */
+  --facet-1: #A8BFB0;
+  --facet-2: #E8E6D8;
+  --facet-3: #4A5759;
+  --facet-4: #D8C079;
+  --facet-5: #576165;
+  --facet-6: #2C3639;
+  --facet-7: #6B7A7F;
+
+  /* tipografia */
+  --font-display: "Balgin", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Roboto", -apple-system, "Segoe UI", Arial, sans-serif;
+
+  /* grid base 8px */
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 32px;
+  --sp-6: 48px;
+  --sp-8: 64px;
+  --sp-10: 80px;
+  --sp-12: 96px;
+  --sp-15: 120px;
+
+  --container-max: 1200px;
+  --side-margin: 24px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Reset mínimo ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body, h1, h2, h3, p, figure { margin: 0; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; margin: 0; padding: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- Base ---------- */
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--cinza-chumbo);
+  background: var(--off-white);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Acessibilidade: foco e utilidades ---------- */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--amarelo-suave);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--sp-2);
+  top: -60px;
+  background: var(--preto-antifragil);
+  color: var(--off-white);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 4px;
+  z-index: 1000;
+  transition: top 0.2s var(--ease);
+}
+.skip-link:focus {
+  top: var(--sp-2);
+}
+
+/* ---------- Container ---------- */
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--side-margin);
+}
+
+/* ===================================================================
+   Header
+   =================================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(242, 242, 242, 0.88);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  border-bottom: 1px solid rgba(69, 82, 89, 0.12);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+}
+
+.brand { display: inline-flex; align-items: center; }
+.brand__mark { height: 40px; width: auto; }
+
+.site-header__link {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+  color: var(--cinza-chumbo);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: 4px;
+  transition: color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+.site-header__link:hover {
+  color: var(--preto-antifragil);
+  background: rgba(69, 82, 89, 0.08);
+}
+
+/* ===================================================================
+   Hero
+   =================================================================== */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--off-white);
+  padding-top: var(--sp-15);
+  padding-bottom: calc(var(--sp-15) + 56px);
+}
+
+/* formas decorativas suaves, inspiradas nas facetas do logo — tons únicos, baixa opacidade */
+.hero__facet {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+.hero__facet--one {
+  width: 620px;
+  height: 620px;
+  top: -220px;
+  right: -200px;
+  background: var(--verde-pastel);
+  opacity: 0.35;
+  clip-path: polygon(30% 0%, 100% 0%, 100% 70%, 55% 100%, 0% 55%);
+}
+.hero__facet--two {
+  width: 360px;
+  height: 360px;
+  bottom: -140px;
+  left: -120px;
+  background: var(--cinza-chumbo);
+  opacity: 0.06;
+  clip-path: polygon(0% 20%, 65% 0%, 100% 60%, 40% 100%);
+}
+
+.hero__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-10);
+  align-items: center;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cinza-chumbo);
+  margin-bottom: var(--sp-4);
+}
+.kicker__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amarelo-suave);
+  flex-shrink: 0;
+}
+
+.hero__headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--preto-antifragil);
+  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  max-width: 16ch;
+}
+
+.hero__mark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+}
+.hero__mark-img {
+  width: min(320px, 70vw);
+  filter: drop-shadow(0 24px 48px rgba(38, 46, 51, 0.16));
+}
+
+/* seam diagonal: hero (claro) -> introdução (escuro) */
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: clamp(40px, 7vw, 96px);
+  background: var(--preto-antifragil);
+  clip-path: polygon(0 100%, 100% 35%, 100% 100%);
+}
+
+/* ===================================================================
+   Introdução — fundo escuro (Preto Antifrágil)
+   =================================================================== */
+.intro {
+  position: relative;
+  background: var(--preto-antifragil);
+  padding-top: var(--sp-15);
+  padding-bottom: calc(var(--sp-15) + 56px);
+  overflow: hidden;
+}
+
+.intro__watermark {
+  position: absolute;
+  top: 50%;
+  right: -8%;
+  transform: translateY(-50%);
+  width: clamp(360px, 48vw, 640px);
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+.intro__inner {
+  position: relative;
+  z-index: 1;
+  /* trocado de flex-row para posicionamento com padding: evita o
+     bug clássico de overflow de texto em filho flex (min-width:auto
+     + max-width em ch não encolhia corretamente em telas estreitas,
+     confirmado visualmente — texto cortado no mobile). Bloco normal
+     sempre respeita a largura do contêiner. */
+  padding-left: calc(var(--sp-4) + 3px);
+}
+
+.intro__bar {
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--amarelo-suave);
+  border-radius: 2px;
+}
+
+.intro__paragraph {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  line-height: 1.75;
+  color: var(--off-white);
+  max-width: 42ch;
+}
+
+/* seam diagonal: introdução (escuro) -> contato (claro) */
+.intro::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: clamp(40px, 7vw, 96px);
+  background: var(--verde-pastel);
+  clip-path: polygon(0 35%, 100% 100%, 0 100%);
+}
+
+/* ===================================================================
+   Contato — fundo Verde Pastel Suave
+   =================================================================== */
+.contact {
+  position: relative;
+  background: var(--verde-pastel);
+  padding-top: var(--sp-15);
+  padding-bottom: calc(var(--sp-15) + 56px);
+  overflow: hidden;
+  text-align: center;
+}
+
+.contact__facet {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  left: -160px;
+  bottom: -180px;
+  background: var(--off-white);
+  opacity: 0.4;
+  clip-path: polygon(20% 0%, 100% 15%, 85% 100%, 0% 75%);
+  pointer-events: none;
+}
+
+.contact__inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 640px;
+}
+
+.contact__shard {
+  width: 72px;
+  height: 36px;
+  margin-bottom: var(--sp-3);
+}
+
+.contact__heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--preto-antifragil);
+  font-size: clamp(2rem, 4.2vw, 3.25rem);
+  line-height: 1.15;
+  margin-bottom: var(--sp-2);
+}
+
+.contact__subtext {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1.0625rem;
+  /* preto-antifragil em vez de cinza-chumbo: sobre o verde pastel claro,
+     cinza-chumbo fica abaixo de 4.5:1 (falha AA em texto normal) */
+  color: var(--preto-antifragil);
+  margin-bottom: var(--sp-6);
+}
+
+.contact__cta {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  color: var(--preto-antifragil);
+  background: var(--amarelo-suave);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: 4px;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background-color 0.2s var(--ease);
+  box-shadow: 0 1px 2px rgba(38, 46, 51, 0.1);
+}
+.contact__cta:hover {
+  background: #e4d39a;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(38, 46, 51, 0.18);
+}
+
+/* seam diagonal: contato (claro) -> rodapé (escuro) */
+.contact::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: clamp(32px, 5vw, 72px);
+  background: var(--preto-antifragil);
+  clip-path: polygon(0 100%, 100% 40%, 100% 100%);
+}
+
+/* ===================================================================
+   Rodapé
+   =================================================================== */
+.site-footer {
+  background: var(--preto-antifragil);
+  padding-top: var(--sp-8);
+  padding-bottom: var(--sp-8);
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.site-footer__mark {
+  height: 32px;
+  opacity: 0.6;
+}
+
+.site-footer__text {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  color: rgba(242, 242, 242, 0.6);
+  text-align: center;
+}
+
+/* ===================================================================
+   Reveal on scroll (JS adiciona .reveal-ready na raiz e depois .is-visible
+   em cada item). Sem JS ou se o script falhar ao carregar, os elementos
+   .reveal permanecem com a aparência normal (opacity/posição padrão) —
+   a ocultação só é ativada quando o próprio script confirma que rodou.
+   =================================================================== */
+html.reveal-ready .reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+html.reveal-ready .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===================================================================
+   Breakpoints — mobile first
+   =================================================================== */
+
+/* Tablet ≥ 600px */
+@media (min-width: 600px) {
+  :root { --side-margin: 32px; }
+
+  .contact__shard { width: 96px; height: 48px; }
+}
+
+/* Desktop ≥ 1024px */
+@media (min-width: 1024px) {
+  :root { --side-margin: 40px; }
+
+  .hero {
+    padding-top: var(--sp-15);
+    padding-bottom: calc(var(--sp-15) + 72px);
+  }
+
+  .hero__grid {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: var(--sp-12);
+  }
+
+  .hero__mark { justify-content: flex-end; }
+
+  .intro__inner { padding-left: var(--sp-6); }
+}
+
+/* Desktop grande ≥ 1440px */
+@media (min-width: 1440px) {
+  .hero__headline { max-width: 18ch; }
+}

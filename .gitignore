@@ -1,39 +1,14 @@
-# Dependências
-node_modules/
-jspm_packages/
-
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Builds e Saídas
-build/
-out/
-.next/
-.nuxt/
-
-# Variáveis de Ambiente (Segurança!)
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.env
-
-# Cache de ferramentas
-.cache/
+# Cache local do Firebase CLI
 .firebase/
-.eslintcache
-.stylelintcache
-.prettiercache
-.parcel-cache
 
-# Arquivos do Sistema e IDEs
+# Arquivo de histórico pré-reconstrução de 2026-10-02 (site premium Figma Make
+# + static-site/ anteriores). Mantido só em disco local como rede de segurança
+# — não é commitado porque inclui node_modules/ (~370MB) e porque o histórico
+# real já está preservado no git (ver README.md, commit 6b08471 e anteriores).
+_obsoleto-pre-reconstrucao-2026-10-02/
+
+# Sistema / IDE
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-*.swp
