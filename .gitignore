@@ -25,6 +25,7 @@ out/
 
 # Cache de ferramentas
 .cache/
+.firebase/
 .eslintcache
 .stylelintcache
 .prettiercache
