@@ -45,7 +45,8 @@
     assets/
       css/styles.css
       js/main.js
-      refugio-tech.svg      (logo oficial, ativos/marca/ do repositório Consultoria)
+      refugio-tech.svg      (logo oficial completo, ativos/marca/ do repositório Consultoria)
+      refugio-tech-mark.svg (recorte só do símbolo, sem o texto — usado no lockup horizontal do header)
       favicon.png
       fonts/
         balgin-light.otf        (fonte principal da marca — recuperada do
