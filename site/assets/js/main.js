@@ -66,3 +66,94 @@
     }
   });
 })();
+
+/**
+ * Formulário de contato (Web3Forms) — melhoria progressiva.
+ * Sem este script, o <form> ainda funciona: submit normal via POST,
+ * Web3Forms processa e redireciona para a URL do campo "redirect"
+ * (mesma página, com "?mensagem-enviada=1"). Com o script, a
+ * submissão vira fetch/AJAX: sem sair da página, com mensagem de
+ * sucesso/erro inline.
+ */
+(function () {
+  "use strict";
+
+  function showStatus(el, message, state) {
+    el.textContent = message;
+    if (state) {
+      el.setAttribute("data-state", state);
+    } else {
+      el.removeAttribute("data-state");
+    }
+  }
+
+  // Caso de fallback sem JS: se o redirect do Web3Forms trouxe o
+  // visitante de volta com "?mensagem-enviada=1", mostra a confirmação.
+  function checkRedirectReturn(statusEl) {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get("mensagem-enviada") === "1") {
+      showStatus(statusEl, "Mensagem enviada. Obrigado — vamos responder em breve.", "success");
+      var url = new URL(window.location.href);
+      url.searchParams.delete("mensagem-enviada");
+      window.history.replaceState({}, "", url.pathname + url.hash);
+    }
+  }
+
+  var form = document.getElementById("contact-form");
+  if (!form) return;
+
+  var statusEl = document.getElementById("contact-form-status");
+  if (statusEl) checkRedirectReturn(statusEl);
+
+  if (typeof window.fetch !== "function") return; // sem fetch, cai no POST normal
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    if (!form.reportValidity()) return;
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var originalLabel = submitBtn ? submitBtn.textContent : "";
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Enviando…";
+    }
+    showStatus(statusEl, "Enviando…", null);
+
+    fetch(form.action, {
+      method: "POST",
+      body: new FormData(form),
+      headers: { Accept: "application/json" },
+    })
+      .then(function (response) {
+        return response.json().then(function (data) {
+          return { ok: response.ok, data: data };
+        });
+      })
+      .then(function (result) {
+        if (result.ok && result.data && result.data.success) {
+          showStatus(statusEl, "Mensagem enviada. Obrigado — vamos responder em breve.", "success");
+          form.reset();
+        } else {
+          showStatus(
+            statusEl,
+            "Não deu para enviar agora. Tente de novo em instantes ou escreva direto para contato@refugio.tech.",
+            "error"
+          );
+        }
+      })
+      .catch(function () {
+        showStatus(
+          statusEl,
+          "Não deu para enviar agora. Tente de novo em instantes ou escreva direto para contato@refugio.tech.",
+          "error"
+        );
+      })
+      .finally(function () {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalLabel;
+        }
+      });
+  });
+})();

@@ -141,11 +141,19 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 72px;
+  height: 96px;
 }
 
-.brand { display: inline-flex; align-items: center; }
-.brand__mark { height: 40px; width: auto; }
+.brand { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.brand__mark { height: 44px; width: auto; flex-shrink: 0; }
+.brand__name {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1.375rem;
+  letter-spacing: 0.01em;
+  color: var(--preto-antifragil);
+  white-space: nowrap;
+}
 
 .site-header__link {
   font-family: var(--font-body);
@@ -156,10 +164,26 @@ button:focus-visible {
   padding: var(--sp-1) var(--sp-2);
   border-radius: 4px;
   transition: color 0.2s var(--ease), background-color 0.2s var(--ease);
+  white-space: nowrap;
 }
 .site-header__link:hover {
   color: var(--preto-antifragil);
   background: rgba(69, 82, 89, 0.08);
+}
+
+/* Telas muito estreitas: o lockup horizontal (símbolo + nome) ocupa mais
+   espaço que o símbolo sozinho de antes — reduz a marca e troca o link de
+   contato pelo rótulo curto (achado real em teste em 390px/360px: mesmo
+   reduzindo fonte, "Fale com a gente" ainda não cabia). */
+.site-header__link-short { display: none; }
+@media (max-width: 479px) {
+  .site-header__inner { height: 84px; }
+  .brand { gap: var(--sp-1); }
+  .brand__mark { height: 36px; }
+  .brand__name { font-size: 1.0625rem; }
+  .site-header__link { font-size: 0.8125rem; padding: 6px 10px; }
+  .site-header__link-full { display: none; }
+  .site-header__link-short { display: inline; }
 }
 
 /* ===================================================================
@@ -311,6 +335,26 @@ button:focus-visible {
   max-width: 42ch;
 }
 
+.intro__teaser {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: var(--sp-4);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amarelo-suave);
+}
+.intro__teaser-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amarelo-suave);
+  flex-shrink: 0;
+}
+
 /* seam diagonal: introdução (escuro) -> contato (claro) */
 .intro::after {
   content: "";
@@ -333,6 +377,7 @@ button:focus-visible {
   padding-bottom: calc(var(--sp-15) + 56px);
   overflow: hidden;
   text-align: center;
+  scroll-margin-top: 96px;
 }
 
 .contact__facet {
@@ -380,6 +425,60 @@ button:focus-visible {
   color: var(--preto-antifragil);
   margin-bottom: var(--sp-6);
 }
+
+.contact__form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-3);
+  width: 100%;
+  max-width: 420px;
+  text-align: left;
+}
+
+.contact__field { display: flex; }
+
+.contact__form input[type="text"],
+.contact__form input[type="email"],
+.contact__form textarea {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--preto-antifragil);
+  background: var(--off-white);
+  border: 1px solid rgba(38, 46, 51, 0.22);
+  border-radius: 4px;
+  padding: var(--sp-2) var(--sp-3);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.contact__form textarea { resize: vertical; min-height: 104px; }
+.contact__form input::placeholder,
+.contact__form textarea::placeholder { color: rgba(38, 46, 51, 0.5); }
+.contact__form input:focus-visible,
+.contact__form textarea:focus-visible {
+  outline: none;
+  border-color: var(--cinza-chumbo);
+  box-shadow: 0 0 0 3px rgba(69, 82, 89, 0.18);
+}
+
+.contact__form button[type="submit"] {
+  align-self: flex-start;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.contact__form button[type="submit"]:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.contact__form-status {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: var(--preto-antifragil);
+  min-height: 1.3em;
+}
+.contact__form-status[data-state="error"] { color: #7a2f2f; }
 
 .contact__cta {
   display: inline-block;

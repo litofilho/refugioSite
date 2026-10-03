@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 13 378 378" width="378" height="378" role="img" aria-label="Símbolo da Refúgio Tech">
+  <polygon points="65,18 248,18 248,165" fill="#A8BFB0"></polygon>
+  <polygon points="248,18 433,18 248,165" fill="#E8E6D8"></polygon>
+  <polygon points="433,18 433,165 248,165" fill="#4A5759"></polygon>
+  <polygon points="248,165 433,165 433,312" fill="#D8C079"></polygon>
+  <polygon points="248,165 433,312 248,386" fill="#576165"></polygon>
+  <polygon points="248,165 248,386 65,312" fill="#2C3639"></polygon>
+  <polygon points="65,18 248,165 65,312" fill="#6B7A7F"></polygon>
+</svg>
