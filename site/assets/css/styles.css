@@ -519,7 +519,6 @@ button:focus-visible {
 }
 
 .contact__form button[type="submit"] {
-  align-self: flex-start;
   border: 0;
   cursor: pointer;
   font: inherit;
