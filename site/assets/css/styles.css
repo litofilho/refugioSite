@@ -156,13 +156,22 @@ button:focus-visible {
 
 .brand { display: inline-flex; align-items: center; gap: var(--sp-2); }
 .brand__mark { height: 44px; width: auto; flex-shrink: 0; }
+/* Caixa alta igual ao lockup do hero (bug relatado pelo fundador em
+   2026-10-03: header em Title Case, hero em CAIXA ALTA — texto HTML
+   continua "Refúgio Tech", com acento correto; é o text-transform que
+   padroniza a grafia visual, igual já era feito em .hero__mark-caption,
+   não precisa retipar sem acento). Fonte aumentada para a altura da caixa
+   alta (cap height) bater com a altura do símbolo ao lado (44px) — antes
+   22px (~16px de cap height) ficava visualmente menor que o símbolo. */
 .brand__name {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: 1.375rem;
-  letter-spacing: 0.01em;
+  font-size: 2.75rem;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
   color: var(--preto-antifragil);
   white-space: nowrap;
+  line-height: 1;
 }
 
 .site-header__link {
@@ -190,7 +199,16 @@ button:focus-visible {
   .site-header__inner { height: 84px; }
   .brand { gap: var(--sp-1); }
   .brand__mark { height: 36px; }
-  .brand__name { font-size: 1.0625rem; }
+  /* Mesma lógica da versão desktop (cap height bate com os 36px do
+     símbolo), mas limitada por uma fórmula fluida: nesta faixa de tela o
+     link de navegação ("Contato") disputa espaço na mesma linha, e um
+     valor fixo de 36px (testado de verdade em 390px e 360px) sobrepunha o
+     nome no botão de contato. calc() deriva o espaço realmente livre
+     (viewport menos símbolo, gap, nav e margens, com folga de ~6px) e usa
+     o menor entre isso e o alvo de 36px — bate com o símbolo sempre que
+     houver espaço (perto de 479px) e reduz graciosamente em telas bem
+     estreitas (320px) sem nunca sobrepor o botão de contato. */
+  .brand__name { font-size: min(2.25rem, calc((100vw - 166px) / 6.694)); letter-spacing: 0.01em; }
   .site-header__link { font-size: 0.8125rem; padding: 6px 10px; }
   .site-header__link-full { display: none; }
   .site-header__link-short { display: inline; }
@@ -293,13 +311,22 @@ button:focus-visible {
    mesma var(--font-display) do header — garante fonte idêntica nos dois
    lugares, sem depender de fonte carregando dentro de um <img src="*.svg">
    (contexto isolado que não herda @font-face/Google Fonts da página). */
+/* Largura do texto ajustada para bater com a largura do símbolo ao lado
+   (bug relatado pelo fundador em 2026-10-03: legenda ficava muito mais
+   estreita que o símbolo de 320px/70vw). .hero__mark-img usa
+   `width: min(320px, 70vw)` — a fórmula de font-size abaixo escala junto
+   (9.4vw abaixo do ponto de corte, travando em 2.65rem acima dele),
+   calibrada empiricamente (medição real de largura renderizada no
+   navegador, não só cálculo) para a largura do texto acompanhar a do
+   símbolo em qualquer viewport, não só num breakpoint fixo. */
 .hero__mark-caption {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: 1.125rem;
+  font-size: min(9.4vw, 2.65rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--preto-antifragil);
+  white-space: nowrap;
 }
 
 /* seam diagonal: hero (claro) -> introdução (escuro) */
