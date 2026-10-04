@@ -1,24 +1,34 @@
 /* ===================================================================
    Refúgio Tech — styles.css
    Boutique técnica · refúgio sólido e calmo para PMEs.
-   Paleta oficial, grid 8px, tipografia Balgin (títulos) + Roboto (corpo).
+   Paleta oficial, grid 8px, tipografia Jost (títulos, fallback de Balgin —
+   ver nota abaixo) + Roboto (corpo).
    =================================================================== */
 
-/* ---------- Fontes locais: Balgin (apenas light / extralight) ---------- */
-@font-face {
-  font-family: "Balgin";
-  src: url("../fonts/balgin-light.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Balgin";
-  src: url("../fonts/balgin-extralight.otf") format("opentype");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
+/* ---------- Tipografia de destaque: Balgin substituída por Jost ----------
+   Bug reportado pelo fundador (2026-10-03): fonte do header diferente da
+   fonte da seção 1. Causa real, confirmada via `fc-query` nos dois arquivos
+   recuperados (balgin-light.otf / balgin-extralight.otf): são builds
+   "FONTSPRING DEMO" — o charset embutido cobre só ASCII básico (0x20–0x7E),
+   ZERO glifos em Latin-1 Supplement (nenhum á/é/í/ó/ú/ã/õ/â/ê/ô/ç/ü). Ao
+   renderizar "Refúgio", o navegador troca só o glifo "ú" para a próxima
+   fonte da pilha (fallback por caractere), criando uma mistura visual
+   dentro da própria palavra — isso é o que aparecia como "fonte diferente".
+   Além do glifo faltante, a licença dessas builds é demo/trial, de uso
+   pessoal (não comercial) — então mesmo que tivessem o glifo, não seriam
+   servíveis num site de produção. Balgin é uma fonte real (Studio Sun,
+   design de Cahya Sofyan, vendida em Fontspring/MyFonts/Creative Market),
+   mas a versão completa/licenciada nunca foi comprada — ver
+   docs/infra-site-dominio-hospedagem.md, seção 15, para a decisão completa
+   e o aviso para o Agente 0 revisar ativos/marca/branding.md.
+   Substituída por "Jost" (Google Fonts, SIL OFL, gratuita, subsets latin +
+   latin-ext com cobertura total dos diacríticos do português), geométrica e
+   com os mesmos pesos leves (200/300) já usados no layout — visualmente no
+   mesmo registro (sans-serif geométrica, traço fino, caráter "90s/Kabel")
+   que a Balgin original. Carregada via Google Fonts no <head> do
+   index.html, junto com a Roboto. Os arquivos balgin-*.otf permanecem em
+   assets/fonts/ apenas como referência histórica — não são mais
+   referenciados em nenhum @font-face. */
 
 /* ---------- Design tokens ---------- */
 :root {
@@ -39,7 +49,7 @@
   --facet-7: #6B7A7F;
 
   /* tipografia */
-  --font-display: "Balgin", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Jost", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-body: "Roboto", -apple-system, "Segoe UI", Arial, sans-serif;
 
   /* grid base 8px */
@@ -265,11 +275,31 @@ button:focus-visible {
   position: relative;
   z-index: 1;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
 }
 .hero__mark-img {
   width: min(320px, 70vw);
   filter: drop-shadow(0 24px 48px rgba(38, 46, 51, 0.16));
+}
+/* Legenda "Refúgio Tech" sob o símbolo do hero — antes vinha embutida como
+   texto vetorial dentro de refugio-tech.svg, em fonte Raleway, nunca
+   carregada no site (caía num fallback genérico do sistema). Isso fazia a
+   palavra "Refúgio" aparecer numa fonte diferente da usada no header, logo
+   acima na mesma tela — bug relatado pelo fundador em 2026-10-03. Corrigido
+   trocando o SVG do hero para a versão só com o símbolo
+   (refugio-tech-mark.svg) e escrevendo o nome como texto HTML real, com a
+   mesma var(--font-display) do header — garante fonte idêntica nos dois
+   lugares, sem depender de fonte carregando dentro de um <img src="*.svg">
+   (contexto isolado que não herda @font-face/Google Fonts da página). */
+.hero__mark-caption {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1.125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--preto-antifragil);
 }
 
 /* seam diagonal: hero (claro) -> introdução (escuro) */
@@ -582,7 +612,11 @@ html.reveal-ready .reveal.is-visible {
     gap: var(--sp-12);
   }
 
-  .hero__mark { justify-content: flex-end; }
+  /* hero__mark virou flex-direction:column (símbolo + legenda); o eixo
+     cruzado agora é horizontal, então o alinhamento à direita no desktop
+     usa align-items, não justify-content (que passou a controlar o eixo
+     vertical) */
+  .hero__mark { align-items: flex-end; }
 
   .intro__inner { padding-left: var(--sp-6); }
 }

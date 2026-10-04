@@ -7,6 +7,13 @@
 # real já está preservado no git (ver README.md, commit 6b08471 e anteriores).
 _obsoleto-pre-reconstrucao-2026-10-02/
 
+# Fonte Balgin recuperada (balgin-light.otf / balgin-extralight.otf): builds
+# "FONTSPRING DEMO", licença demo/trial de uso pessoal, sem glifos de
+# diacríticos do português (bug 2026-10-03, ver docs/infra-site-dominio-
+# hospedagem.md seção 15). Não comitar nem servir publicamente — mantida
+# aqui só como referência histórica de qual arquivo foi recuperado.
+_obsoleto-fontes-balgin-demo-nao-licenciada/
+
 # Sistema / IDE
 .DS_Store
 Thumbs.db
