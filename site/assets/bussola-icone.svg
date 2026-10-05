@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<polygon points="100,100 89.7,75.1 100.0,12.0" fill="#D9C583"/>
+<polygon points="100,100 100.0,12.0 110.3,75.1" fill="#262E33"/>
+<polygon points="100,100 124.9,89.7 188.0,100.0" fill="#A8BFB0"/>
+<polygon points="100,100 188.0,100.0 124.9,110.3" fill="#576165"/>
+<polygon points="100,100 110.3,124.9 100.0,188.0" fill="#576165"/>
+<polygon points="100,100 100.0,188.0 89.7,124.9" fill="#2C3639"/>
+<polygon points="100,100 75.1,110.3 12.0,100.0" fill="#A8BFB0"/>
+<polygon points="100,100 12.0,100.0 75.1,89.7" fill="#4A5759"/>
+<polygon points="100,100 110.3,75.1 135.4,64.6" fill="#6B7A7F"/>
+<polygon points="100,100 135.4,64.6 124.9,89.7" fill="#6B7A7F"/>
+<polygon points="100,100 124.9,110.3 135.4,135.4" fill="#4A5759"/>
+<polygon points="100,100 135.4,135.4 110.3,124.9" fill="#4A5759"/>
+<polygon points="100,100 89.7,124.9 64.6,135.4" fill="#2C3639"/>
+<polygon points="100,100 64.6,135.4 75.1,110.3" fill="#2C3639"/>
+<polygon points="100,100 75.1,89.7 64.6,64.6" fill="#6B7A7F"/>
+<polygon points="100,100 64.6,64.6 89.7,75.1" fill="#6B7A7F"/>
+</svg>

@@ -121,6 +121,11 @@
   align-items: center;
   gap: var(--sp-1);
 }
+.chat-widget__header-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
 .chat-widget__status-dot {
   width: 8px;
   height: 8px;

@@ -50,6 +50,12 @@
   margin-bottom: var(--sp-4);
 }
 
+.bussola-hero__badge {
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--sp-2);
+}
+
 .bussola-hero__headline {
   font-family: var(--font-display);
   font-weight: 300;

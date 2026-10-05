@@ -345,6 +345,11 @@ button:focus-visible {
   color: var(--cinza-chumbo);
   margin-bottom: var(--sp-1);
 }
+.hero__cta-kicker-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
 
 .hero__cta-heading {
   font-family: var(--font-display);
