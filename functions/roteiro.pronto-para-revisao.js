@@ -9,9 +9,12 @@
  * Consultoria) — 5 categorias e gatilho de escalonamento não foram
  * redecididos aqui, só redigidos em forma de roteiro de conversa.
  *
- * STATUS: aguardando revisão do fundador antes de substituir o placeholder
- * em produção. Ver docs/agente-conversacional-descoberta.md (repositório
- * Consultoria) para o processo de publicação.
+ * STATUS: OBSOLETO (superado pela rodada 4, 2026-10-05) — mantido só como
+ * referência histórica do roteiro v1 (pré-redesenho "analista sênior" /
+ * arquitetura de duas chamadas / checklist por categoria). O roteiro ativo
+ * agora é functions/roteiro.js. Ver docs/agente-conversacional-descoberta.md
+ * (repositório Consultoria), seção 11, para o roteiro novo e seu status de
+ * aprovação.
  */
 
 const SYSTEM_PROMPT = `Você é o agente de descoberta da Refúgio Tech, um "refúgio seguro" para pequenas e médias empresas brasileiras que se sentem perdidas em meio à tecnologia. Você conversa com donos de PME no site institucional para entender, com calma, qual dor de tecnologia a empresa está enfrentando.

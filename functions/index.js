@@ -1,30 +1,47 @@
 'use strict';
 
 /**
- * Cloud Function do agente conversacional de descoberta — piloto Segmento A.
+ * Cloud Function do agente conversacional de descoberta — piloto Segmento A,
+ * nome de marca "Bússola" na página pública.
  *
- * Plano técnico aprovado pelo fundador: ver sessão Hermes
- * 20261005_122529_b0399b ("Plano técnico agente conversacional descoberta")
- * e decisoes/2026-10-05-agente-piloto-descoberta-pme.md (repositório
- * Consultoria) para o roteiro completo.
+ * STATUS (rodada 4, 2026-10-05): implementa os 6 pontos da "Resolução final
+ * da rodada 3" em decisoes/2026-10-05-agente-piloto-descoberta-pme.md
+ * (repositório Consultoria) — arquitetura de duas chamadas, heurísticas sem
+ * ITIL/COBIT para suporte_terceirizado, validação de domínio por melhor
+ * esforço + checagem pós-resposta, orçamento de alerta GCP em R$50/mês,
+ * piso de segurança por palavra-chave determinística, gate de escalonamento
+ * por checklist de campos + plateau. AGUARDANDO APROVAÇÃO DO FUNDADOR —
+ * nenhum `firebase deploy --only functions` foi executado nesta rodada.
+ * Testado fora do Cloud Functions, com chamadas diretas à API do Vertex AI
+ * (ver docs/agente-conversacional-descoberta.md, repositório Consultoria,
+ * seção da rodada 4, para o relatório de teste).
  *
- * Resumo do desenho (detalhe em docs/agente-conversacional-descoberta.md,
- * repositório Consultoria):
+ * Resumo do desenho:
  *   - Modelo: Gemini 2.5 Flash via Vertex AI, mesmo projeto GCP.
  *   - Persistência: Firestore (southamerica-east1), coleção
  *     conversas_piloto_descoberta (sessão) + subcoleção mensagens.
- *   - Escalonamento para lead: campo estruturado (JSON) devolvido pelo
- *     próprio modelo a cada turno, nunca por regex sobre texto livre.
- *   - "consultoria produtiva" escalona sempre (regra determinística no
- *     código, não depende do modelo lembrar disso).
- *   - E-mail de escalonamento via Web3Forms (mesmo canal já usado pelo
- *     formulário de contato do site, contato@refugio.tech).
- *   - Mitigação de abuso: Cloudflare Turnstile (obrigatório no 1º turno de
- *     cada sessão) + limite de turnos por sessão + limite de mensagens por
- *     IP por dia, aplicados dentro da própria function (ver nota em
- *     docs/agente-conversacional-descoberta.md sobre por que o rate
- *     limiting do lado da Cloudflare, previsto no plano original, não se
- *     aplica tecnicamente a este endpoint).
+ *   - Chamada 1 (callDiagnostico): sempre executada, saída JSON estruturada
+ *     (responseSchema) — categoriza, preenche o checklist de campos por
+ *     categoria, sinaliza necessidade de fonte externa e os três motivos de
+ *     escalonamento que só o modelo pode perceber (execução prática, decisão
+ *     de investimento, mudança de contrato).
+ *   - Chamada 2 (callGrounding): só disparada quando a chamada 1 sinalizar
+ *     precisa_fonte_externa=true. Sem responseSchema (incompatível com
+ *     grounding no Gemini 2.5 Flash), usa a ferramenta googleSearch. O
+ *     código confere se o domínio citado bate com DOMINIOS_APROVADOS da
+ *     categoria; se não bater, trata como "sem fonte confiável" (gatilho de
+ *     escalonamento).
+ *   - Gate de escalonamento 100% determinístico em código — ver
+ *     calcularMotivoEscalonamento(). motivo_escalonamento sempre em
+ *     MOTIVOS_ESCALONAMENTO (enum fixo), nunca texto livre do modelo.
+ *   - Piso de segurança: filtro de palavra-chave determinístico
+ *     (aplicarPisoSeguranca) antepõe aviso de backup sempre que a resposta
+ *     final contém termo destrutivo da lista TERMOS_DESTRUTIVOS. Limite
+ *     aceito e declarado: não cobre paráfrase ou instrução disfarçada.
+ *   - E-mail de escalonamento via log estruturado + Cloud Monitoring (ver
+ *     notificarEscalonamento) — inalterado nesta rodada.
+ *   - Mitigação de abuso: Cloudflare Turnstile + limite de turnos por sessão
+ *     + limite de mensagens por IP por dia — inalterado nesta rodada.
  */
 
 const { onRequest } = require('firebase-functions/v2/https');
@@ -70,12 +87,62 @@ const CATEGORIAS = [
   'consultoria_produtiva',
 ];
 
+// Checklist fino de campos de diagnóstico por categoria — ver
+// docs/agente-conversacional-descoberta.md (rodada 4) para a justificativa
+// de cada campo. Usado tanto para montar o responseSchema quanto para
+// calcular o diff de "campo novo preenchido" turno a turno.
+const CAMPOS_POR_CATEGORIA = {
+  seguranca_basica: ['alvo_protegido', 'existe_backup', 'onde_fica_backup', 'ja_teve_incidente', 'nivel_urgencia_percebido'],
+  infraestrutura: ['equipamento_envolvido', 'sintoma_principal', 'quantidade_pessoas_afetadas', 'ja_tentou_resolver', 'ambiente_fisico'],
+  ferramentas_gestao: ['ferramenta_atual', 'processo_afetado', 'volume_de_uso', 'dor_especifica', 'ja_tentou_resolver'],
+  suporte_terceirizado: ['tem_fornecedor_hoje', 'existe_contrato_ou_sla_escrito', 'tempo_resposta_relatado', 'custo_relatado', 'motivo_insatisfacao'],
+  consultoria_produtiva: ['o_que_quer_construir', 'motivo_construir_do_zero', 'orcamento_mencionado', 'prazo_mencionado'],
+};
+
+// Validação de domínio por "melhor esforço + checagem pós-resposta" (ponto 3
+// da resolução) — não é allowlist garantido via Vertex AI Search, é uma
+// lista de referência conferida em código depois da busca livre. Domínio
+// vazio = categoria nunca aciona grounding (suporte_terceirizado: heurística
+// própria, sem fornecedor oficial a citar).
+const DOMINIOS_APROVADOS = {
+  seguranca_basica: ['microsoft.com', 'google.com', 'kaspersky.com', 'kaspersky.com.br', 'avast.com'],
+  infraestrutura: ['intelbras.com.br', 'tp-link.com', 'tp-link.com.br'],
+  ferramentas_gestao: ['omie.com.br', 'bling.com.br', 'tiny.com.br', 'contaazul.com', 'microsoft.com', 'google.com'],
+  suporte_terceirizado: [],
+  consultoria_produtiva: ['omie.com.br', 'bling.com.br', 'tiny.com.br', 'contaazul.com', 'microsoft.com', 'google.com'],
+};
+
+const MOTIVOS_ESCALONAMENTO = [
+  'execucao_pratica',
+  'decisao_investimento',
+  'mudanca_contrato',
+  'sem_fonte_confiavel',
+  'fora_padrao_conhecido',
+  'plateau_diagnostico',
+];
+
+const SINAIS_ESCALONAMENTO_DO_MODELO = ['execucao_pratica', 'decisao_investimento', 'mudanca_contrato'];
+
+const PLATEAU_TURNOS = 2;
+
+// Piso de segurança (ponto 5): lista fixa de termos destrutivos em PT-BR.
+// Limite aceito e declarado: não cobre paráfrase nem instrução destrutiva
+// disfarçada — é rede de segurança determinística, não garantia semântica.
+const TERMOS_DESTRUTIVOS_REGEX = /apagar|deletar|exclu(ir|a|indo|ídos?)|formatar|reinstala(r|ndo)|reseta(r|ndo)|reset\s+de\s+f[aá]brica|restaura[rç][aã]o?\s+de\s+f[aá]brica|revoga(r|ndo)\s+(o\s+)?acesso|limpar\s+(o\s+disco|tudo)|sobrescreve(r|ndo)|desinstala(r|ndo)|zera(r|ndo)|wipe|factory reset/i;
+
+const AVISO_BACKUP = 'Antes de qualquer coisa: garanta (ou confirme que já existe) um backup atualizado antes de continuar — essa ação não tem volta.';
+
+const MENSAGEM_HANDOFF_PADRAO = 'Vou registrar isso para um especialista humano da Refúgio Tech continuar com você.';
+
 let roteiro;
 try {
   // eslint-disable-next-line global-require
   roteiro = require('./roteiro');
 } catch (e) {
-  roteiro = { SYSTEM_PROMPT: 'PLACEHOLDER — roteiro ainda não revisado pelo fundador. Ver docs/agente-conversacional-descoberta.md.' };
+  roteiro = {
+    SYSTEM_PROMPT_DIAGNOSTICO: 'PLACEHOLDER — roteiro ainda não revisado pelo fundador. Ver docs/agente-conversacional-descoberta.md.',
+    SYSTEM_PROMPT_GROUNDING: 'Responda de forma factual e curta, citando a fonte.',
+  };
 }
 
 let cachedTurnstileSecret = null;
@@ -125,31 +192,60 @@ async function checkAndIncrementIpLimit(ip) {
   });
 }
 
-function buildResponseSchema() {
+/** Sub-schema de um campo de checklist: string livre, vazio se desconhecido. */
+function campoSchema(descricao) {
+  return { type: 'string', description: descricao || 'Deixe string vazia se ainda não souber.' };
+}
+
+/** Monta o sub-objeto de campos de uma categoria a partir de CAMPOS_POR_CATEGORIA. */
+function categoriaCamposSchema(categoria) {
+  const properties = {};
+  for (const campo of CAMPOS_POR_CATEGORIA[categoria]) {
+    properties[campo] = campoSchema();
+  }
+  return { type: 'object', properties, required: [] };
+}
+
+function buildCamposDiagnosticoSchema() {
+  const properties = {};
+  for (const categoria of CATEGORIAS) {
+    properties[categoria] = categoriaCamposSchema(categoria);
+  }
+  return {
+    type: 'object',
+    description: 'Checklist de diagnóstico. Preencha só os campos da categoria identificada; deixe as outras quatro com todos os campos em string vazia.',
+    properties,
+  };
+}
+
+function buildDiagnosticoResponseSchema() {
   return {
     type: 'object',
     properties: {
-      resposta: { type: 'string', description: 'Texto da resposta do agente para o PME, em português do Brasil.' },
+      resposta: { type: 'string', description: 'Texto da resposta do agente para o PME, em português do Brasil. Se precisa_fonte_externa=true, uma frase curta de transição.' },
       categoria: { type: 'string', enum: [...CATEGORIAS, 'nenhuma'] },
-      escalar: { type: 'boolean' },
-      motivo_escalonamento: { type: 'string' },
-      resumo_para_lead: { type: 'string', description: 'Resumo factual do que o PME disse, para o fundador ler antes de responder o lead. Vazio se escalar=false.' },
+      padrao_conhecido: { type: 'boolean', description: 'true se a situação casa com um padrão que o agente sabe resolver com orientação; false se é genuinamente atípica.' },
+      precisa_fonte_externa: { type: 'boolean', description: 'true só quando o passo exato depende de documentação oficial de um fornecedor específico. suporte_terceirizado nunca marca true.' },
+      consulta_busca: { type: 'string', description: 'Pergunta de busca objetiva, preenchida só quando precisa_fonte_externa=true.' },
+      sinal_escalonamento: { type: 'string', enum: ['nenhum', ...SINAIS_ESCALONAMENTO_DO_MODELO] },
+      campos_diagnostico: buildCamposDiagnosticoSchema(),
+      resumo_para_lead: { type: 'string', description: 'Resumo factual do que o PME disse, para o fundador ler antes de responder o lead. Vazio se ainda não há motivo de escalonamento.' },
       nome_pme: { type: 'string' },
       empresa_pme: { type: 'string' },
       contato_pme: { type: 'string' },
     },
-    required: ['resposta', 'categoria', 'escalar'],
+    required: ['resposta', 'categoria', 'padrao_conhecido', 'precisa_fonte_externa', 'sinal_escalonamento', 'campos_diagnostico'],
   };
 }
 
-async function callGemini(history, novaMensagem) {
+async function callDiagnostico(history, novaMensagem) {
   const vertexAI = new VertexAI({ project: PROJECT_ID, location: VERTEX_LOCATION });
   const model = vertexAI.getGenerativeModel({
     model: MODEL_NAME,
-    systemInstruction: roteiro.SYSTEM_PROMPT,
+    systemInstruction: roteiro.SYSTEM_PROMPT_DIAGNOSTICO,
     generationConfig: {
       responseMimeType: 'application/json',
-      responseSchema: buildResponseSchema(),
+      responseSchema: buildDiagnosticoResponseSchema(),
       temperature: 0.4,
     },
   });
@@ -166,24 +262,75 @@ async function callGemini(history, novaMensagem) {
 }
 
 /**
- * Dispara o aviso de escalonamento para o fundador.
- *
- * NÃO usa Web3Forms: testado nesta rodada e a própria API recusa chamada
- * server-side ("This method is not allowed. Use our API in client side or
- * contact support with server IP address (Pro plan is required)") — o
- * formulário de contato do site funciona porque é o NAVEGADOR do visitante
- * chamando a API, não um backend. Mesma restrição já encontrada e
- * documentada pelo diretor anterior ao tentar automatizar o cadastro da
- * Web3Forms (docs/infra-site-dominio-hospedagem.md seção 14.3).
- *
- * Em vez de assinar um novo fornecedor de e-mail transacional (custo e
- * conta novos, caminho não combinado com o fundador), uso só o que já está
- * disponível no mesmo projeto GCP: um log estruturado específico
- * ("LEAD_ESCALADO_AGENTE_DESCOBERTA") + uma política de alerta do Cloud
- * Monitoring (criada nesta mesma rodada) que dispara e-mail para
- * d3_nt@hotmail.com — o mesmo e-mail pessoal do fundador que já recebe o
- * contato do site. Zero fornecedor novo, zero custo adicional (Cloud
- * Monitoring tem cota gratuita generosa, muito acima do volume do piloto).
+ * Chamada 2 — só disparada quando a chamada 1 sinaliza precisa_fonte_externa.
+ * Sem responseSchema (incompatível com a ferramenta googleSearch no Gemini
+ * 2.5 Flash). Devolve { texto, dominiosCitados } — dominiosCitados vem do
+ * campo "domain" de cada groundingChunk.web (confirmado via teste direto à
+ * API nesta rodada: a API já devolve um hostname limpo, sem precisar
+ * resolver o link de redirecionamento do Vertex AI Search).
+ */
+async function callGrounding(categoria, consultaBusca) {
+  const vertexAI = new VertexAI({ project: PROJECT_ID, location: VERTEX_LOCATION });
+  const model = vertexAI.getGenerativeModel({
+    model: MODEL_NAME,
+    systemInstruction: roteiro.SYSTEM_PROMPT_GROUNDING,
+    tools: [{ googleSearch: {} }],
+    generationConfig: { temperature: 0.2 },
+  });
+
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: consultaBusca }] }],
+  });
+  const candidate = result.response.candidates[0];
+  const texto = candidate.content.parts.map((p) => p.text || '').join(' ').trim();
+  const chunks = (candidate.groundingMetadata && candidate.groundingMetadata.groundingChunks) || [];
+  const dominiosCitados = chunks
+    .map((c) => c.web && c.web.domain)
+    .filter(Boolean);
+  return { texto, dominiosCitados };
+}
+
+function dominioAprovado(dominio, listaAprovados) {
+  return listaAprovados.some((aprovado) => dominio === aprovado || dominio.endsWith('.' + aprovado));
+}
+
+/** Piso de segurança (ponto 5) — ver TERMOS_DESTRUTIVOS_REGEX no topo do arquivo. */
+function aplicarPisoSeguranca(texto) {
+  if (TERMOS_DESTRUTIVOS_REGEX.test(texto)) {
+    return AVISO_BACKUP + ' ' + texto;
+  }
+  return texto;
+}
+
+/**
+ * Diff de campos novos preenchidos nesta categoria, turno a turno — calculado
+ * em código, nunca por autoavaliação do modelo (ponto 6).
+ */
+function contarCamposNovos(camposAtuais, camposAnteriores, camposDaCategoria) {
+  let novos = 0;
+  for (const campo of camposDaCategoria) {
+    const atual = (camposAtuais && camposAtuais[campo]) || '';
+    const anterior = (camposAnteriores && camposAnteriores[campo]) || '';
+    if (atual.trim() !== '' && anterior.trim() === '') novos += 1;
+  }
+  return novos;
+}
+
+/**
+ * Gate de escalonamento 100% determinístico (ponto 6). Ordem de prioridade
+ * fixa; motivo sempre em MOTIVOS_ESCALONAMENTO, nunca texto livre.
+ */
+function calcularMotivoEscalonamento({ sinalModelo, semFonteAprovada, padraoConhecido, plateau }) {
+  if (SINAIS_ESCALONAMENTO_DO_MODELO.includes(sinalModelo)) return sinalModelo;
+  if (semFonteAprovada) return 'sem_fonte_confiavel';
+  if (padraoConhecido === false) return 'fora_padrao_conhecido';
+  if (plateau) return 'plateau_diagnostico';
+  return null;
+}
+
+/**
+ * Dispara o aviso de escalonamento para o fundador — ver docs/agente-
+ * conversacional-descoberta.md seção 4 para por que não é Web3Forms.
  */
 function notificarEscalonamento({ sessionId, categoria, resumo, nome, empresa, contato, motivo }) {
   const consoleLink = `https://console.firebase.google.com/project/${PROJECT_ID}/firestore/data/~2Fconversas_piloto_descoberta~2F${sessionId}`;
@@ -250,6 +397,8 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         status: 'ativa',
         categoria: null,
         turnos: 0,
+        turnosSemNovoCampo: 0,
+        camposDiagnostico: {},
         leadCriado: false,
         ipOrigem: ip,
       });
@@ -265,20 +414,75 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     const historicoSnap = await mensagensRef.orderBy('timestamp', 'asc').limit(40).get();
     const historico = historicoSnap.docs.map((d) => d.data());
 
-    const resultado = await callGemini(historico, message);
+    const resultado = await callDiagnostico(historico, message);
+
+    const categoriaFinal = CATEGORIAS.includes(resultado.categoria) ? resultado.categoria : (sessionData.categoria || null);
+    const categoriaMudou = categoriaFinal !== sessionData.categoria;
+
+    // --- Checklist / plateau (ponto 6) ---
+    const camposAtuaisCategoria = (categoriaFinal && resultado.campos_diagnostico && resultado.campos_diagnostico[categoriaFinal]) || {};
+    const camposAnterioresCategoria = (!categoriaMudou && sessionData.camposDiagnostico) || {};
+    const camposDaCategoria = categoriaFinal ? (CAMPOS_POR_CATEGORIA[categoriaFinal] || []) : [];
+    const novosCampos = contarCamposNovos(camposAtuaisCategoria, camposAnterioresCategoria, camposDaCategoria);
+
+    let turnosSemNovoCampo;
+    if (categoriaMudou) {
+      turnosSemNovoCampo = 0; // categoria nova: checklist começa do zero, não penaliza
+    } else if (novosCampos > 0) {
+      turnosSemNovoCampo = 0;
+    } else {
+      turnosSemNovoCampo = (sessionData.turnosSemNovoCampo || 0) + 1;
+    }
+    const plateau = Boolean(categoriaFinal) && categoriaFinal !== 'nenhuma' && turnosSemNovoCampo >= PLATEAU_TURNOS;
+
+    // --- Chamada 2 (grounding), só se sinalizada e categoria permite ---
+    let respostaFinal = resultado.resposta;
+    let semFonteAprovada = false;
+    const categoriaPermiteGrounding = categoriaFinal && DOMINIOS_APROVADOS[categoriaFinal] && DOMINIOS_APROVADOS[categoriaFinal].length > 0;
+    const precisaFonteExterna = Boolean(resultado.precisa_fonte_externa) && categoriaPermiteGrounding;
+
+    if (precisaFonteExterna && resultado.consulta_busca) {
+      try {
+        const grounding = await callGrounding(categoriaFinal, resultado.consulta_busca);
+        const listaAprovados = DOMINIOS_APROVADOS[categoriaFinal] || [];
+        const algumAprovado = grounding.dominiosCitados.some((d) => dominioAprovado(d, listaAprovados));
+        if (algumAprovado && grounding.texto) {
+          const dominioCitado = grounding.dominiosCitados.find((d) => dominioAprovado(d, listaAprovados));
+          respostaFinal = grounding.texto + (dominioCitado ? ` (fonte: ${dominioCitado})` : '');
+        } else {
+          semFonteAprovada = true;
+          // mantém resultado.resposta (frase de transição) como handoff
+        }
+      } catch (groundingErr) {
+        logger.error('Erro na chamada de grounding', groundingErr);
+        semFonteAprovada = true;
+      }
+    }
+
+    const motivoEscalonamento = calcularMotivoEscalonamento({
+      sinalModelo: resultado.sinal_escalonamento,
+      semFonteAprovada,
+      padraoConhecido: resultado.padrao_conhecido,
+      plateau,
+    });
+    const escalarFinal = motivoEscalonamento !== null;
+
+    respostaFinal = aplicarPisoSeguranca(respostaFinal);
+    if (escalarFinal && !sessionData.leadCriado) {
+      respostaFinal = respostaFinal + '\n\n' + MENSAGEM_HANDOFF_PADRAO;
+    }
 
     const batch = db.batch();
     const agora = admin.firestore.FieldValue.serverTimestamp();
     batch.set(mensagensRef.doc(), { autor: 'pme', texto: message, timestamp: agora });
-    batch.set(mensagensRef.doc(), { autor: 'agente', texto: resultado.resposta, timestamp: agora });
-
-    const categoriaFinal = CATEGORIAS.includes(resultado.categoria) ? resultado.categoria : (sessionData.categoria || null);
-    const escalarFinal = Boolean(resultado.escalar) || categoriaFinal === 'consultoria_produtiva';
+    batch.set(mensagensRef.doc(), { autor: 'agente', texto: respostaFinal, timestamp: agora });
 
     batch.set(sessionRef, {
       atualizadoEm: agora,
       categoria: categoriaFinal,
       turnos: (sessionData.turnos || 0) + 1,
+      turnosSemNovoCampo,
+      camposDiagnostico: camposAtuaisCategoria,
       status: escalarFinal ? 'escalada' : sessionData.status,
     }, { merge: true });
 
@@ -290,7 +494,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       await leadRef.set({
         sessionId,
         categoria: categoriaFinal,
-        motivo: resultado.motivo_escalonamento || (categoriaFinal === 'consultoria_produtiva' ? 'categoria consultoria_produtiva escalona sempre' : null),
+        motivo: motivoEscalonamento,
         resumo: resultado.resumo_para_lead || null,
         nome: resultado.nome_pme || null,
         empresa: resultado.empresa_pme || null,
@@ -304,11 +508,11 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         nome: resultado.nome_pme,
         empresa: resultado.empresa_pme,
         contato: resultado.contato_pme,
-        motivo: resultado.motivo_escalonamento,
+        motivo: motivoEscalonamento,
       });
     }
 
-    res.status(200).json({ resposta: resultado.resposta, escalado: escalarFinal });
+    res.status(200).json({ resposta: respostaFinal, escalado: escalarFinal });
   } catch (err) {
     logger.error('Erro no endpoint /chat', err);
     res.status(500).json({ erro: 'erro_interno' });

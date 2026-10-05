@@ -15,8 +15,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="assets/css/styles.css">
-<link rel="stylesheet" href="assets/css/chat-widget.css">
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -65,6 +63,14 @@
       <div class="intro__bar" aria-hidden="true"></div>
       <p class="intro__paragraph reveal">A Refúgio Tech existe para ser um ponto firme em meio à tecnologia: solidez para sustentar as decisões que importam, tranquilidade para quem não precisa entender de tudo — só precisa de alguém em quem confiar. É essa a bússola de tudo o que construímos aqui, desde já.</p>
       <p class="intro__teaser reveal"><span class="intro__teaser-dot" aria-hidden="true"></span>Em breve, mais novidades.</p>
+    </div>
+  </section>
+
+  <!-- ===================== CTA — BÚSSOLA ===================== -->
+  <section class="home-cta" aria-labelledby="home-cta-heading">
+    <div class="container home-cta__inner">
+      <p id="home-cta-heading" class="home-cta__text reveal">Antes de abrir mais um chatbot genérico, descubra com a Bússola o que está realmente travando sua empresa.</p>
+      <a class="contact__cta reveal" href="bussola/">Falar com a Bússola</a>
     </div>
   </section>
 
@@ -117,29 +123,9 @@
 
 <script src="assets/js/main.js"></script>
 
-<!-- ===================== AGENTE CONVERSACIONAL DE DESCOBERTA (piloto) =====================
-     Infra: functions/index.js (Cloud Function southamerica-east1) + Firestore.
-     Roteiro ainda em revisão pelo fundador — ver docs/agente-conversacional-descoberta.md
-     no repositório Consultoria antes de considerar este bloco "publicado" de fato. -->
-<div id="refugio-chat-widget" class="chat-widget">
-  <button type="button" class="chat-widget__launcher" aria-expanded="false" aria-controls="refugio-chat-panel">
-    <span class="chat-widget__launcher-dot" aria-hidden="true"></span>
-    Converse com a gente
-  </button>
-  <div class="chat-widget__panel" id="refugio-chat-panel" hidden>
-    <div class="chat-widget__header">
-      <p class="chat-widget__header-title">Diagnóstico rápido</p>
-      <button type="button" class="chat-widget__close" aria-label="Fechar">×</button>
-    </div>
-    <div class="chat-widget__messages" role="log" aria-live="polite"></div>
-    <div class="chat-widget__turnstile"></div>
-    <form class="chat-widget__form">
-      <label for="chat-widget-input" class="visually-hidden">Sua mensagem</label>
-      <textarea id="chat-widget-input" class="chat-widget__input" rows="1" placeholder="Escreva aqui…" required></textarea>
-      <button type="submit" class="chat-widget__send">Enviar</button>
-    </form>
-  </div>
-</div>
-<script src="assets/js/chat-widget.js"></script>
+<!-- O agente conversacional "Bússola" tem página própria agora
+     (site/bussola/index.html) — ver decisoes/2026-10-05-agente-piloto-
+     descoberta-pme.md (repositório Consultoria, "Achado do primeiro teste
+     manual"). O widget de chat não fica mais solto na home. -->
 </body>
 </html>

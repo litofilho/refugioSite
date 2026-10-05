@@ -412,8 +412,58 @@ button:focus-visible {
   flex-shrink: 0;
 }
 
-/* seam diagonal: introdução (escuro) -> contato (claro) */
+/* seam diagonal: introdução (escuro) -> CTA da Bússola (claro, off-white) —
+   trocado de var(--verde-pastel) porque a seção .contact deixou de vir
+   imediatamente depois da .intro (ver .home-cta abaixo, inserida entre as
+   duas quando o widget solto saiu da home — decisoes/2026-10-05-agente-
+   piloto-descoberta-pme.md). */
 .intro::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: clamp(40px, 7vw, 96px);
+  background: var(--off-white);
+  clip-path: polygon(0 35%, 100% 100%, 0 100%);
+}
+
+/* ===================================================================
+   CTA para a página da Bússola (substitui o widget de chat solto que
+   ficava embutido direto na home — ver decisoes/2026-10-05-agente-
+   piloto-descoberta-pme.md, "Achado do primeiro teste manual").
+   Fundo claro (off-white), entre a introdução (escura) e o contato
+   (verde pastel) — por isso ganha a mesma seam diagonal que a introdução
+   usava antes para chegar no contato.
+   =================================================================== */
+.home-cta {
+  position: relative;
+  background: var(--off-white);
+  padding-top: var(--sp-12);
+  padding-bottom: calc(var(--sp-12) + 56px);
+  text-align: center;
+  overflow: hidden;
+}
+
+.home-cta__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+.home-cta__text {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--preto-antifragil);
+  font-size: clamp(1.375rem, 2.8vw, 2rem);
+  line-height: 1.35;
+  margin-bottom: var(--sp-5, 40px);
+}
+
+/* seam diagonal: CTA da Bússola (claro) -> contato (verde pastel) —
+   mesmo padrão que a introdução usava antes de ganhar esta seção no meio. */
+.home-cta::after {
   content: "";
   position: absolute;
   left: 0;
