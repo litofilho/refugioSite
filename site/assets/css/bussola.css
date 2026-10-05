@@ -50,10 +50,36 @@
   margin-bottom: var(--sp-4);
 }
 
-.bussola-hero__badge {
-  width: 56px;
-  height: 56px;
+/* Badge da pagina /bussola: 56px -> 128px. Pedido do fundador apos ver o
+   preview da rodada anterior ("ficou meio perdido e pequeno, precisa de
+   mais presenca visual"). Testado contra 2 alternativas menores (88px e
+   112px+halo) em preview local -- ver docs/agente-conversacional-
+   descoberta.md (repositorio Consultoria) para o relatorio com as 3
+   opcoes. O wrapper .bussola-hero__badge-wrap existe para permitir um
+   halo decorativo atras do icone no futuro sem mexer na estrutura; nesta
+   versao escolhida ele fica inerte (sem halo), so o tamanho do icone
+   carrega a presenca. */
+.bussola-hero__badge-wrap {
+  position: relative;
+  display: inline-flex;
   margin-bottom: var(--sp-2);
+}
+
+.bussola-hero__badge-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.bussola-hero__badge {
+  display: block;
+  width: 128px;
+  height: 128px;
 }
 
 .bussola-hero__headline {

@@ -268,6 +268,30 @@ button:focus-visible {
   clip-path: polygon(0% 20%, 65% 0%, 100% 60%, 40% 100%);
 }
 
+/* Elemento grafico de fundo, grande e decorativo: a rosa dos ventos da
+   Bussola (mesmo SVG do icone oficial, opcao B escolhida em rodada
+   anterior) usada em escala grande no hero da home, mesma familia visual
+   dos .hero__facet acima (formas geometricas de fundo que ja existiam).
+   Pedido do fundador apos ver o preview da rodada anterior: o icone de
+   24px no kicker nao dava pra perceber que era uma bussola -- este
+   elemento resolve isso tornando o simbolo reconhecivel sem competir
+   com o texto (opacidade baixa, posicionado fora da coluna de texto,
+   atras do card do CTA). Dimensionamento e posicao testados em preview
+   local (3 variacoes, desktop 1440px e mobile 390px) antes de aplicar --
+   ver docs/agente-conversacional-descoberta.md (repositorio Consultoria)
+   para o relatorio completo com as 3 opcoes descartadas. */
+.hero__bussola-bg {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  width: clamp(640px, 58vw, 920px);
+  height: auto;
+  bottom: -18%;
+  right: -12%;
+  transform: rotate(-4deg);
+  opacity: 0.13;
+}
+
 .hero__grid {
   position: relative;
   z-index: 1;
