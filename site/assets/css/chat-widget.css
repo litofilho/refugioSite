@@ -172,7 +172,10 @@
   max-width: 85%;
   padding: 10px 14px;
   border-radius: 14px;
-  font-size: 0.9375rem;
+  /* Auditoria de acessibilidade rodada 19 (achado 1, alta severidade):
+     era 0.9375rem (15px fixo) — texto da conversa em si, não um rótulo.
+     Subiu para 1rem (16px). */
+  font-size: 1rem;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
@@ -357,7 +360,12 @@
   border: 1px solid rgba(69, 82, 89, 0.2);
   border-radius: var(--radius-md, 18px);
   padding: 10px 14px;
-  font-size: 0.9375rem;
+  /* Auditoria de acessibilidade rodada 19 (achado 1, alta severidade):
+     era 0.9375rem (15px fixo). Abaixo de 16px num <textarea>/<input> é
+     também o gatilho conhecido do zoom automático do Safari/iOS ao focar
+     o campo — fix reconhecido pra esse problema é justamente font-size
+     >= 16px (não só estética). Subiu para 1rem (16px). */
+  font-size: 1rem;
   font-family: inherit;
   line-height: 1.4;
   resize: none;

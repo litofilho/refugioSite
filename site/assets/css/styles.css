@@ -218,7 +218,13 @@ button:focus-visible {
      houver espaço (perto de 479px) e reduz graciosamente em telas bem
      estreitas (320px) sem nunca sobrepor o botão de contato. */
   .brand__name { font-size: min(2.25rem, calc((100vw - 166px) / 6.694)); letter-spacing: 0.01em; }
-  .site-header__link { font-size: 0.8125rem; padding: 6px 10px; }
+  /* Auditoria de acessibilidade rodada 19 (achado 1, baixa-moderada
+     severidade): era 0.8125rem (13px) neste breakpoint — igualado ao
+     valor desktop (0.875rem/14px), já usado sem problema de espaço
+     porque é exatamente aqui que o rótulo troca para "Contato" (curto,
+     ver .site-header__link-short abaixo), então sobra espaço pro
+     aumento. Confirmado visualmente em 390px/360px depois do ajuste. */
+  .site-header__link { font-size: 0.875rem; padding: 6px 10px; }
   .site-header__link-full { display: none; }
   .site-header__link-short { display: inline; }
 }
@@ -280,7 +286,11 @@ button:focus-visible {
   gap: var(--sp-1);
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 0.8125rem;
+  /* Auditoria de acessibilidade rodada 19 (achado 1, baixa severidade):
+     era 0.8125rem (13px). Subiu para 0.875rem (14px) — ainda claramente
+     menor que título/corpo (hierarquia preservada), só sai da faixa
+     "pequeno demais mesmo sendo eyebrow em caixa alta". */
+  font-size: 0.875rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
@@ -339,7 +349,9 @@ button:focus-visible {
   gap: var(--sp-1);
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 0.8125rem;
+  /* Auditoria de acessibilidade rodada 19 (achado 1, baixa severidade):
+     mesmo ajuste do .kicker — 0.8125rem (13px) -> 0.875rem (14px). */
+  font-size: 0.875rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
@@ -643,7 +655,9 @@ button:focus-visible {
 .site-footer__text {
   font-family: var(--font-body);
   font-weight: 300;
-  font-size: 0.8125rem;
+  /* Auditoria de acessibilidade rodada 19 (achado 1, baixa severidade):
+     era 0.8125rem (13px). Subiu para 0.875rem (14px). */
+  font-size: 0.875rem;
   letter-spacing: 0.02em;
   color: rgba(242, 242, 242, 0.6);
   text-align: center;

@@ -71,7 +71,11 @@
 .bussola-hero__lede {
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: clamp(0.9375rem, 2vw, 1.125rem);
+  /* Auditoria de acessibilidade rodada 19 (achado 1, alta severidade):
+     piso era 0.9375rem (15px no mobile, onde 2vw não alcança o mínimo) —
+     abaixo da convenção de 16px para texto de leitura corrida. Piso subiu
+     para 1rem (16px); teto (1.125rem/18px) e o clamp() continuam iguais. */
+  font-size: clamp(1rem, 2vw, 1.125rem);
   line-height: 1.6;
   color: var(--cinza-chumbo);
   max-width: 54ch;
