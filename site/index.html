@@ -37,11 +37,17 @@
 
 <main id="conteudo">
 
-  <!-- ===================== HERO (título + CTA da Bússola) =====================
+  <!-- ===================== HERO (título + card da Bússola) =====================
        Rodada 6: o CTA da Bússola (antes numa seção .home-cta separada, depois
-       de .intro — exigia 2 telas de rolagem no celular) agora vive dentro do
-       próprio bloco da hero, logo abaixo do título, visível sem rolar em
-       390px de largura. Texto do card idêntico ao aprovado, só reposicionado. -->
+       de .intro — exigia 2 telas de rolagem no celular) passou a viver dentro
+       do próprio bloco da hero.
+       Rodada 7 (2026-10-05, pedido explícito do fundador): a marca grande
+       (símbolo geométrico + "Refúgio Tech") que ocupava a coluna da direita
+       no desktop foi REMOVIDA da hero — ela já aparece no header do site,
+       não precisa se repetir aqui. O card da Bússola agora ocupa o lugar
+       onde a marca estava (desktop: coluna da direita, ver
+       @media (min-width: 1024px) em styles.css; mobile: segue o fluxo
+       natural do DOM, abaixo do título). Texto do card inalterado. -->
   <section class="hero" aria-labelledby="hero-headline">
     <div class="hero__facet hero__facet--one" aria-hidden="true"></div>
     <div class="hero__facet hero__facet--two" aria-hidden="true"></div>
@@ -61,11 +67,6 @@
             <a class="contact__cta hero__cta-button" href="bussola/">Falar com a Bússola</a>
           </div>
         </div>
-      </div>
-
-      <div class="hero__mark reveal" aria-hidden="true">
-        <img src="assets/refugio-tech-mark.svg" alt="" class="hero__mark-img">
-        <span class="hero__mark-caption">Refúgio Tech</span>
       </div>
     </div>
   </section>

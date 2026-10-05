@@ -267,10 +267,9 @@ button:focus-visible {
   z-index: 1;
   display: grid;
   grid-template-columns: 1fr;
-  /* ordem no DOM = ordem visual no mobile: título, CTA da Bússola, marca
-     decorativa — a marca (puramente decorativa, aria-hidden) vai por
-     último de propósito para não competir por espaço com o convite de
-     ação acima da dobra. */
+  /* ordem no DOM = ordem visual no mobile: título, depois card da Bússola
+     (rodada 7: a marca grande que ficava por último foi removida da hero —
+     ver comentário no index.html). */
   gap: var(--sp-4);
   align-items: start;
 }
@@ -371,51 +370,14 @@ button:focus-visible {
 
 .hero__cta-button { display: inline-block; }
 
-.hero__mark {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-2);
-}
-.hero__mark-img {
-  /* mobile-first: marca decorativa discreta, pequena — o protagonismo da
-     tela é o título + CTA, não o símbolo. Cresce de volta ao tamanho
-     original a partir do breakpoint ≥1024px (ver abaixo). */
-  width: min(120px, 32vw);
-  filter: drop-shadow(0 24px 48px rgba(38, 46, 51, 0.16));
-}
-/* Legenda "Refúgio Tech" sob o símbolo do hero — antes vinha embutida como
-   texto vetorial dentro de refugio-tech.svg, em fonte Raleway, nunca
-   carregada no site (caía num fallback genérico do sistema). Isso fazia a
-   palavra "Refúgio" aparecer numa fonte diferente da usada no header, logo
-   acima na mesma tela — bug relatado pelo fundador em 2026-10-03. Corrigido
-   trocando o SVG do hero para a versão só com o símbolo
-   (refugio-tech-mark.svg) e escrevendo o nome como texto HTML real, com a
-   mesma var(--font-display) do header — garante fonte idêntica nos dois
-   lugares, sem depender de fonte carregando dentro de um <img src="*.svg">
-   (contexto isolado que não herda @font-face/Google Fonts da página). */
-/* Largura do texto ajustada para bater com a largura do símbolo ao lado
-   (bug relatado pelo fundador em 2026-10-03: legenda ficava muito mais
-   estreita que o símbolo de 320px/70vw). .hero__mark-img usa
-   `width: min(320px, 70vw)` — a fórmula de font-size abaixo escala junto
-   (9.4vw abaixo do ponto de corte, travando em 2.65rem acima dele),
-   calibrada empiricamente (medição real de largura renderizada no
-   navegador, não só cálculo) para a largura do texto acompanhar a do
-   símbolo em qualquer viewport, não só num breakpoint fixo. */
-.hero__mark-caption {
-  font-family: var(--font-display);
-  font-weight: 300;
-  /* calibrada para acompanhar a largura menor de .hero__mark-img no mobile
-     (ver nota acima); cresce de volta no breakpoint desktop junto com a
-     imagem. */
-  font-size: min(3.6vw, 1.1rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--preto-antifragil);
-  white-space: nowrap;
-}
+/* ===================================================================
+   Rodada 7 (2026-10-05): a marca grande (símbolo + legenda "Refúgio
+   Tech") que ocupava a coluna da direita da hero no desktop foi
+   REMOVIDA — pedido explícito do fundador, ela já aparece no header.
+   As regras .hero__mark / .hero__mark-img / .hero__mark-caption que
+   existiam aqui foram removidas junto com o bloco no index.html; se
+   precisar recuperar o histórico, ver o git log deste arquivo
+   (repositório Website) antes desta data. */
 
 /* seam diagonal: hero (claro) -> introdução (escuro) */
 .hero::after {
@@ -717,36 +679,23 @@ html.reveal-ready .reveal.is-visible {
     padding-bottom: calc(var(--sp-15) + 72px);
   }
 
-  /* desktop: título + CTA empilhados na coluna da esquerda, marca
-     decorativa ocupa a coluna da direita (ver grid-template-areas) — no
-     mobile a ordem é só o fluxo natural do DOM (título, CTA, marca). */
+  /* desktop: título na coluna da esquerda, card da Bússola na coluna da
+     direita — rodada 7 (2026-10-05): antes a coluna da direita era
+     ocupada pela marca grande (removida, ver nota acima e no index.html);
+     o card da Bússola passou a ocupar o espaço dela, não foi só
+     adicionado abaixo do título. No mobile a ordem é o fluxo natural do
+     DOM (título, depois card). */
   .hero__grid {
     grid-template-columns: 1.1fr 0.9fr;
-    grid-template-areas:
-      "content mark"
-      "cta     mark";
+    grid-template-areas: "content cta";
     column-gap: var(--sp-12);
-    row-gap: var(--sp-6);
     align-items: center;
   }
   .hero__content { grid-area: content; }
   .hero__cta { grid-area: cta; }
-  .hero__mark { grid-area: mark; align-self: center; }
-
-  /* marca decorativa volta ao tamanho original, de protagonista visual
-     secundário (mobile) para elemento de composição em pé de igualdade
-     com o texto (desktop, onde sobra espaço horizontal). */
-  .hero__mark-img { width: min(320px, 70vw); }
-  .hero__mark-caption { font-size: min(9.4vw, 2.65rem); }
 
   .hero__cta-card-body { padding: var(--sp-6) var(--sp-4); }
   .hero__cta-heading { font-size: clamp(1.5rem, 3vw, 2.25rem); }
-
-  /* hero__mark virou flex-direction:column (símbolo + legenda); o eixo
-     cruzado agora é horizontal, então o alinhamento à direita no desktop
-     usa align-items, não justify-content (que passou a controlar o eixo
-     vertical) */
-  .hero__mark { align-items: flex-end; }
 
   .intro__inner { padding-left: var(--sp-6); }
 }
