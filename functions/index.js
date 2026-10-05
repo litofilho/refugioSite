@@ -4,19 +4,31 @@
  * Cloud Function do agente conversacional de descoberta — piloto Segmento A,
  * nome de marca "Bússola" na página pública.
  *
- * STATUS (rodada 4, 2026-10-05): implementa os 6 pontos da "Resolução final
- * da rodada 3" em decisoes/2026-10-05-agente-piloto-descoberta-pme.md
- * (repositório Consultoria) — arquitetura de duas chamadas, heurísticas sem
- * ITIL/COBIT para suporte_terceirizado, validação de domínio por melhor
- * esforço + checagem pós-resposta, orçamento de alerta GCP em R$50/mês,
- * piso de segurança por palavra-chave determinística, gate de escalonamento
- * por checklist de campos + plateau. AGUARDANDO APROVAÇÃO DO FUNDADOR —
- * nenhum `firebase deploy --only functions` foi executado nesta rodada.
- * Testado fora do Cloud Functions, com chamadas diretas à API do Vertex AI
- * (ver docs/agente-conversacional-descoberta.md, repositório Consultoria,
- * seção da rodada 4, para o relatório de teste).
+ * STATUS (rodada 7, 2026-10-05): corrige 2 dos 4 bugs relatados pelo
+ * fundador no teste real de conversa (ver docs/agente-conversacional-
+ * descoberta.md, repositório Consultoria, seção da rodada 7, para o
+ * relatório completo de causa raiz e teste):
  *
- * Resumo do desenho:
+ *   - Bug de coerência do gate de escalonamento (causa raiz, não só
+ *     sintoma): o schema de saída do modelo agora separa `resposta_base`
+ *     (sempre preenchido) de `pergunta_continuidade` (só usado quando a
+ *     conversa continua). O código NUNCA concatena `pergunta_continuidade`
+ *     à resposta quando `escalarFinal` já foi decidido nesse turno — ver
+ *     bloco "BLOQUEIO DE CAUSA RAIZ" dentro de exports.chat. Antes, o
+ *     modelo escrevia uma única string livre (`resposta`) que podia conter
+ *     pergunta de diagnóstico mesmo em turnos que o código ia escalar,
+ *     porque nada no código impedia a concatenação. Agora a separação é
+ *     estrutural (schema), não dependente de o modelo lembrar de uma regra
+ *     de prompt.
+ *   - Suporte a anexos (imagem, vídeo, áudio) — upload via signed URL pro
+ *     bucket dedicado `refugio-tech-anexos-piloto` (Cloud Storage), nunca
+ *     direto pelo corpo da requisição HTTP (limite de ~32MB do Cloud
+ *     Functions 2ª geração). A function nunca confia no tipo/tamanho que o
+ *     client declarou — relê os metadados reais do objeto no bucket antes
+ *     de aceitar e montar a part multimodal (`fileData`) pro Gemini.
+ *
+ * Resumo do desenho (inalterado desde a rodada 4, exceto os dois pontos
+ * acima):
  *   - Modelo: Gemini 2.5 Flash via Vertex AI, mesmo projeto GCP.
  *   - Persistência: Firestore (southamerica-east1), coleção
  *     conversas_piloto_descoberta (sessão) + subcoleção mensagens.
@@ -41,24 +53,38 @@
  *   - E-mail de escalonamento via log estruturado + Cloud Monitoring (ver
  *     notificarEscalonamento) — inalterado nesta rodada.
  *   - Mitigação de abuso: Cloudflare Turnstile + limite de turnos por sessão
- *     + limite de mensagens por IP por dia — inalterado nesta rodada.
+ *     + limite de mensagens por IP por dia + (novo) limite de anexos por
+ *     sessão e de bytes de anexo por IP por dia.
  */
 
 const { onRequest } = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions/v2');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
+const crypto = require('crypto');
 const { VertexAI } = require('@google-cloud/vertexai');
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+const { Storage } = require('@google-cloud/storage');
 
 admin.initializeApp();
 const db = admin.firestore();
+const storage = new Storage();
 
 setGlobalOptions({ region: 'southamerica-east1', maxInstances: 10 });
 
 const PROJECT_ID = 'refugio-tech';
-const VERTEX_LOCATION = 'us-central1'; // Gemini via Vertex AI não está disponível em southamerica-east1; dado em si (Firestore) fica no Brasil, só a chamada de inferência sai.
+const VERTEX_LOCATION = 'us-central1'; // Gemini via Vertex AI não está disponível em southamerica-east1; dado em si (Firestore, bucket de anexos) fica no Brasil, só a chamada de inferência sai.
 const MODEL_NAME = 'gemini-2.5-flash';
+
+// Bucket dedicado a anexos do piloto (ver docs/agente-conversacional-
+// descoberta.md, rodada 7, seção de anexos, para a justificativa de usar um
+// bucket GCS simples em vez do Firebase Storage "padrão": evita habilitar um
+// produto novo do Firebase pra um caso de uso que só precisa de signed URL +
+// leitura server-side, mais reversível). Privado (uniform bucket-level
+// access + public access prevention enforced) — nenhum acesso público direto,
+// só signed URLs de upload de curta duração e o service agent do Vertex AI
+// (permissão concedida fora do código, via gcloud, ver relatório).
+const BUCKET_ANEXOS = 'refugio-tech-anexos-piloto';
 
 const ALLOWED_ORIGINS = new Set([
   'https://refugio.tech',
@@ -78,6 +104,27 @@ function origemPermitida(origin) {
 // Limites de abuso — aplicados dentro da própria function (ver cabeçalho do arquivo).
 const MAX_TURNOS_POR_SESSAO = 30;
 const MAX_MENSAGENS_POR_IP_POR_DIA = 60;
+
+// Limites de anexo (ponto 4 do bug report, rodada 7) — teto autoimposto de
+// proteção de custo/abuso, não limite técnico do Gemini (que aceita até 2GB
+// por arquivo via Cloud Storage). Valores propostos por este diretor,
+// pendentes de validação do fundador (ver relatório) — fáceis de ajustar,
+// um único número cada.
+const ANEXOS_CONFIG = {
+  'image/jpeg': { extensao: 'jpg', maxBytes: 15 * 1024 * 1024 },
+  'image/png': { extensao: 'png', maxBytes: 15 * 1024 * 1024 },
+  'image/webp': { extensao: 'webp', maxBytes: 15 * 1024 * 1024 },
+  'video/mp4': { extensao: 'mp4', maxBytes: 50 * 1024 * 1024 },
+  'video/webm': { extensao: 'webm', maxBytes: 50 * 1024 * 1024 },
+  'audio/mpeg': { extensao: 'mp3', maxBytes: 20 * 1024 * 1024 },
+  'audio/wav': { extensao: 'wav', maxBytes: 20 * 1024 * 1024 },
+  'audio/ogg': { extensao: 'ogg', maxBytes: 20 * 1024 * 1024 },
+  'audio/webm': { extensao: 'webm', maxBytes: 20 * 1024 * 1024 },
+};
+const MAX_ANEXOS_POR_SESSAO = 5;
+const MAX_BYTES_ANEXO_POR_IP_POR_DIA = 300 * 1024 * 1024; // 300MB/dia — teto de proteção, não previsão de uso real.
+const MAX_ANEXO_URLS_POR_IP_POR_DIA = 40; // pedidos de signed URL por IP/dia — barato de gerar, mas limitado pra não virar vetor de martelo.
+const EXPIRACAO_SIGNED_URL_MS = 5 * 60 * 1000; // 5 minutos pra completar o upload.
 
 const CATEGORIAS = [
   'seguranca_basica',
@@ -192,6 +239,34 @@ async function checkAndIncrementIpLimit(ip) {
   });
 }
 
+/** Limite leve de pedidos de signed URL por IP/dia (gerar a URL é barato, mas sem teto vira vetor de martelo). */
+async function checkAndIncrementAnexoUrlLimit(ip) {
+  const ref = db.collection('rate_limits').doc(`${ip}_${todayKey()}`);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const current = snap.exists ? snap.data().anexoUrls || 0 : 0;
+    if (current >= MAX_ANEXO_URLS_POR_IP_POR_DIA) {
+      return false;
+    }
+    tx.set(ref, { anexoUrls: current + 1, ip, data: todayKey() }, { merge: true });
+    return true;
+  });
+}
+
+/** Teto de bytes de anexo efetivamente aceitos (pós-validação real) por IP/dia. */
+async function checkAndIncrementAnexoBytes(ip, bytes) {
+  const ref = db.collection('rate_limits').doc(`${ip}_${todayKey()}`);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const current = snap.exists ? snap.data().bytesAnexos || 0 : 0;
+    if (current + bytes > MAX_BYTES_ANEXO_POR_IP_POR_DIA) {
+      return false;
+    }
+    tx.set(ref, { bytesAnexos: current + bytes, ip, data: todayKey() }, { merge: true });
+    return true;
+  });
+}
+
 /** Sub-schema de um campo de checklist: string livre, vazio se desconhecido. */
 function campoSchema(descricao) {
   return { type: 'string', description: descricao || 'Deixe string vazia se ainda não souber.' };
@@ -218,11 +293,26 @@ function buildCamposDiagnosticoSchema() {
   };
 }
 
+/**
+ * Schema de saída do modelo — ver cabeçalho do arquivo para o porquê da
+ * separação `resposta_base` / `pergunta_continuidade` (correção de causa
+ * raiz do bug de coerência do gate de escalonamento, rodada 7). Antes havia
+ * um único campo `resposta` (texto livre) que podia conter tanto a resposta
+ * de diagnóstico quanto uma pergunta de continuidade, sem nenhuma garantia
+ * de que o modelo deixaria de perguntar quando ia escalar no mesmo turno.
+ */
 function buildDiagnosticoResponseSchema() {
   return {
     type: 'object',
     properties: {
-      resposta: { type: 'string', description: 'Texto da resposta do agente para o PME, em português do Brasil. Se precisa_fonte_externa=true, uma frase curta de transição.' },
+      resposta_base: {
+        type: 'string',
+        description: 'Texto da resposta do agente para o PME, em português do Brasil — a parte que vale INDEPENDENTE de continuar a conversa ou escalar (acolhimento, orientação, confirmação do que foi entendido). Se precisa_fonte_externa=true, uma frase curta de transição. NUNCA inclua aqui uma pergunta de diagnóstico nova — isso vai só em pergunta_continuidade.',
+      },
+      pergunta_continuidade: {
+        type: 'string',
+        description: 'Preencha SÓ quando você pretende continuar diagnosticando neste turno (ou seja, quando padrao_conhecido=true E sinal_escalonamento="nenhum"). Deixe string vazia sempre que padrao_conhecido=false ou sinal_escalonamento != "nenhum" — o sistema vai decidir escalar com base nesses mesmos campos e, se escalar, essa pergunta é descartada automaticamente pelo código (nunca aparece junto com o aviso de escalonamento). Não adianta preenchê-la "por garantia": se escalar=true, ela nunca é usada.',
+      },
       categoria: { type: 'string', enum: [...CATEGORIAS, 'nenhuma'] },
       padrao_conhecido: { type: 'boolean', description: 'true se a situação casa com um padrão que o agente sabe resolver com orientação; false se é genuinamente atípica.' },
       precisa_fonte_externa: { type: 'boolean', description: 'true só quando o passo exato depende de documentação oficial de um fornecedor específico. suporte_terceirizado nunca marca true.' },
@@ -234,11 +324,16 @@ function buildDiagnosticoResponseSchema() {
       empresa_pme: { type: 'string' },
       contato_pme: { type: 'string' },
     },
-    required: ['resposta', 'categoria', 'padrao_conhecido', 'precisa_fonte_externa', 'sinal_escalonamento', 'campos_diagnostico'],
+    required: ['resposta_base', 'categoria', 'padrao_conhecido', 'precisa_fonte_externa', 'sinal_escalonamento', 'campos_diagnostico'],
   };
 }
 
-async function callDiagnostico(history, novaMensagem) {
+/**
+ * Chamada 1 — sempre executada. `novaMensagemParts` é um array de parts no
+ * formato do Gemini (`[{ text }]` no caso comum; `[{ fileData }, { text }]`
+ * quando há anexo nesta mensagem — ver exports.chat).
+ */
+async function callDiagnostico(history, novaMensagemParts) {
   const vertexAI = new VertexAI({ project: PROJECT_ID, location: VERTEX_LOCATION });
   const model = vertexAI.getGenerativeModel({
     model: MODEL_NAME,
@@ -252,9 +347,12 @@ async function callDiagnostico(history, novaMensagem) {
 
   const contents = history.map((m) => ({
     role: m.autor === 'pme' ? 'user' : 'model',
-    parts: [{ text: m.texto }],
+    // Anexos de turnos passados não são reenviados ao modelo (custo/latência)
+    // — só um marcador textual pra manter continuidade de contexto (ex. "ele
+    // mandou uma foto antes"), sem duplicar bytes de arquivo a cada turno.
+    parts: [{ text: m.anexo ? `${m.texto || '(sem legenda)'} [anexo enviado: ${m.anexo.mimeType}]` : m.texto }],
   }));
-  contents.push({ role: 'user', parts: [{ text: novaMensagem }] });
+  contents.push({ role: 'user', parts: novaMensagemParts });
 
   const result = await model.generateContent({ contents });
   const text = result.response.candidates[0].content.parts[0].text;
@@ -262,7 +360,7 @@ async function callDiagnostico(history, novaMensagem) {
 }
 
 /**
- * Chamada 2 — só disparada quando a chamada 1 sinaliza precisa_fonte_externa.
+ * Chamada 2 — só disparada quando a chamada 1 devolve precisa_fonte_externa.
  * Sem responseSchema (incompatível com a ferramenta googleSearch no Gemini
  * 2.5 Flash). Devolve { texto, dominiosCitados } — dominiosCitados vem do
  * campo "domain" de cada groundingChunk.web (confirmado via teste direto à
@@ -329,6 +427,30 @@ function calcularMotivoEscalonamento({ sinalModelo, semFonteAprovada, padraoConh
 }
 
 /**
+ * Compõe o texto final para o PME a partir de resposta_base + (opcional)
+ * pergunta_continuidade — ESTE é o bloqueio de causa raiz do bug relatado
+ * pelo fundador em 2026-10-05 ("site mal construído" perguntou e escalou na
+ * mesma mensagem). `pergunta_continuidade` só é concatenada quando
+ * `escalarFinal` é false, incondicionalmente — não importa o que o modelo
+ * tenha preenchido nesse campo, nem qual dos quatro motivos de
+ * MOTIVOS_ESCALONAMENTO disparou o escalonamento (sinal do próprio modelo,
+ * fonte não aprovada, padrão desconhecido ou platô — os quatro são
+ * cobertos igualmente, porque a checagem é sobre o resultado final
+ * `escalarFinal`, não sobre qual gatilho específico foi). Isso corrige a
+ * causa raiz (o código não impunha essa exclusão mútua antes), não só o
+ * sintoma do caso específico testado pelo fundador.
+ */
+function comporRespostaBase(respostaBase, perguntaContinuidade, escalarFinal) {
+  const base = (respostaBase || '').trim();
+  if (escalarFinal) return base; // pergunta_continuidade descartada deliberadamente.
+  const pergunta = (perguntaContinuidade || '').trim();
+  if (!pergunta) return base;
+  if (!base) return pergunta;
+  const baseTerminaComPontuacao = /[.!?…]\s*$/.test(base);
+  return base + (baseTerminaComPontuacao ? ' ' : '. ') + pergunta;
+}
+
+/**
  * Dispara o aviso de escalonamento para o fundador — ver docs/agente-
  * conversacional-descoberta.md seção 4 para por que não é Web3Forms.
  */
@@ -345,6 +467,66 @@ function notificarEscalonamento({ sessionId, categoria, resumo, nome, empresa, c
     consoleLink,
   });
 }
+
+/**
+ * Endpoint novo (rodada 7): devolve uma signed URL (v4, PUT, curta duração)
+ * pro navegador subir o anexo DIRETO pro bucket, sem passar pela function
+ * (contorna o limite de ~32MB do corpo de requisição do Cloud Functions 2ª
+ * geração). A function nunca confia no tipo/tamanho declarados aqui — essa
+ * validação de verdade acontece em exports.chat, relendo os metadados reais
+ * do objeto já no bucket (ver bloco "VALIDAÇÃO REAL DO ANEXO").
+ */
+exports.anexoUrl = onRequest({ cors: false }, async (req, res) => {
+  const origin = req.headers.origin;
+  if (origemPermitida(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+  }
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+  if (req.method !== 'POST') {
+    res.status(405).json({ erro: 'method_not_allowed' });
+    return;
+  }
+
+  try {
+    const { sessionId, mimeType } = req.body || {};
+    if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 128 || !/^[a-zA-Z0-9-]+$/.test(sessionId)) {
+      res.status(400).json({ erro: 'sessionId_invalido' });
+      return;
+    }
+    const config = ANEXOS_CONFIG[mimeType];
+    if (!config) {
+      res.status(400).json({ erro: 'tipo_de_arquivo_nao_suportado' });
+      return;
+    }
+
+    const ip = getClientIp(req);
+    const okIp = await checkAndIncrementAnexoUrlLimit(ip);
+    if (!okIp) {
+      res.status(429).json({ erro: 'limite_diario_de_anexos_excedido' });
+      return;
+    }
+
+    const nomeObjeto = `anexos/${sessionId}/${crypto.randomUUID()}.${config.extensao}`;
+    const file = storage.bucket(BUCKET_ANEXOS).file(nomeObjeto);
+    const [uploadUrl] = await file.getSignedUrl({
+      version: 'v4',
+      action: 'write',
+      expires: Date.now() + EXPIRACAO_SIGNED_URL_MS,
+      contentType: mimeType,
+    });
+
+    res.status(200).json({ uploadUrl, path: nomeObjeto, maxBytes: config.maxBytes, expiraEmMs: EXPIRACAO_SIGNED_URL_MS });
+  } catch (err) {
+    logger.error('Erro no endpoint /anexoUrl', err);
+    res.status(500).json({ erro: 'erro_interno' });
+  }
+});
 
 exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, async (req, res) => {
   const origin = req.headers.origin;
@@ -364,12 +546,15 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
   }
 
   try {
-    const { sessionId, message, turnstileToken } = req.body || {};
+    const { sessionId, message, turnstileToken, anexo } = req.body || {};
     if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 128) {
       res.status(400).json({ erro: 'sessionId_invalido' });
       return;
     }
-    if (!message || typeof message !== 'string' || message.length > 4000) {
+
+    const temAnexoDeclarado = Boolean(anexo) && typeof anexo === 'object' && typeof anexo.path === 'string';
+
+    if (typeof message !== 'string' || message.length > 4000 || (!message.trim() && !temAnexoDeclarado)) {
       res.status(400).json({ erro: 'message_invalida' });
       return;
     }
@@ -400,6 +585,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         turnosSemNovoCampo: 0,
         camposDiagnostico: {},
         leadCriado: false,
+        anexosCount: 0,
         ipOrigem: ip,
       });
     }
@@ -410,11 +596,64 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       return;
     }
 
+    // --- VALIDAÇÃO REAL DO ANEXO (ponto 2 do bug report, rodada 7) ---
+    // Nunca confia em path/tipo/tamanho declarados pelo client — relê os
+    // metadados reais do objeto já no bucket antes de aceitar.
+    let anexoParaGemini = null;
+    let anexoParaFirestore = null;
+    if (temAnexoDeclarado) {
+      const prefixoEsperado = `anexos/${sessionId}/`;
+      if (!anexo.path.startsWith(prefixoEsperado)) {
+        res.status(400).json({ erro: 'anexo_invalido', motivo: 'path_fora_da_sessao' });
+        return;
+      }
+      if ((sessionData.anexosCount || 0) >= MAX_ANEXOS_POR_SESSAO) {
+        res.status(400).json({ erro: 'anexo_invalido', motivo: 'limite_de_anexos_da_sessao_excedido' });
+        return;
+      }
+
+      let metadata;
+      try {
+        [metadata] = await storage.bucket(BUCKET_ANEXOS).file(anexo.path).getMetadata();
+      } catch (e) {
+        res.status(400).json({ erro: 'anexo_invalido', motivo: 'anexo_nao_encontrado_no_bucket' });
+        return;
+      }
+
+      const contentTypeReal = metadata.contentType;
+      const tamanhoReal = Number(metadata.size || 0);
+      const configReal = ANEXOS_CONFIG[contentTypeReal];
+      if (!configReal || tamanhoReal <= 0 || tamanhoReal > configReal.maxBytes) {
+        await storage.bucket(BUCKET_ANEXOS).file(anexo.path).delete().catch(() => {});
+        res.status(400).json({ erro: 'anexo_invalido', motivo: 'tipo_ou_tamanho_fora_do_permitido' });
+        return;
+      }
+
+      const bytesOk = await checkAndIncrementAnexoBytes(ip, tamanhoReal);
+      if (!bytesOk) {
+        await storage.bucket(BUCKET_ANEXOS).file(anexo.path).delete().catch(() => {});
+        res.status(429).json({ erro: 'limite_diario_de_bytes_de_anexo_excedido' });
+        return;
+      }
+
+      anexoParaGemini = { path: anexo.path, mimeType: contentTypeReal };
+      anexoParaFirestore = { path: anexo.path, mimeType: contentTypeReal, tamanhoBytes: tamanhoReal };
+    }
+
     const mensagensRef = sessionRef.collection('mensagens');
     const historicoSnap = await mensagensRef.orderBy('timestamp', 'asc').limit(40).get();
     const historico = historicoSnap.docs.map((d) => d.data());
 
-    const resultado = await callDiagnostico(historico, message);
+    const textoEfetivo = message.trim()
+      ? message
+      : '[PME enviou um anexo sem legenda. Analise o conteúdo do arquivo pra entender o problema.]';
+    const partesMensagemAtual = [];
+    if (anexoParaGemini) {
+      partesMensagemAtual.push({ fileData: { fileUri: `gs://${BUCKET_ANEXOS}/${anexoParaGemini.path}`, mimeType: anexoParaGemini.mimeType } });
+    }
+    partesMensagemAtual.push({ text: textoEfetivo });
+
+    const resultado = await callDiagnostico(historico, partesMensagemAtual);
 
     const categoriaFinal = CATEGORIAS.includes(resultado.categoria) ? resultado.categoria : (sessionData.categoria || null);
     const categoriaMudou = categoriaFinal !== sessionData.categoria;
@@ -436,7 +675,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     const plateau = Boolean(categoriaFinal) && categoriaFinal !== 'nenhuma' && turnosSemNovoCampo >= PLATEAU_TURNOS;
 
     // --- Chamada 2 (grounding), só se sinalizada e categoria permite ---
-    let respostaFinal = resultado.resposta;
+    let corpoResposta = resultado.resposta_base;
     let semFonteAprovada = false;
     const categoriaPermiteGrounding = categoriaFinal && DOMINIOS_APROVADOS[categoriaFinal] && DOMINIOS_APROVADOS[categoriaFinal].length > 0;
     const precisaFonteExterna = Boolean(resultado.precisa_fonte_externa) && categoriaPermiteGrounding;
@@ -448,10 +687,10 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         const algumAprovado = grounding.dominiosCitados.some((d) => dominioAprovado(d, listaAprovados));
         if (algumAprovado && grounding.texto) {
           const dominioCitado = grounding.dominiosCitados.find((d) => dominioAprovado(d, listaAprovados));
-          respostaFinal = grounding.texto + (dominioCitado ? ` (fonte: ${dominioCitado})` : '');
+          corpoResposta = grounding.texto + (dominioCitado ? ` (fonte: ${dominioCitado})` : '');
         } else {
           semFonteAprovada = true;
-          // mantém resultado.resposta (frase de transição) como handoff
+          // mantém resultado.resposta_base (frase de transição) como handoff
         }
       } catch (groundingErr) {
         logger.error('Erro na chamada de grounding', groundingErr);
@@ -467,14 +706,21 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     });
     const escalarFinal = motivoEscalonamento !== null;
 
-    respostaFinal = aplicarPisoSeguranca(respostaFinal);
+    // BLOQUEIO DE CAUSA RAIZ (ver comporRespostaBase) — nunca concatena
+    // pergunta_continuidade quando escalarFinal=true, independente do que o
+    // modelo tenha preenchido nesse campo.
+    const respostaComposta = comporRespostaBase(corpoResposta, resultado.pergunta_continuidade, escalarFinal);
+
+    let respostaFinal = aplicarPisoSeguranca(respostaComposta);
     if (escalarFinal && !sessionData.leadCriado) {
       respostaFinal = respostaFinal + '\n\n' + MENSAGEM_HANDOFF_PADRAO;
     }
 
     const batch = db.batch();
     const agora = admin.firestore.FieldValue.serverTimestamp();
-    batch.set(mensagensRef.doc(), { autor: 'pme', texto: message, timestamp: agora });
+    const pmeMsgData = { autor: 'pme', texto: message, timestamp: agora };
+    if (anexoParaFirestore) pmeMsgData.anexo = anexoParaFirestore;
+    batch.set(mensagensRef.doc(), pmeMsgData);
     batch.set(mensagensRef.doc(), { autor: 'agente', texto: respostaFinal, timestamp: agora });
 
     batch.set(sessionRef, {
@@ -484,6 +730,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       turnosSemNovoCampo,
       camposDiagnostico: camposAtuaisCategoria,
       status: escalarFinal ? 'escalada' : sessionData.status,
+      anexosCount: (sessionData.anexosCount || 0) + (anexoParaGemini ? 1 : 0),
     }, { merge: true });
 
     await batch.commit();
@@ -518,3 +765,14 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     res.status(500).json({ erro: 'erro_interno' });
   }
 });
+
+// Exportado só para o script de testes unitários isolados (ver
+// functions/_teste-unitario-gate.js, não implantado — roda fora do Cloud
+// Functions). Não é usado pelo runtime da function em si.
+module.exports._testavel = {
+  calcularMotivoEscalonamento,
+  comporRespostaBase,
+  contarCamposNovos,
+  dominioAprovado,
+  aplicarPisoSeguranca,
+};

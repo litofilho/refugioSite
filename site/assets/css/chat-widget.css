@@ -261,10 +261,61 @@
   cursor: not-allowed;
 }
 
+/* Bug 1 (teste real do fundador, rodada 7): o widget do Turnstile ficava
+   ocupando espaço pra sempre depois de validado. Agora colapsa (altura e
+   opacidade animadas até zero) assim que o callback de sucesso do widget
+   dispara — ver .is-collapsed, aplicada via JS em chat-widget.js. */
 .chat-widget__turnstile {
   flex: none;
   padding: 0 var(--sp-3);
   min-height: 2px;
+  max-height: 100px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-height 0.3s var(--ease), opacity 0.2s var(--ease), padding 0.3s var(--ease), margin 0.3s var(--ease);
+}
+.chat-widget__turnstile.is-collapsed {
+  max-height: 0;
+  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Bug 2 (anexos, rodada 7): preview do arquivo selecionado, entre o
+   Turnstile e o campo de texto — mesma pílula visual dos chips. */
+.chat-widget__anexo-preview {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 var(--sp-3) var(--sp-1);
+  padding: 6px 10px;
+  border: 1px solid rgba(69, 82, 89, 0.18);
+  border-radius: var(--radius-pill, 999px);
+  background: var(--off-white);
+  font-size: 0.8125rem;
+  color: var(--preto-antifragil);
+}
+.chat-widget__anexo-preview[hidden] { display: none; }
+.chat-widget__anexo-preview-nome {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-widget__anexo-remover {
+  flex: none;
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--cinza-chumbo);
+  cursor: pointer;
+  padding: 0 4px;
 }
 
 .chat-widget__form {
@@ -275,6 +326,26 @@
   padding: var(--sp-2) var(--sp-3);
   border-top: 1px solid rgba(69, 82, 89, 0.12);
   background: #fff;
+}
+.chat-widget__file-input { display: none; }
+.chat-widget__attach {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(69, 82, 89, 0.2);
+  border-radius: var(--radius-md, 18px);
+  background: var(--off-white);
+  color: var(--cinza-chumbo);
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+.chat-widget__attach:hover,
+.chat-widget__attach:focus-visible {
+  border-color: var(--verde-pastel);
+  color: var(--preto-antifragil);
 }
 .chat-widget__input {
   flex: 1 1 auto;

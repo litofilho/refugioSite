@@ -11,16 +11,27 @@
    agente fala vem do servidor (roteiro.js, Cloud Function) — este arquivo
    não contém nenhum conteúdo de marca/roteiro, só mecânica de UI.
 
-   REDESIGN (rodada de UX): a mecânica de rede/sessão/Turnstile é a mesma
-   de antes (não alterada). O que muda é onde/como a UI é montada: o
-   widget agora vive embutido na hero (sem position:fixed) e ganha
-   sugestões de início clicáveis que enviam a mensagem direto, com o
-   mínimo de cliques possível entre a página carregar e a 1ª resposta.
+   RODADA 7 (2026-10-05) — 3 correções de bug relatadas pelo fundador no
+   teste real:
+     1. Turnstile agora COLAPSA (classe .is-collapsed, ver chat-widget.css)
+        assim que a verificação passa, em vez de continuar ocupando espaço
+        até o fim da conversa.
+     2. Enter no campo de texto envia a mensagem (Shift+Enter continua
+        quebrando linha, padrão de qualquer app de chat) — antes só o
+        clique no botão funcionava, porque o campo é um <textarea> (não
+        envia nativamente com Enter como um <input type="text">).
+     3. Suporte a anexo (imagem/vídeo/áudio): botão de clipe abre o
+        seletor de arquivo; o arquivo sobe DIRETO pro Cloud Storage via
+        signed URL obtida em /anexoUrl (nunca passa pelo corpo da
+        requisição /chat — ver functions/index.js pro porquê do limite de
+        32MB do Cloud Functions). Depois do upload, a referência (path)
+        viaja junto da próxima mensagem enviada.
    =================================================================== */
 (function () {
   'use strict';
 
   var CHAT_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/chat';
+  var ANEXO_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/anexoUrl';
   var TURNSTILE_SITE_KEY = '0x4AAAAAAFOdF-ZOtkuLF9u6';
   var STORAGE_KEY = 'refugio_chat_session_id';
 
@@ -41,6 +52,8 @@
     var turnstileToken = null;
     var turnstileWidgetId = null;
     var enviouPrimeiraMensagem = false;
+    var anexoSelecionado = null; // { path, mimeType } depois de upload concluído
+    var anexoEmUpload = false;
 
     var launcher = root.querySelector('.chat-widget__launcher');
     var panel = root.querySelector('.chat-widget__panel');
@@ -52,6 +65,11 @@
     var input = root.querySelector('.chat-widget__input');
     var sendBtn = root.querySelector('.chat-widget__send');
     var turnstileContainer = root.querySelector('.chat-widget__turnstile');
+    var attachBtn = root.querySelector('.chat-widget__attach');
+    var fileInput = root.querySelector('.chat-widget__file-input');
+    var anexoPreview = root.querySelector('.chat-widget__anexo-preview');
+    var anexoPreviewNome = root.querySelector('.chat-widget__anexo-preview-nome');
+    var anexoRemoverBtn = root.querySelector('.chat-widget__anexo-remover');
     var typingEl = null;
 
     function addBubble(autor, texto) {
@@ -80,6 +98,15 @@
       typingEl = null;
     }
 
+    // --- BUG 1: Turnstile precisa colapsar/desaparecer assim que a
+    // verificação passa, não só quando a conversa escala. ---
+    function colapsarTurnstile() {
+      if (turnstileContainer) turnstileContainer.classList.add('is-collapsed');
+    }
+    function expandirTurnstileDeNovo() {
+      if (turnstileContainer) turnstileContainer.classList.remove('is-collapsed');
+    }
+
     function renderTurnstileSeNecessario() {
       if (turnstileWidgetId !== null) return;
       if (typeof window.turnstile === 'undefined') {
@@ -92,9 +119,17 @@
         theme: 'light',
         callback: function (token) {
           turnstileToken = token;
+          // Verificação passou: colapsa o widget imediatamente — não
+          // espera a resposta da primeira mensagem pra sumir (esse era o
+          // bug: o widget ficava ocupando espaço até o fim da conversa).
+          colapsarTurnstile();
         },
         'expired-callback': function () {
           turnstileToken = null;
+          // Token expirou antes de ser usado (ex.: usuário demorou pra
+          // digitar a 1a mensagem) — reabre o widget pra permitir
+          // verificar de novo, já que sem token a 1a mensagem não passa.
+          if (!enviouPrimeiraMensagem) expandirTurnstileDeNovo();
         },
       });
     }
@@ -138,13 +173,103 @@
       });
     }
 
+    // --- BUG 2 (anexos): seleção de arquivo, upload via signed URL ---
+    var EXTENSAO_POR_MIME = {
+      'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
+      'video/mp4': 'mp4', 'video/webm': 'webm',
+      'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/ogg': 'ogg', 'audio/webm': 'webm',
+    };
+
+    function mostrarPreviewAnexo(nome) {
+      if (!anexoPreview) return;
+      anexoPreviewNome.textContent = nome;
+      anexoPreview.hidden = false;
+    }
+    function esconderPreviewAnexo() {
+      if (!anexoPreview) return;
+      anexoPreview.hidden = true;
+      anexoPreviewNome.textContent = '';
+    }
+    function limparAnexo() {
+      anexoSelecionado = null;
+      anexoEmUpload = false;
+      if (fileInput) fileInput.value = '';
+      esconderPreviewAnexo();
+    }
+
+    if (attachBtn && fileInput) {
+      attachBtn.addEventListener('click', function () {
+        if (anexoEmUpload) return;
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', function () {
+        var arquivo = fileInput.files && fileInput.files[0];
+        if (!arquivo) return;
+
+        if (!EXTENSAO_POR_MIME[arquivo.type]) {
+          addBubble('sistema', 'Esse tipo de arquivo não é aceito. Envie imagem (jpg/png/webp), vídeo (mp4/webm) ou áudio (mp3/wav/ogg).');
+          limparAnexo();
+          return;
+        }
+
+        anexoEmUpload = true;
+        mostrarPreviewAnexo('Enviando ' + arquivo.name + '…');
+        sendBtn.disabled = true;
+
+        fetch(ANEXO_URL_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sessionId, mimeType: arquivo.type }),
+        })
+          .then(function (resp) {
+            if (!resp.ok) throw new Error('status ' + resp.status);
+            return resp.json();
+          })
+          .then(function (data) {
+            if (arquivo.size > data.maxBytes) {
+              throw new Error('arquivo_grande_demais');
+            }
+            return fetch(data.uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': arquivo.type },
+              body: arquivo,
+            }).then(function (putResp) {
+              if (!putResp.ok) throw new Error('upload_falhou');
+              anexoSelecionado = { path: data.path, mimeType: arquivo.type };
+              anexoEmUpload = false;
+              mostrarPreviewAnexo(arquivo.name);
+              sendBtn.disabled = false;
+            });
+          })
+          .catch(function (err) {
+            anexoEmUpload = false;
+            sendBtn.disabled = false;
+            var msg = 'Não consegui enviar esse arquivo agora. Tente de novo ou escreva o problema em texto.';
+            if (err && err.message === 'arquivo_grande_demais') {
+              msg = 'Esse arquivo é grande demais. Tente um arquivo menor.';
+            }
+            addBubble('sistema', msg);
+            limparAnexo();
+          });
+      });
+    }
+
+    if (anexoRemoverBtn) {
+      anexoRemoverBtn.addEventListener('click', function () {
+        limparAnexo();
+      });
+    }
+
     function enviarMensagem(texto) {
       texto = (texto || '').trim();
-      if (!texto) return;
+      if (!texto && !anexoSelecionado) return;
+      if (anexoEmUpload) return; // espera o upload terminar antes de enviar
 
       if (!enviouPrimeiraMensagem && !turnstileToken) {
         addBubble('sistema', 'Só um instante, confirmando que você não é um robô…');
         renderTurnstileSeNecessario();
+        expandirTurnstileDeNovo();
         // tenta de novo automaticamente quando o token chegar, sem exigir
         // um clique extra do visitante.
         var tentativas = 0;
@@ -165,13 +290,16 @@
 
     function enviarMensagemReal(texto) {
       esconderSugestoes();
-      addBubble('pme', texto);
+      var anexoParaEnvio = anexoSelecionado;
+      addBubble('pme', texto || (anexoParaEnvio ? '📎 ' + '(anexo enviado)' : ''));
       input.value = '';
+      limparAnexo();
       sendBtn.disabled = true;
       chipButtons.forEach(function (btn) { btn.disabled = true; });
       showTyping();
 
       var payload = { sessionId: sessionId, message: texto };
+      if (anexoParaEnvio) payload.anexo = anexoParaEnvio;
       if (!enviouPrimeiraMensagem) {
         payload.turnstileToken = turnstileToken;
       }
@@ -187,11 +315,13 @@
         })
         .then(function (data) {
           enviouPrimeiraMensagem = true;
+          // Verificação já foi usada com sucesso — garante que o widget
+          // fica colapsado pro resto da conversa (reforço do bug 1, caso
+          // o callback de sucesso do Turnstile não tenha disparado antes
+          // por algum motivo).
+          colapsarTurnstile();
           hideTyping();
           addBubble('agente', data.resposta);
-          if (data.escalado) {
-            if (turnstileContainer) turnstileContainer.innerHTML = '';
-          }
           sendBtn.disabled = false;
         })
         .catch(function () {
@@ -204,6 +334,17 @@
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
       enviarMensagem(input.value);
+    });
+
+    // --- BUG 3: Enter envia, Shift+Enter quebra linha (padrão de chat) ---
+    // O campo é um <textarea>, que não tem o comportamento nativo de
+    // "Enter envia" que um <input type="text"> dentro de um <form> tem —
+    // por isso precisa deste listener explícito.
+    input.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' && !ev.shiftKey) {
+        ev.preventDefault();
+        enviarMensagem(input.value);
+      }
     });
 
     // Sugestões de início: um clique preenche E envia direto, reduzindo
