@@ -355,18 +355,21 @@ button:focus-visible {
   line-height: 1.25;
   letter-spacing: -0.01em;
   max-width: 30ch;
-  margin-bottom: var(--sp-2);
+  /* Rodada 11 (2026-10-05, pedido do fundador): o parágrafo explicativo
+     (.hero__cta-paragraph) que vinha depois foi removido do card da home
+     (card mais direto, menos texto antes da ação — a /bussola mantém o
+     texto completo abaixo do chat, inalterada). Sem o parágrafo fazendo a
+     transição visual até o botão, o espaço que antes era só a margem do
+     título (var(--sp-2), pensada pra separar do parágrafo que vinha a
+     seguir) ficou curto demais entre o título e o botão — subiu para
+     var(--sp-4) para o card não parecer com um vão vazio estranho. */
+  margin-bottom: var(--sp-4);
 }
 
-.hero__cta-paragraph {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  color: var(--cinza-chumbo);
-  max-width: 56ch;
-  margin-bottom: var(--sp-3);
-}
+/* .hero__cta-paragraph removida nesta mesma rodada — o elemento <p> que
+   usava essa classe não existe mais no index.html (ver nota acima). Se
+   precisar recuperar o texto/estilo, ver o git log deste arquivo
+   (repositório Website) antes de 2026-10-05, rodada 11. */
 
 .hero__cta-button { display: inline-block; }
 
