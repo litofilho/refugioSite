@@ -15,6 +15,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="assets/css/styles.css">
+<link rel="stylesheet" href="assets/css/chat-widget.css">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
 
@@ -114,5 +116,30 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+
+<!-- ===================== AGENTE CONVERSACIONAL DE DESCOBERTA (piloto) =====================
+     Infra: functions/index.js (Cloud Function southamerica-east1) + Firestore.
+     Roteiro ainda em revisão pelo fundador — ver docs/agente-conversacional-descoberta.md
+     no repositório Consultoria antes de considerar este bloco "publicado" de fato. -->
+<div id="refugio-chat-widget" class="chat-widget">
+  <button type="button" class="chat-widget__launcher" aria-expanded="false" aria-controls="refugio-chat-panel">
+    <span class="chat-widget__launcher-dot" aria-hidden="true"></span>
+    Converse com a gente
+  </button>
+  <div class="chat-widget__panel" id="refugio-chat-panel" hidden>
+    <div class="chat-widget__header">
+      <p class="chat-widget__header-title">Diagnóstico rápido</p>
+      <button type="button" class="chat-widget__close" aria-label="Fechar">×</button>
+    </div>
+    <div class="chat-widget__messages" role="log" aria-live="polite"></div>
+    <div class="chat-widget__turnstile"></div>
+    <form class="chat-widget__form">
+      <label for="chat-widget-input" class="visually-hidden">Sua mensagem</label>
+      <textarea id="chat-widget-input" class="chat-widget__input" rows="1" placeholder="Escreva aqui…" required></textarea>
+      <button type="submit" class="chat-widget__send">Enviar</button>
+    </form>
+  </div>
+</div>
+<script src="assets/js/chat-widget.js"></script>
 </body>
 </html>

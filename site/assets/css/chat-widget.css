@@ -1,0 +1,176 @@
+/* ===================================================================
+   Refúgio Tech — chat-widget.css
+   Widget do agente conversacional de descoberta (piloto Segmento A).
+   Usa os design tokens já definidos em styles.css (:root) — não redefine
+   paleta/tipografia, só aplica.
+   =================================================================== */
+
+.chat-widget {
+  position: fixed;
+  right: var(--sp-3, 24px);
+  bottom: var(--sp-3, 24px);
+  z-index: 1000;
+  font-family: var(--font-body, Roboto, sans-serif);
+}
+
+.chat-widget__launcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 999px;
+  border: none;
+  background: var(--preto-antifragil, #262E33);
+  color: var(--off-white, #F2F2F2);
+  font-family: var(--font-display, sans-serif);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.chat-widget__launcher:hover,
+.chat-widget__launcher:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+}
+.chat-widget__launcher-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amarelo-suave, #D9C583);
+  flex: none;
+}
+
+.chat-widget__panel {
+  position: fixed;
+  right: var(--sp-3, 24px);
+  bottom: calc(var(--sp-3, 24px) + 68px);
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(600px, calc(100vh - 140px));
+  display: flex;
+  flex-direction: column;
+  background: var(--off-white, #F2F2F2);
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+.chat-widget__panel[hidden],
+.chat-widget.is-open .chat-widget__launcher,
+.chat-widget:not(.is-open) .chat-widget__panel {
+  display: none;
+}
+
+.chat-widget__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: var(--preto-antifragil, #262E33);
+  color: var(--off-white, #F2F2F2);
+}
+.chat-widget__header-title {
+  font-family: var(--font-display, sans-serif);
+  font-size: 1rem;
+  margin: 0;
+}
+.chat-widget__close {
+  background: transparent;
+  border: none;
+  color: var(--off-white, #F2F2F2);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.chat-widget__messages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--off-white, #F2F2F2);
+}
+
+.chat-widget__bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.chat-widget__bubble--agente {
+  align-self: flex-start;
+  background: #fff;
+  color: var(--preto-antifragil, #262E33);
+  border: 1px solid var(--verde-pastel, #B2C2B9);
+}
+.chat-widget__bubble--pme {
+  align-self: flex-end;
+  background: var(--cinza-chumbo, #455259);
+  color: #fff;
+}
+.chat-widget__bubble--sistema {
+  align-self: center;
+  background: transparent;
+  color: var(--cinza-chumbo, #455259);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.chat-widget__typing {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  color: var(--cinza-chumbo, #455259);
+  padding: 0 14px;
+}
+
+.chat-widget__turnstile {
+  padding: 8px 18px 0;
+}
+
+.chat-widget__form {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--verde-pastel, #B2C2B9);
+  background: #fff;
+}
+.chat-widget__input {
+  flex: 1 1 auto;
+  border: 1px solid var(--verde-pastel, #B2C2B9);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  resize: none;
+}
+.chat-widget__send {
+  border: none;
+  border-radius: 10px;
+  padding: 0 16px;
+  background: var(--amarelo-suave, #D9C583);
+  color: var(--preto-antifragil, #262E33);
+  font-weight: 600;
+  cursor: pointer;
+}
+.chat-widget__send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 420px) {
+  .chat-widget__panel {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    bottom: 84px;
+  }
+  .chat-widget__launcher {
+    right: 12px;
+  }
+}

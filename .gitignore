@@ -19,3 +19,15 @@ _obsoleto-fontes-balgin-demo-nao-licenciada/
 Thumbs.db
 .vscode/
 .idea/
+
+# Cloud Functions — dependências instaladas via npm install, não versionadas
+functions/node_modules/
+firebase-debug.log
+firebase-debug.*.log
+
+# Dado bruto do piloto do agente de descoberta — PII de PME real (nome,
+# empresa, contato). Fica só local/Firestore, nunca no GitHub. Exportado por
+# scripts/exportar-conversas.js para dados-piloto/raw/, lido manualmente pelo
+# VP/fundador para curadoria de conhecimento (nunca comitado).
+dados-piloto/raw/*.md
+
