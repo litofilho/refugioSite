@@ -37,7 +37,11 @@
 
 <main id="conteudo">
 
-  <!-- ===================== HERO ===================== -->
+  <!-- ===================== HERO (título + CTA da Bússola) =====================
+       Rodada 6: o CTA da Bússola (antes numa seção .home-cta separada, depois
+       de .intro — exigia 2 telas de rolagem no celular) agora vive dentro do
+       próprio bloco da hero, logo abaixo do título, visível sem rolar em
+       390px de largura. Texto do card idêntico ao aprovado, só reposicionado. -->
   <section class="hero" aria-labelledby="hero-headline">
     <div class="hero__facet hero__facet--one" aria-hidden="true"></div>
     <div class="hero__facet hero__facet--two" aria-hidden="true"></div>
@@ -45,6 +49,18 @@
     <div class="container hero__grid">
       <div class="hero__content reveal">
         <h1 id="hero-headline" class="hero__headline">Onde a tecnologia encontra um porto seguro.</h1>
+      </div>
+
+      <div class="hero__cta reveal">
+        <div class="hero__cta-card">
+          <div class="hero__cta-card-accent" aria-hidden="true"></div>
+          <div class="hero__cta-card-body">
+            <p class="hero__cta-kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
+            <h2 id="home-cta-heading" class="hero__cta-heading">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h2>
+            <p class="hero__cta-paragraph">Ela não devolve resposta de prateleira nem substitui aquele parente que resolve na emergência. A Bússola investiga o problema real da sua empresa — backup, rede, sistemas de gestão, suporte de TI ou um projeto que você quer construir do zero — com a profundidade de um analista técnico sênior, consultando ao vivo a documentação oficial de fornecedores como Microsoft e Google, sempre com a fonte citada.</p>
+            <a class="contact__cta hero__cta-button" href="bussola/">Falar com a Bússola</a>
+          </div>
+        </div>
       </div>
 
       <div class="hero__mark reveal" aria-hidden="true">
@@ -65,20 +81,8 @@
     </div>
   </section>
 
-  <!-- ===================== CTA — BÚSSOLA ===================== -->
-  <section class="home-cta" aria-labelledby="home-cta-heading">
-    <div class="container home-cta__inner">
-      <div class="home-cta__card reveal">
-        <div class="home-cta__card-accent" aria-hidden="true"></div>
-        <div class="home-cta__card-body">
-          <p class="home-cta__kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
-          <h2 id="home-cta-heading" class="home-cta__heading">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h2>
-          <p class="home-cta__paragraph">Ela não devolve resposta de prateleira nem substitui aquele parente que resolve na emergência. A Bússola investiga o problema real da sua empresa — backup, rede, sistemas de gestão, suporte de TI ou um projeto que você quer construir do zero — com a profundidade de um analista técnico sênior, consultando ao vivo a documentação oficial de fornecedores como Microsoft e Google, sempre com a fonte citada.</p>
-          <a class="contact__cta home-cta__button" href="bussola/">Falar com a Bússola</a>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- O CTA da Bússola (antes aqui, seção .home-cta) foi movido para dentro
+       da .hero, rodada 6 — ver comentário acima da seção hero. -->
 
   <!-- ===================== CONTATO ===================== -->
   <section class="contact" id="fale-com-a-gente" aria-labelledby="contact-heading">

@@ -67,6 +67,15 @@
   --side-margin: 24px;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* raios — modernização rodada 6: cantos mais generosos (referência:
+     produtos de chat de IA atuais), sombra leve em vez de borda dura */
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --shadow-soft: 0 16px 40px rgba(38, 46, 51, 0.1);
+  --shadow-lift: 0 24px 56px rgba(38, 46, 51, 0.14);
 }
 
 /* ---------- Reset mínimo ---------- */
@@ -221,8 +230,11 @@ button:focus-visible {
   position: relative;
   overflow: hidden;
   background: var(--off-white);
-  padding-top: var(--sp-15);
-  padding-bottom: calc(var(--sp-15) + 56px);
+  /* mobile-first: espaço compacto no topo para que título + CTA da Bússola
+     caibam acima da dobra em 390px — o respiro generoso (sp-15) só entra
+     em telas maiores, ver breakpoint ≥1024px mais abaixo. */
+  padding-top: var(--sp-6);
+  padding-bottom: var(--sp-6);
 }
 
 /* formas decorativas suaves, inspiradas nas facetas do logo — tons únicos, baixa opacidade */
@@ -255,8 +267,12 @@ button:focus-visible {
   z-index: 1;
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--sp-10);
-  align-items: center;
+  /* ordem no DOM = ordem visual no mobile: título, CTA da Bússola, marca
+     decorativa — a marca (puramente decorativa, aria-hidden) vai por
+     último de propósito para não competir por espaço com o convite de
+     ação acima da dobra. */
+  gap: var(--sp-4);
+  align-items: start;
 }
 
 .kicker {
@@ -283,11 +299,77 @@ button:focus-visible {
   font-family: var(--font-display);
   font-weight: 300;
   color: var(--preto-antifragil);
-  font-size: clamp(2.25rem, 5.4vw, 4.75rem);
-  line-height: 1.12;
+  /* mobile-first: tamanho mais compacto na base (tela pequena), cresce com
+     a viewport; o teto grande (4.75rem) só é alcançado em telas largas. */
+  font-size: clamp(1.875rem, 7vw, 4.75rem);
+  line-height: 1.15;
   letter-spacing: -0.01em;
-  max-width: 16ch;
+  max-width: 18ch;
 }
+
+/* ===================================================================
+   CTA da Bússola, embutido na hero (rodada 6 — antes era a seção
+   .home-cta, separada, depois de .intro: exigia 2 telas de rolagem no
+   mobile antes de qualquer convite de ação). Mesmo texto, só reposicionado
+   para aparecer logo abaixo do título, visível sem rolar em 390px.
+   =================================================================== */
+.hero__cta-card {
+  position: relative;
+  display: flex;
+  background: #fff;
+  border: 1px solid rgba(178, 194, 185, 0.5);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+}
+
+.hero__cta-card-accent {
+  flex: none;
+  width: 6px;
+  background: var(--amarelo-suave);
+}
+
+.hero__cta-card-body {
+  /* mobile-first: padding bem enxuto na base, cresce no desktop */
+  padding: var(--sp-3) var(--sp-3);
+}
+
+.hero__cta-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cinza-chumbo);
+  margin-bottom: var(--sp-1);
+}
+
+.hero__cta-heading {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--preto-antifragil);
+  /* mobile-first: compacto na base, cresce com a viewport */
+  font-size: clamp(1.25rem, 5.6vw, 2.25rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  max-width: 30ch;
+  margin-bottom: var(--sp-2);
+}
+
+.hero__cta-paragraph {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--cinza-chumbo);
+  max-width: 56ch;
+  margin-bottom: var(--sp-3);
+}
+
+.hero__cta-button { display: inline-block; }
 
 .hero__mark {
   position: relative;
@@ -295,10 +377,13 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
 }
 .hero__mark-img {
-  width: min(320px, 70vw);
+  /* mobile-first: marca decorativa discreta, pequena — o protagonismo da
+     tela é o título + CTA, não o símbolo. Cresce de volta ao tamanho
+     original a partir do breakpoint ≥1024px (ver abaixo). */
+  width: min(120px, 32vw);
   filter: drop-shadow(0 24px 48px rgba(38, 46, 51, 0.16));
 }
 /* Legenda "Refúgio Tech" sob o símbolo do hero — antes vinha embutida como
@@ -322,7 +407,10 @@ button:focus-visible {
 .hero__mark-caption {
   font-family: var(--font-display);
   font-weight: 300;
-  font-size: min(9.4vw, 2.65rem);
+  /* calibrada para acompanhar a largura menor de .hero__mark-img no mobile
+     (ver nota acima); cresce de volta no breakpoint desktop junto com a
+     imagem. */
+  font-size: min(3.6vw, 1.1rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--preto-antifragil);
@@ -397,104 +485,8 @@ button:focus-visible {
   margin-top: var(--sp-4);
 }
 
-/* seam diagonal: introdução (escuro) -> CTA da Bússola (claro, off-white) —
-   trocado de var(--verde-pastel) porque a seção .contact deixou de vir
-   imediatamente depois da .intro (ver .home-cta abaixo, inserida entre as
-   duas quando o widget solto saiu da home — decisoes/2026-10-05-agente-
-   piloto-descoberta-pme.md). */
+/* seam diagonal: introdução (escuro) -> contato (verde pastel) */
 .intro::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: clamp(40px, 7vw, 96px);
-  background: var(--off-white);
-  clip-path: polygon(0 35%, 100% 100%, 0 100%);
-}
-
-/* ===================================================================
-   CTA para a página da Bússola (substitui o widget de chat solto que
-   ficava embutido direto na home — ver decisoes/2026-10-05-agente-
-   piloto-descoberta-pme.md, "Achado do primeiro teste manual").
-   Fundo claro (off-white), entre a introdução (escura) e o contato
-   (verde pastel) — por isso ganha a mesma seam diagonal que a introdução
-   usava antes para chegar no contato.
-   =================================================================== */
-.home-cta {
-  position: relative;
-  background: var(--off-white);
-  padding-top: var(--sp-10);
-  padding-bottom: calc(var(--sp-10) + 56px);
-  overflow: hidden;
-}
-
-.home-cta__inner {
-  position: relative;
-  z-index: 1;
-  max-width: 820px;
-  margin-inline: auto;
-}
-
-.home-cta__card {
-  position: relative;
-  display: flex;
-  background: #fff;
-  border: 1px solid rgba(178, 194, 185, 0.5);
-  border-radius: 20px;
-  box-shadow: 0 24px 56px rgba(38, 46, 51, 0.1);
-  overflow: hidden;
-}
-
-.home-cta__card-accent {
-  flex: none;
-  width: 6px;
-  background: var(--amarelo-suave);
-}
-
-.home-cta__card-body {
-  padding: var(--sp-6) var(--sp-4);
-}
-
-.home-cta__kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-family: var(--font-body);
-  font-weight: 500;
-  font-size: 0.8125rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cinza-chumbo);
-  margin-bottom: var(--sp-3);
-}
-
-.home-cta__heading {
-  font-family: var(--font-display);
-  font-weight: 300;
-  color: var(--preto-antifragil);
-  font-size: clamp(1.5rem, 3.4vw, 2.25rem);
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-  max-width: 28ch;
-  margin-bottom: var(--sp-3);
-}
-
-.home-cta__paragraph {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--cinza-chumbo);
-  max-width: 56ch;
-  margin-bottom: var(--sp-5, 40px);
-}
-
-.home-cta__button { display: inline-block; }
-
-/* seam diagonal: CTA da Bússola (claro) -> contato (verde pastel) —
-   mesmo padrão que a introdução usava antes de ganhar esta seção no meio. */
-.home-cta::after {
   content: "";
   position: absolute;
   left: 0;
@@ -504,6 +496,10 @@ button:focus-visible {
   background: var(--verde-pastel);
   clip-path: polygon(0 35%, 100% 100%, 0 100%);
 }
+
+/* O CTA da Bússola deixou de ser uma seção própria (.home-cta) entre
+   .intro e .contact — rodada 6 moveu o card para dentro da .hero (ver
+   .hero__cta-* acima), para ficar visível sem rolar no mobile. */
 
 /* ===================================================================
    Contato — fundo Verde Pastel Suave
@@ -585,7 +581,9 @@ button:focus-visible {
   color: var(--preto-antifragil);
   background: var(--off-white);
   border: 1px solid rgba(38, 46, 51, 0.22);
-  border-radius: 4px;
+  /* modernização rodada 6: cantos mais generosos, coerente com os cards e
+     botões em pílula do resto do site. */
+  border-radius: var(--radius-sm);
   padding: var(--sp-2) var(--sp-3);
   transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
@@ -625,8 +623,11 @@ button:focus-visible {
   letter-spacing: 0.01em;
   color: var(--preto-antifragil);
   background: var(--amarelo-suave);
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: 4px;
+  padding: var(--sp-2) var(--sp-5, 40px);
+  /* modernização rodada 6: botão em pílula, no mesmo registro visual das
+     referências (CTA único, cantos bem arredondados) em vez do raio de
+     4px anterior. */
+  border-radius: var(--radius-pill);
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background-color 0.2s var(--ease);
   box-shadow: 0 1px 2px rgba(38, 46, 51, 0.1);
 }
@@ -703,6 +704,8 @@ html.reveal-ready .reveal.is-visible {
   :root { --side-margin: 32px; }
 
   .contact__shard { width: 96px; height: 48px; }
+
+  .hero__cta-card-body { padding: var(--sp-5, 40px) var(--sp-4); }
 }
 
 /* Desktop ≥ 1024px */
@@ -714,10 +717,30 @@ html.reveal-ready .reveal.is-visible {
     padding-bottom: calc(var(--sp-15) + 72px);
   }
 
+  /* desktop: título + CTA empilhados na coluna da esquerda, marca
+     decorativa ocupa a coluna da direita (ver grid-template-areas) — no
+     mobile a ordem é só o fluxo natural do DOM (título, CTA, marca). */
   .hero__grid {
     grid-template-columns: 1.1fr 0.9fr;
-    gap: var(--sp-12);
+    grid-template-areas:
+      "content mark"
+      "cta     mark";
+    column-gap: var(--sp-12);
+    row-gap: var(--sp-6);
+    align-items: center;
   }
+  .hero__content { grid-area: content; }
+  .hero__cta { grid-area: cta; }
+  .hero__mark { grid-area: mark; align-self: center; }
+
+  /* marca decorativa volta ao tamanho original, de protagonista visual
+     secundário (mobile) para elemento de composição em pé de igualdade
+     com o texto (desktop, onde sobra espaço horizontal). */
+  .hero__mark-img { width: min(320px, 70vw); }
+  .hero__mark-caption { font-size: min(9.4vw, 2.65rem); }
+
+  .hero__cta-card-body { padding: var(--sp-6) var(--sp-4); }
+  .hero__cta-heading { font-size: clamp(1.5rem, 3vw, 2.25rem); }
 
   /* hero__mark virou flex-direction:column (símbolo + legenda); o eixo
      cruzado agora é horizontal, então o alinhamento à direita no desktop
@@ -728,7 +751,7 @@ html.reveal-ready .reveal.is-visible {
   .intro__inner { padding-left: var(--sp-6); }
 }
 
-/* Desktop grande ≥ 1440px */
-@media (min-width: 1440px) {
-  .hero__headline { max-width: 18ch; }
-}
+/* Nota: .hero__headline já usa max-width: 18ch desde a base (mobile-first,
+   ver regra acima) — o que antes era um ajuste específico de telas ≥1440px
+   passou a valer em qualquer largura, então o breakpoint extra foi
+   removido. */

@@ -20,8 +20,10 @@
   position: relative;
   overflow: hidden;
   background: var(--off-white);
-  padding-top: var(--sp-8);
-  padding-bottom: calc(var(--sp-8) + 40px);
+  /* mobile-first: respiro enxuto na base — o chat precisa caber acima da
+     dobra junto com o título. Cresce no desktop (ver breakpoint abaixo). */
+  padding-top: var(--sp-5, 40px);
+  padding-bottom: calc(var(--sp-5, 40px) + 32px);
 }
 
 .bussola-hero__facet {
@@ -45,25 +47,26 @@
 }
 
 .bussola-hero__intro {
-  margin-bottom: var(--sp-5, 40px);
+  margin-bottom: var(--sp-4);
 }
 
 .bussola-hero__headline {
   font-family: var(--font-display);
   font-weight: 300;
   color: var(--preto-antifragil);
-  font-size: clamp(1.625rem, 4.6vw, 2.75rem);
-  line-height: 1.2;
+  /* mobile-first: compacto na base, cresce com a viewport */
+  font-size: clamp(1.375rem, 6vw, 2.75rem);
+  line-height: 1.22;
   letter-spacing: -0.01em;
-  margin-bottom: var(--sp-3);
+  margin-bottom: var(--sp-2);
   max-width: 26ch;
 }
 
 .bussola-hero__lede {
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: clamp(1rem, 1.6vw, 1.125rem);
-  line-height: 1.65;
+  font-size: clamp(0.9375rem, 2vw, 1.125rem);
+  line-height: 1.6;
   color: var(--cinza-chumbo);
   max-width: 54ch;
 }
