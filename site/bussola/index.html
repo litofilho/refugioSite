@@ -58,7 +58,14 @@
        O chat é o protagonista: o botão "Falar com a Bússola" já aparece
        no primeiro viewport (sem rolar) e expande o painel de conversa
        aqui mesmo, inline — não é um painel flutuante escondido, não é
-       uma página separada. -->
+       uma página separada.
+
+       ORDEM (ajuste 2026-10-05, pedido explícito do fundador): badge ->
+       título -> launcher do chat -> parágrafo. O parágrafo de apresentação
+       (lede) deixou de ficar entre o título e o chat e passou para DEPOIS
+       do launcher — mais destaque pro chat, menos texto antes da ação.
+       Ver docs/agente-conversacional-descoberta.md (repositório
+       Consultoria) para o registro desta rodada. -->
   <section class="bussola-hero" aria-labelledby="bussola-headline">
     <div class="bussola-hero__facet" aria-hidden="true"></div>
     <div class="container bussola-hero__inner">
@@ -69,7 +76,6 @@
         </div>
         <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
         <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h1>
-        <p class="bussola-hero__lede">A Bússola é a agente de inteligência artificial da Refúgio Tech. Ela não é um chatbot que devolve respostas de prateleira, nem substitui aquele parente ou conhecido que resolve na emergência. Ela foi feita para quem já tentou essas duas saídas e continuou sem resposta.</p>
       </div>
 
       <!-- ===================== AGENTE CONVERSACIONAL "BÚSSOLA" (piloto) =====================
@@ -136,6 +142,8 @@
           </form>
         </div>
       </div>
+
+      <p class="bussola-hero__lede">A Bússola é a agente de inteligência artificial da Refúgio Tech. Ela não é um chatbot que devolve respostas de prateleira, nem substitui aquele parente ou conhecido que resolve na emergência. Ela foi feita para quem já tentou essas duas saídas e continuou sem resposta.</p>
 
     </div>
   </section>

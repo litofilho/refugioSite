@@ -105,6 +105,12 @@
   line-height: 1.6;
   color: var(--cinza-chumbo);
   max-width: 54ch;
+  /* Reordenação 2026-10-05: o parágrafo saiu de dentro de
+     .bussola-hero__intro (onde vinha logo após o h1) e passou a ficar
+     depois do chat (#refugio-chat-widget), como irmão direto dentro de
+     .bussola-hero__inner. Precisa do próprio respiro acima, que antes
+     vinha de estar empilhado com badge/kicker/h1 no mesmo wrapper. */
+  margin-top: var(--sp-4);
 }
 
 /* seam diagonal: hero claro -> explicação escura */
