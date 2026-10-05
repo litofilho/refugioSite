@@ -8,8 +8,12 @@
      Produzido por agente efêmero de conteúdo em 2026-10-05, dentro do
      briefing de posicionamento fechado em decisoes/2026-10-05-agente-
      piloto-descoberta-pme.md (repositório Consultoria, seção "Nome,
-     página e posicionamento do agente"). Publicado SÓ em canal de preview
-     do Firebase Hosting para revisão visual — NÃO rodar
+     página e posicionamento do agente"). Redesenho de UX em rodada
+     posterior: chat passou a ser acessível já na hero, sem exigir
+     rolagem (ver pedido explícito do fundador no mesmo arquivo de
+     decisões, "cliente precisa rolar a tela toda antes de poder
+     conversar" — rejeitado). Publicado SÓ em canal de preview do
+     Firebase Hosting para revisão visual — NÃO rodar
      `firebase deploy --only hosting` para produção antes da aprovação.
      =================================================================== -->
 <title>Bússola: agente de IA da Refúgio Tech para dúvidas de TI</title>
@@ -50,24 +54,89 @@
 
 <main id="conteudo">
 
-  <!-- ===================== HERO — NOME + PROPOSTA DE VALOR / CONTRASTE ===================== -->
+  <!-- ===================== HERO — TEXTO CURTO + CHAT JÁ ABERTO À MÃO =====================
+       O chat é o protagonista: o botão "Falar com a Bússola" já aparece
+       no primeiro viewport (sem rolar) e expande o painel de conversa
+       aqui mesmo, inline — não é um painel flutuante escondido, não é
+       uma página separada. -->
   <section class="bussola-hero" aria-labelledby="bussola-headline">
     <div class="bussola-hero__facet" aria-hidden="true"></div>
     <div class="container bussola-hero__inner">
-      <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
-      <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h1>
-      <p class="bussola-hero__lede">A Bússola é a agente de inteligência artificial da Refúgio Tech. Ela não é um chatbot que devolve respostas de prateleira, nem substitui aquele parente ou conhecido que resolve na emergência. Ela foi feita para quem já tentou essas duas saídas e continuou sem resposta.</p>
-      <p class="bussola-hero__paragraph">A conversa tem a profundidade de um analista técnico sênior: a Bússola investiga o problema real da sua empresa e, quando precisa, consulta ao vivo a documentação oficial de fornecedores como Microsoft, Google e fabricantes de equipamentos ou sistemas de gestão — sempre com a fonte citada. Nada de resposta genérica tirada da memória.</p>
+
+      <div class="bussola-hero__intro">
+        <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
+        <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h1>
+        <p class="bussola-hero__lede">A Bússola é a agente de inteligência artificial da Refúgio Tech. Ela não é um chatbot que devolve respostas de prateleira, nem substitui aquele parente ou conhecido que resolve na emergência. Ela foi feita para quem já tentou essas duas saídas e continuou sem resposta.</p>
+      </div>
+
+      <!-- ===================== AGENTE CONVERSACIONAL "BÚSSOLA" (piloto) =====================
+           Infra: functions/index.js (Cloud Function southamerica-east1) + Firestore.
+           Lógica/roteiro ainda em revisão pelo fundador — ver
+           docs/agente-conversacional-descoberta.md no repositório Consultoria
+           antes de considerar este bloco "publicado" de fato.
+           Mecânica de rede/sessão/Turnstile em assets/js/chat-widget.js. -->
+      <div id="refugio-chat-widget" class="chat-widget">
+        <button type="button" class="chat-widget__launcher" aria-expanded="false" aria-controls="refugio-chat-panel">
+          <span class="chat-widget__launcher-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 5.5h16v10H9.5l-4.5 3.6V15.5H4v-10Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="chat-widget__launcher-text">
+            <span class="chat-widget__launcher-title">Falar com a Bússola</span>
+            <span class="chat-widget__launcher-sub">Sem cadastro · conversa privada · resposta na hora</span>
+          </span>
+          <span class="chat-widget__launcher-arrow" aria-hidden="true">→</span>
+        </button>
+
+        <div class="chat-widget__panel" id="refugio-chat-panel" hidden>
+          <div class="chat-widget__header">
+            <div class="chat-widget__header-id">
+              <span class="chat-widget__status-dot" aria-hidden="true"></span>
+              <p class="chat-widget__header-title">Bússola</p>
+            </div>
+            <button type="button" class="chat-widget__close" aria-label="Minimizar conversa">×</button>
+          </div>
+
+          <div class="chat-widget__body">
+            <div class="chat-widget__messages" role="log" aria-live="polite" aria-label="Conversa com a Bússola"></div>
+
+            <div class="chat-widget__suggestions" aria-label="Sugestões para começar">
+              <p class="chat-widget__suggestions-label">Pode começar por aqui:</p>
+              <div class="chat-widget__chips">
+                <button type="button" class="chat-widget__chip" data-suggestion="Meu backup não funciona — ou eu nem sei se funciona de verdade.">Meu backup não funciona (ou nem sei se funciona)</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Minha rede e os equipamentos da empresa só sobrevivem, não funcionam de verdade.">Minha rede só "sobrevive", não funciona de verdade</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Minhas planilhas e sistemas de gestão viraram um problema à parte em vez de ajudar.">Minhas planilhas viraram um problema à parte</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Meu fornecedor de TI cobra caro e demora para resolver qualquer coisa.">Meu fornecedor de TI cobra caro e demora</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Quero construir um sistema do zero em vez de usar uma solução pronta.">Quero construir um sistema do zero</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-widget__turnstile"></div>
+          <form class="chat-widget__form">
+            <label for="chat-widget-input" class="visually-hidden">Sua mensagem para a Bússola</label>
+            <textarea id="chat-widget-input" class="chat-widget__input" rows="1" placeholder="Escreva o que está travando na sua empresa…" required></textarea>
+            <button type="submit" class="chat-widget__send" aria-label="Enviar mensagem">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M3 11 21 4l-7 18-2.5-7.5L3 11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <!-- ===================== EXPLICAÇÃO SIMPLES DO QUE A BÚSSOLA FAZ ===================== -->
+  <!-- ===================== LEITURA OPCIONAL: COMO A BÚSSOLA FUNCIONA =====================
+       Não é pré-requisito para conversar — o chat já está disponível na
+       hero, acima. Isso aqui é contexto extra para quem quiser entender
+       melhor antes (ou depois) de escrever. -->
   <section class="bussola-explicacao" aria-labelledby="bussola-explicacao-heading">
     <h2 id="bussola-explicacao-heading" class="visually-hidden">Como a Bússola funciona</h2>
     <div class="container bussola-explicacao__inner">
+      <p class="bussola-explicacao__paragraph">A conversa tem a profundidade de um analista técnico sênior: a Bússola investiga o problema real da sua empresa e, quando precisa, consulta ao vivo a documentação oficial de fornecedores como Microsoft, Google e fabricantes de equipamentos ou sistemas de gestão — sempre com a fonte citada. Nada de resposta genérica tirada da memória.</p>
+
       <p class="bussola-explicacao__intro">Como funciona: você conta o que está travando na empresa, com suas próprias palavras, e a Bússola conduz a conversa para entender o problema de verdade antes de indicar um caminho.</p>
 
-      <p class="bussola-explicacao__intro" style="font-size:1rem; opacity:0.85; margin-bottom: var(--sp-3);">Ela ajuda a colocar em perspectiva situações como:</p>
+      <p class="bussola-explicacao__lead-in">Ela ajuda a colocar em perspectiva situações como:</p>
       <ul class="bussola-explicacao__list">
         <li class="bussola-explicacao__item">Se os dados e sistemas da empresa estão protegidos e existe um plano para quando algo falhar.</li>
         <li class="bussola-explicacao__item">Se a rede, os computadores e os equipamentos estão funcionando como deveriam, ou só sobrevivendo.</li>
@@ -76,13 +145,8 @@
         <li class="bussola-explicacao__item">Se vale construir algo do zero quando já existe uma solução pronta e testada no mercado.</li>
       </ul>
       <p class="bussola-explicacao__closing">A Bússola não decide por você. Ela organiza a dúvida e aponta a direção para a conversa certa com a Refúgio Tech.</p>
-    </div>
-  </section>
 
-  <!-- ===================== TRANSIÇÃO PARA O WIDGET ===================== -->
-  <section class="bussola-transicao" aria-labelledby="bussola-transicao-heading">
-    <div class="container">
-      <p id="bussola-transicao-heading" class="bussola-transicao__text">Converse com a Bússola abaixo e veja a direção com clareza.</p>
+      <a href="#refugio-chat-widget" class="bussola-explicacao__back-link" data-chat-reopen>↑ Voltar para a conversa com a Bússola</a>
     </div>
   </section>
 
@@ -95,30 +159,6 @@
   </div>
 </footer>
 
-<!-- ===================== AGENTE CONVERSACIONAL "BÚSSOLA" (piloto) =====================
-     Infra: functions/index.js (Cloud Function southamerica-east1) + Firestore.
-     Lógica/roteiro ainda em revisão pelo fundador — ver
-     docs/agente-conversacional-descoberta.md no repositório Consultoria
-     antes de considerar este bloco "publicado" de fato. -->
-<div id="refugio-chat-widget" class="chat-widget">
-  <button type="button" class="chat-widget__launcher" aria-expanded="false" aria-controls="refugio-chat-panel">
-    <span class="chat-widget__launcher-dot" aria-hidden="true"></span>
-    Falar com a Bússola
-  </button>
-  <div class="chat-widget__panel" id="refugio-chat-panel" hidden>
-    <div class="chat-widget__header">
-      <p class="chat-widget__header-title">Bússola</p>
-      <button type="button" class="chat-widget__close" aria-label="Fechar">×</button>
-    </div>
-    <div class="chat-widget__messages" role="log" aria-live="polite"></div>
-    <div class="chat-widget__turnstile"></div>
-    <form class="chat-widget__form">
-      <label for="chat-widget-input" class="visually-hidden">Sua mensagem</label>
-      <textarea id="chat-widget-input" class="chat-widget__input" rows="1" placeholder="Escreva aqui…" required></textarea>
-      <button type="submit" class="chat-widget__send">Enviar</button>
-    </form>
-  </div>
-</div>
 <script src="../assets/js/chat-widget.js"></script>
 </body>
 </html>

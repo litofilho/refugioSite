@@ -3,16 +3,25 @@
    Página dedicada do agente de IA "Bússola" (piloto de descoberta,
    Segmento A). Usa só os design tokens já definidos em styles.css
    (:root) — não redefine paleta/tipografia, só aplica em layout novo.
+
+   REDESIGN (rodada de UX): o chat passa a ser o protagonista absoluto
+   da hero — acessível com um clique, sem rolar a página. O texto de
+   marca (headline/lede) fica compacto, acima do chat, dentro da mesma
+   seção; o restante do conteúdo institucional (explicação, lista de
+   categorias, fechamento) vira leitura opcional abaixo da dobra.
+   Inspiração de composição: telas de "novo chat" de Claude/ChatGPT/
+   Gemini — card de conversa central, sugestões clicáveis, sem
+   depender de rolagem para começar.
    Carregar DEPOIS de styles.css e ANTES de chat-widget.css no <head>.
    =================================================================== */
 
-/* ---------- Hero da Bússola (claro) ---------- */
+/* ---------- Hero da Bússola (claro) — texto + chat, sem exigir rolagem ---------- */
 .bussola-hero {
   position: relative;
   overflow: hidden;
   background: var(--off-white);
-  padding-top: var(--sp-15);
-  padding-bottom: calc(var(--sp-10) + 40px);
+  padding-top: var(--sp-8);
+  padding-bottom: calc(var(--sp-8) + 40px);
 }
 
 .bussola-hero__facet {
@@ -21,10 +30,10 @@
   z-index: 0;
   width: 520px;
   height: 520px;
-  top: -200px;
-  right: -180px;
+  top: -220px;
+  right: -200px;
   background: var(--verde-pastel);
-  opacity: 0.3;
+  opacity: 0.28;
   clip-path: polygon(30% 0%, 100% 0%, 100% 70%, 55% 100%, 0% 55%);
 }
 
@@ -32,34 +41,29 @@
   position: relative;
   z-index: 1;
   max-width: 760px;
+  margin-inline: auto;
+}
+
+.bussola-hero__intro {
+  margin-bottom: var(--sp-5, 40px);
 }
 
 .bussola-hero__headline {
   font-family: var(--font-display);
   font-weight: 300;
   color: var(--preto-antifragil);
-  font-size: clamp(1.875rem, 4.4vw, 3.25rem);
-  line-height: 1.22;
+  font-size: clamp(1.625rem, 4.6vw, 2.75rem);
+  line-height: 1.2;
   letter-spacing: -0.01em;
-  margin-bottom: var(--sp-6);
-  max-width: 24ch;
+  margin-bottom: var(--sp-3);
+  max-width: 26ch;
 }
 
 .bussola-hero__lede {
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
-  line-height: 1.7;
-  color: var(--preto-antifragil);
-  max-width: 54ch;
-  margin-bottom: var(--sp-4);
-}
-
-.bussola-hero__paragraph {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.75;
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  line-height: 1.65;
   color: var(--cinza-chumbo);
   max-width: 54ch;
 }
@@ -80,8 +84,8 @@
 .bussola-explicacao {
   position: relative;
   background: var(--preto-antifragil);
-  padding-top: var(--sp-12);
-  padding-bottom: calc(var(--sp-12) + 48px);
+  padding-top: var(--sp-10);
+  padding-bottom: var(--sp-10);
   overflow: hidden;
 }
 
@@ -91,13 +95,34 @@
   max-width: 680px;
 }
 
+.bussola-explicacao__paragraph {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: rgba(242, 242, 242, 0.88);
+  max-width: 58ch;
+  margin-bottom: var(--sp-6);
+  padding-bottom: var(--sp-6);
+  border-bottom: 1px solid rgba(242, 242, 242, 0.14);
+}
+
 .bussola-explicacao__intro {
   font-family: var(--font-body);
   font-weight: 300;
   font-size: clamp(1.0625rem, 1.8vw, 1.3125rem);
   line-height: 1.7;
   color: var(--off-white);
-  margin-bottom: var(--sp-6);
+  margin-bottom: var(--sp-3);
+}
+
+.bussola-explicacao__lead-in {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--off-white);
+  opacity: 0.85;
+  margin-bottom: var(--sp-3);
 }
 
 .bussola-explicacao__list {
@@ -133,39 +158,31 @@
   font-size: 1.0625rem;
   line-height: 1.6;
   color: var(--off-white);
+  margin-bottom: var(--sp-6);
 }
 
-/* seam diagonal: explicação escura -> transição/CTA clara */
-.bussola-explicacao::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: clamp(36px, 6vw, 88px);
-  background: var(--off-white);
-  clip-path: polygon(0 35%, 100% 100%, 0 100%);
+.bussola-explicacao__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  color: var(--amarelo-suave);
+  padding: var(--sp-1) 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+.bussola-explicacao__back-link:hover,
+.bussola-explicacao__back-link:focus-visible {
+  border-bottom-color: var(--amarelo-suave);
 }
 
-/* ---------- Transição para o widget (claro) ---------- */
-.bussola-transicao {
-  position: relative;
-  background: var(--off-white);
-  padding-top: var(--sp-10);
-  padding-bottom: calc(var(--sp-15) + 56px);
-  text-align: center;
-}
-
-.bussola-transicao__text {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(1.25rem, 2.6vw, 1.75rem);
-  color: var(--preto-antifragil);
-  max-width: 44ch;
-  margin-inline: auto;
-}
+/* sem seam aqui: explicação e rodapé usam o mesmo fundo escuro
+   (var(--preto-antifragil)) — a transição já é contínua. */
 
 /* Desktop ≥ 1024px */
 @media (min-width: 1024px) {
-  .bussola-hero { padding-top: var(--sp-15); padding-bottom: calc(var(--sp-12) + 64px); }
+  .bussola-hero { padding-top: var(--sp-10); padding-bottom: calc(var(--sp-10) + 56px); }
+  .bussola-explicacao { padding-top: var(--sp-12); padding-bottom: var(--sp-12); }
 }
