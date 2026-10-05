@@ -34,6 +34,10 @@
   var ANEXO_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/anexoUrl';
   var TURNSTILE_SITE_KEY = '0x4AAAAAAFOdF-ZOtkuLF9u6';
   var STORAGE_KEY = 'refugio_chat_session_id';
+  // Teto de auto-resize do textarea (~6 linhas) — mantido em sincronia com
+  // o max-height de .chat-widget__input em chat-widget.css. Acima disso o
+  // campo passa a rolar internamente em vez de continuar crescendo.
+  var INPUT_MAX_HEIGHT = 148;
 
   function getSessionId() {
     var id = window.localStorage.getItem(STORAGE_KEY);
@@ -97,6 +101,19 @@
       if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
       typingEl = null;
     }
+
+    // --- Ajuste de UX (relatado pelo fundador): o textarea tinha altura
+    // fixa de 1 linha e rolava internamente/cortava o texto conforme o
+    // visitante digitava e quebrava linha. Agora cresce automaticamente
+    // até um teto (~6 linhas, INPUT_MAX_HEIGHT) e só então passa a rolar
+    // internamente — padrão comum de auto-resize de textarea. ---
+    function autoResizeInput() {
+      input.style.height = 'auto';
+      var novaAltura = Math.min(input.scrollHeight, INPUT_MAX_HEIGHT);
+      input.style.height = novaAltura + 'px';
+    }
+    input.addEventListener('input', autoResizeInput);
+    autoResizeInput(); // altura inicial correta mesmo antes de digitar
 
     // --- BUG 1: Turnstile precisa colapsar/desaparecer assim que a
     // verificação passa, não só quando a conversa escala. ---
@@ -293,6 +310,7 @@
       var anexoParaEnvio = anexoSelecionado;
       addBubble('pme', texto || (anexoParaEnvio ? '📎 ' + '(anexo enviado)' : ''));
       input.value = '';
+      autoResizeInput(); // volta pra altura de 1 linha depois de limpar o campo
       limparAnexo();
       sendBtn.disabled = true;
       chipButtons.forEach(function (btn) { btn.disabled = true; });

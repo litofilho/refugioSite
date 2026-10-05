@@ -356,7 +356,15 @@
   font-family: inherit;
   line-height: 1.4;
   resize: none;
-  max-height: 120px;
+  /* Ajuste de UX (relatado pelo fundador): altura crescia fixa em 1 linha
+     e o texto só rolava escondido dentro da caixa pequena conforme
+     quebrava linha. Agora a altura é calculada em JS (chat-widget.js,
+     autoResizeInput) a cada tecla, até um teto de ~6 linhas — o
+     max-height abaixo precisa ficar em sincronia com INPUT_MAX_HEIGHT lá.
+     Só depois do teto o campo passa a rolar internamente (overflow-y). */
+  min-height: 42px;
+  max-height: 148px;
+  overflow-y: auto;
   background: var(--off-white);
 }
 .chat-widget__input:focus-visible {
