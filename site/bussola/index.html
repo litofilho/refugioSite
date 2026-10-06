@@ -2,7 +2,16 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- interactive-widget=resizes-content (Bug 1, fundador): quando o
+     teclado do celular abre, o Chrome/Android passa a encolher o
+     LAYOUT viewport (não só o visual viewport) — sem isso, elementos
+     position:fixed com bottom:0 (o painel em tela cheia do chat) podem
+     ficar ancorados atrás do teclado em vez de acompanhar o espaço
+     realmente visível. Suportado desde Chrome 108; navegadores sem
+     suporte ignoram o token com segurança (mesmo comportamento de
+     antes). Reforço complementar à correção de causa raiz (reparenting
+     do painel, ver chat-widget.js) — não substitui ela. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <!-- ===================================================================
      RASCUNHO — texto desta página ainda NÃO foi aprovado pelo fundador.
      Produzido por agente efêmero de conteúdo em 2026-10-05, dentro do

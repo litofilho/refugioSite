@@ -228,12 +228,53 @@
       document.documentElement.style.setProperty('--chat-fs-header-h', header.offsetHeight + 'px');
     }
 
+    // BUG 1 (celular real, pós-rodada 18 — Opção 3 fullscreen): o painel
+    // em tela cheia do mobile usava position:fixed mas continuava sendo
+    // DESCENDENTE de `.bussola-hero` (overflow:hidden) e de `<body>`
+    // (overflow:hidden só enquanto aberto). Confirmado por teste real via
+    // CDP (elementFromPoint + captura de tela, em localhost E em produção):
+    // Chrome/Blink recorta (clipa) um descendente position:fixed pelos
+    // ancestrais com overflow:hidden — a partir de ~metade do painel pra
+    // baixo (bem onde fica o campo de texto), toque/scroll caía direto no
+    // CONTEÚDO DE FUNDO da página (texto da seção seguinte vazava
+    // visualmente por trás do Turnstile e do campo). É exatamente esse
+    // "buraco" que deixa o fundo da página rolar/roubar o toque quando o
+    // teclado abre perto do campo de texto, na mesma região clipada.
+    // Correção de causa raiz (confirmada ao vivo antes de aplicar, não
+    // presumida): mover o painel para ser filho direto de <body> enquanto
+    // está em modo tela cheia (mobile, <1024px) — escapa de QUALQUER
+    // ancestral com overflow:hidden no caminho. Volta pro lugar original
+    // dentro de #refugio-chat-widget ao fechar, sem perder os listeners
+    // (é o mesmo nó DOM sendo movido, não um clone).
+    var panelParentOriginal = panel.parentNode;
+    var panelEstaFullscreen = false;
+
+    function dentroDoBreakpointMobileFullscreen() {
+      return window.matchMedia('(max-width: 1023px)').matches;
+    }
+
+    function moverPainelParaFullscreen() {
+      if (panelEstaFullscreen) return;
+      document.body.appendChild(panel);
+      panel.classList.add('chat-widget__panel--fullscreen');
+      panelEstaFullscreen = true;
+    }
+    function devolverPainelAoLugarOriginal() {
+      if (!panelEstaFullscreen) return;
+      panelParentOriginal.appendChild(panel);
+      panel.classList.remove('chat-widget__panel--fullscreen');
+      panelEstaFullscreen = false;
+    }
+
     function abrirPainel() {
       if (root.classList.contains('is-open')) {
         input.focus();
         return;
       }
       atualizarAlturaHeaderFullscreen();
+      if (dentroDoBreakpointMobileFullscreen()) {
+        moverPainelParaFullscreen();
+      }
       root.classList.add('is-open');
       document.body.classList.add('is-chat-fullscreen-open');
       panel.hidden = false;
@@ -248,6 +289,7 @@
       document.body.classList.remove('is-chat-fullscreen-open');
       panel.hidden = true;
       launcher.setAttribute('aria-expanded', 'false');
+      devolverPainelAoLugarOriginal();
     }
 
     launcher.addEventListener('click', function () {

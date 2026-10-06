@@ -170,7 +170,29 @@ const MOTIVOS_ESCALONAMENTO = [
 
 const SINAIS_ESCALONAMENTO_DO_MODELO = ['execucao_pratica', 'decisao_investimento', 'mudanca_contrato'];
 
-const PLATEAU_TURNOS = 2;
+// BUG 3 (fundador, crítico, 2026-10-06): PLATEAU_TURNOS=2 estava disparando
+// escalonamento mesmo quando o próprio modelo NÃO queria escalar
+// (padrao_conhecido=true, sinal_escalonamento="nenhum") — confirmado por
+// reteste real contra o Vertex AI (rodada 26, 3 conversas simuladas, ver
+// docs/agente-conversacional-descoberta.md repositório Consultoria):
+// "parar de ganhar campo novo no checklist" tanto pode significar "estou
+// travado, não sei como ajudar" (deveria escalar) quanto "já sei o
+// suficiente pra orientar, só falta eu dar a resposta" (NÃO deveria
+// escalar — é exatamente o oposto do papel de analista sênior,
+// escalonamento como exceção, já fixado na decisão do piloto). O gate
+// antigo tratava os dois casos como se fossem o mesmo sinal. Subiu pra 3
+// (mais uma folga antes de considerar plateau) e passou a exigir também
+// que o checklist NÃO esteja substancialmente completo — ver
+// checklistSubstancialmenteCompleto() — porque checklist cheio não é
+// "travado", é "diagnóstico encerrado, hora de orientar". Isso é correção
+// de causa raiz no CÓDIGO (gatilho determinístico), não só ajuste de
+// prompt — reforçado também no roteiro (ver SYSTEM_PROMPT_DIAGNOSTICO,
+// seção "QUANDO JÁ SABE O SUFICIENTE").
+const PLATEAU_TURNOS = 3;
+// Fração do checklist da categoria que, uma vez preenchida, já é
+// diagnóstico suficiente pra orientar — não exige 100% antes de ajudar
+// (coerente com "menor esforço possível", já fixado na decisão do piloto).
+const FRACAO_CHECKLIST_SUFICIENTE = 0.6;
 
 // Piso de segurança (ponto 5): lista fixa de termos destrutivos em PT-BR.
 // Limite aceito e declarado: não cobre paráfrase nem instrução destrutiva
@@ -180,6 +202,17 @@ const TERMOS_DESTRUTIVOS_REGEX = /apagar|deletar|exclu(ir|a|indo|ídos?)|formata
 const AVISO_BACKUP = 'Antes de qualquer coisa: garanta (ou confirme que já existe) um backup atualizado antes de continuar — essa ação não tem volta.';
 
 const MENSAGEM_HANDOFF_PADRAO = 'Vou registrar isso para um especialista humano da Refúgio Tech continuar com você.';
+
+// BUG 2 (fundador, crítico, 2026-10-06): o motivo de escalonamento sozinho
+// já criava o lead antes, mesmo sem NENHUM dado de contato coletado — lead
+// saía desqualificado (ninguém consegue retomar contato com quem não
+// deixou nome nem telefone/e-mail). Regra nova: motivo de escalonamento só
+// fecha o lead quando a sessão já tem contato coletado (ver bloco "BUG 2"
+// dentro de exports.chat, e comporRespostaAguardandoContato abaixo). Esta é
+// a frase determinística usada para pedir o contato explicitamente nesse
+// meio-tempo — não depende do modelo lembrar disso sozinho (mesma filosofia
+// de "o código garante, o prompt reforça" já usada no resto do gate).
+const MENSAGEM_PEDIR_CONTATO = 'Antes de eu registrar isso para alguém da nossa equipe te procurar: pode me passar seu nome e um telefone ou e-mail de contato?';
 
 // Etapa de avaliação da Bússola, combinação A+B+C (ver decisoes/2026-10-05-
 // agente-piloto-descoberta-pme.md, repositório Consultoria, seção "Etapa de
@@ -451,6 +484,19 @@ function contarCamposNovos(camposAtuais, camposAnteriores, camposDaCategoria) {
 }
 
 /**
+ * BUG 3 — ver comentário de FRACAO_CHECKLIST_SUFICIENTE. Checklist
+ * substancialmente completo (>=60% dos campos da categoria preenchidos)
+ * significa "diagnóstico já dá pra orientar", não "travado" — por isso
+ * essa condição BLOQUEIA o plateau no gate abaixo, mesmo com vários turnos
+ * seguidos sem campo novo.
+ */
+function checklistSubstancialmenteCompleto(camposAtuais, camposDaCategoria) {
+  if (!camposDaCategoria || camposDaCategoria.length === 0) return false;
+  const preenchidos = camposDaCategoria.filter((campo) => ((camposAtuais && camposAtuais[campo]) || '').trim() !== '').length;
+  return preenchidos >= Math.ceil(camposDaCategoria.length * FRACAO_CHECKLIST_SUFICIENTE);
+}
+
+/**
  * Gate de escalonamento 100% determinístico (ponto 6). Ordem de prioridade
  * fixa; motivo sempre em MOTIVOS_ESCALONAMENTO, nunca texto livre.
  */
@@ -484,6 +530,21 @@ function comporRespostaBase(respostaBase, perguntaContinuidade, escalarFinal) {
   if (!base) return pergunta;
   const baseTerminaComPontuacao = /[.!?…]\s*$/.test(base);
   return base + (baseTerminaComPontuacao ? ' ' : '. ') + pergunta;
+}
+
+/**
+ * BUG 2 — composição de resposta quando o gate já encontrou motivo de
+ * escalonamento, mas AINDA FALTA contato antes de fechar o lead. Mesma
+ * lógica de exclusão mútua de comporRespostaBase (nunca mistura pergunta de
+ * diagnóstico com outra coisa na mesma resposta): aqui a "outra coisa" é o
+ * pedido de contato, determinístico, que SUBSTITUI pergunta_continuidade —
+ * não importa o que o modelo tenha preenchido nesse campo.
+ */
+function comporRespostaAguardandoContato(respostaBase) {
+  const base = (respostaBase || '').trim();
+  if (!base) return MENSAGEM_PEDIR_CONTATO;
+  const baseTerminaComPontuacao = /[.!?…]\s*$/.test(base);
+  return base + (baseTerminaComPontuacao ? ' ' : '. ') + MENSAGEM_PEDIR_CONTATO;
 }
 
 /**
@@ -687,6 +748,14 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         leadCriado: false,
         anexosCount: 0,
         ipOrigem: ip,
+        // BUG 2: dado de contato acumulado entre turnos (um turno pode
+        // informar nome e outro o telefone/e-mail — precisa persistir os
+        // dois, não só o que veio no último turno) e o estado de "já
+        // encontrei motivo de escalonamento, mas ainda não tenho contato".
+        nomeColetado: '',
+        contatoColetado: '',
+        aguardandoContatoParaEscalar: false,
+        motivoEscalonamentoPendente: null,
       });
     }
 
@@ -772,7 +841,11 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     } else {
       turnosSemNovoCampo = (sessionData.turnosSemNovoCampo || 0) + 1;
     }
-    const plateau = Boolean(categoriaFinal) && categoriaFinal !== 'nenhuma' && turnosSemNovoCampo >= PLATEAU_TURNOS;
+    // BUG 3: checklist substancialmente completo BLOQUEIA o plateau — "sem
+    // campo novo" com diagnóstico já suficiente é sinal de "hora de
+    // orientar", não de "travado". Ver checklistSubstancialmenteCompleto().
+    const checklistCompleto = checklistSubstancialmenteCompleto(camposAtuaisCategoria, camposDaCategoria);
+    const plateau = Boolean(categoriaFinal) && categoriaFinal !== 'nenhuma' && turnosSemNovoCampo >= PLATEAU_TURNOS && !checklistCompleto;
 
     // --- Chamada 2 (grounding), só se sinalizada e categoria permite ---
     let corpoResposta = resultado.resposta_base;
@@ -798,23 +871,72 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       }
     }
 
-    const motivoEscalonamento = calcularMotivoEscalonamento({
+    const motivoDetectadoAgora = calcularMotivoEscalonamento({
       sinalModelo: resultado.sinal_escalonamento,
       semFonteAprovada,
       padraoConhecido: resultado.padrao_conhecido,
       plateau,
     });
-    const escalarFinal = motivoEscalonamento !== null;
+
+    // --- BUG 2 (fundador, crítico): motivo de escalonamento, sozinho, não
+    // basta mais pra fechar o lead. Falta também ter CONTATO coletado (o
+    // que o roteiro já pede como nome_pme/contato_pme) — sem isso o lead
+    // sai desqualificado, sem jeito de um humano retomar contato. Contato
+    // é acumulado entre turnos (contatoColetado/nomeColetado na sessão),
+    // porque pode ter sido dado num turno anterior ao que disparou o
+    // motivo de escalonamento. Quando há motivo mas falta contato, o turno
+    // entra em "aguardando_contato": pede o dado explicitamente (frase
+    // determinística, MENSAGEM_PEDIR_CONTATO) e NÃO cria lead, NÃO marca
+    // leadCriado, NÃO dispara notificação — só quando o contato chega
+    // (neste turno ou em turno anterior já registrado) o motivo pendente é
+    // finalmente honrado. Ver docs/agente-conversacional-descoberta.md
+    // (repositório Consultoria) para o relato completo e o reteste real.
+    const nomeAtual = (resultado.nome_pme || '').trim() || sessionData.nomeColetado || '';
+    const contatoAtual = (resultado.contato_pme || '').trim() || sessionData.contatoColetado || '';
+    const temContato = Boolean(contatoAtual);
+
+    const aguardandoContatoAnterior = Boolean(sessionData.aguardandoContatoParaEscalar);
+    const motivoPendenteAnterior = sessionData.motivoEscalonamentoPendente || null;
+
+    let motivoEscalonamento = null;
+    let aguardandoContatoAgora = false;
+    let escalarFinal = false;
+
+    if (aguardandoContatoAnterior) {
+      if (temContato) {
+        motivoEscalonamento = motivoPendenteAnterior || motivoDetectadoAgora;
+        escalarFinal = Boolean(motivoEscalonamento);
+      } else {
+        aguardandoContatoAgora = true; // continua esperando, mesmo motivo pendente
+      }
+    } else if (motivoDetectadoAgora) {
+      if (temContato) {
+        motivoEscalonamento = motivoDetectadoAgora;
+        escalarFinal = true;
+      } else {
+        aguardandoContatoAgora = true;
+      }
+    }
 
     // BLOQUEIO DE CAUSA RAIZ (ver comporRespostaBase) — nunca concatena
     // pergunta_continuidade quando escalarFinal=true, independente do que o
-    // modelo tenha preenchido nesse campo.
-    const respostaComposta = comporRespostaBase(corpoResposta, resultado.pergunta_continuidade, escalarFinal);
+    // modelo tenha preenchido nesse campo. Quando falta só o contato (BUG
+    // 2), usa comporRespostaAguardandoContato — mesma exclusão mútua, mas
+    // forçando o pedido de contato em vez da pergunta de diagnóstico.
+    let respostaComposta;
+    if (escalarFinal) {
+      respostaComposta = comporRespostaBase(corpoResposta, resultado.pergunta_continuidade, true);
+    } else if (aguardandoContatoAgora) {
+      respostaComposta = comporRespostaAguardandoContato(corpoResposta);
+    } else {
+      respostaComposta = comporRespostaBase(corpoResposta, resultado.pergunta_continuidade, false);
+    }
 
     // Etapa de avaliação da Bússola, parte A: este é o único ponto de "fim"
     // bem definido do fluxo atual — escalarFinal virando true pela PRIMEIRA
     // vez na sessão (mesma condição que já decide se a frase de handoff e o
-    // lead são criados agora, não repetidos nos turnos seguintes).
+    // lead são criados agora, não repetidos nos turnos seguintes). Com o
+    // BUG 2 corrigido, isso só acontece quando já há contato — nunca antes.
     const primeiraVezEscalando = escalarFinal && !sessionData.leadCriado;
 
     let respostaFinal = aplicarPisoSeguranca(respostaComposta);
@@ -835,8 +957,12 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       turnos: (sessionData.turnos || 0) + 1,
       turnosSemNovoCampo,
       camposDiagnostico: camposAtuaisCategoria,
-      status: escalarFinal ? 'escalada' : sessionData.status,
+      status: escalarFinal ? 'escalada' : (aguardandoContatoAgora ? 'aguardando_contato' : sessionData.status),
       anexosCount: (sessionData.anexosCount || 0) + (anexoParaGemini ? 1 : 0),
+      nomeColetado: nomeAtual,
+      contatoColetado: contatoAtual,
+      aguardandoContatoParaEscalar: aguardandoContatoAgora,
+      motivoEscalonamentoPendente: aguardandoContatoAgora ? (motivoPendenteAnterior || motivoDetectadoAgora) : null,
     }, { merge: true });
 
     await batch.commit();
@@ -849,18 +975,18 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         categoria: categoriaFinal,
         motivo: motivoEscalonamento,
         resumo: resultado.resumo_para_lead || null,
-        nome: resultado.nome_pme || null,
+        nome: nomeAtual || null,
         empresa: resultado.empresa_pme || null,
-        contato: resultado.contato_pme || null,
+        contato: contatoAtual || null,
         criadoEm: agora,
       });
       await notificarEscalonamento({
         sessionId,
         categoria: categoriaFinal,
         resumo: resultado.resumo_para_lead,
-        nome: resultado.nome_pme,
+        nome: nomeAtual,
         empresa: resultado.empresa_pme,
-        contato: resultado.contato_pme,
+        contato: contatoAtual,
         motivo: motivoEscalonamento,
       });
     }
@@ -878,7 +1004,22 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
 module.exports._testavel = {
   calcularMotivoEscalonamento,
   comporRespostaBase,
+  comporRespostaAguardandoContato,
   contarCamposNovos,
+  checklistSubstancialmenteCompleto,
   dominioAprovado,
   aplicarPisoSeguranca,
+  // Exportado só pra permitir reteste real isolado contra o Vertex AI
+  // (rodada 26, BUG 3) sem duplicar o schema/listas à mão no script de
+  // teste — mesmo espírito do restante deste bloco, "não usado pelo
+  // runtime da function em si".
+  buildDiagnosticoResponseSchema,
+  callDiagnostico,
+  callGrounding,
+  CATEGORIAS,
+  CAMPOS_POR_CATEGORIA,
+  DOMINIOS_APROVADOS,
+  PLATEAU_TURNOS,
+  MENSAGEM_HANDOFF_PADRAO,
+  MENSAGEM_PEDIR_CONTATO,
 };

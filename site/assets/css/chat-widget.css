@@ -482,14 +482,30 @@
    visível ao lado do ×, mais fácil de notar/ler do que um × solto
    (ideia sugerida no briefing: "botão de fechar mais proeminente").
    Sem transição de entrada/saída (igual à opção 1 — instantâneo).
-   =================================================================== */
+
+   BUG 1 (celular real, fundador): os seletores abaixo eram
+   `.chat-widget.is-open .chat-widget__panel` / `...__close`, dependentes
+   do painel continuar DENTRO de `#refugio-chat-widget`. Causa raiz real
+   (confirmada via CDP, elementFromPoint + screenshot, em produção):
+   `.bussola-hero` (overflow:hidden) e `<body>` (overflow:hidden enquanto
+   aberto) são ancestrais do painel, e o Chrome/Blink recorta um
+   descendente `position:fixed` pelos ancestrais com overflow:hidden —
+   a partir de ~metade do painel pra baixo, a área não pintava nem
+   recebia toque, vazando pro conteúdo de fundo (isso é o que conflitava
+   com o teclado ao focar o campo, perto dessa região). Correção: o JS
+   (chat-widget.js) agora move o painel pra ser filho direto de <body>
+   nesse breakpoint, escapando de QUALQUER ancestral com overflow:hidden.
+   Como o painel deixa de estar dentro de `.chat-widget.is-open`, os
+   seletores abaixo passaram a usar a classe própria
+   `.chat-widget__panel--fullscreen` (aplicada pelo JS no mesmo momento
+   do reparenting), que não depende de onde o painel está no DOM. */
 @media (max-width: 1023px) {
   body.is-chat-fullscreen-open {
     overflow: hidden;
     height: 100%;
   }
 
-  .chat-widget.is-open .chat-widget__panel {
+  .chat-widget__panel--fullscreen {
     position: fixed;
     top: var(--chat-fs-header-h, 64px);
     left: 0;
@@ -504,7 +520,7 @@
     border: none;
   }
 
-  .chat-widget.is-open .chat-widget__close {
+  .chat-widget__panel--fullscreen .chat-widget__close {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -515,7 +531,7 @@
     background: rgba(255, 255, 255, 0.14);
     font-size: 1.15rem;
   }
-  .chat-widget.is-open .chat-widget__close::after {
+  .chat-widget__panel--fullscreen .chat-widget__close::after {
     content: "Fechar";
     font-family: var(--font-body);
     font-weight: 500;
