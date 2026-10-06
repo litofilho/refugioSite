@@ -423,3 +423,66 @@
 @media (min-width: 1024px) {
   .chat-widget__panel { min-height: 480px; }
 }
+
+/* ===================================================================
+   PROPOSTA — Opção 3: variação diferente das opções 1/2. Em vez de
+   cobrir a viewport inteira por cima do header, o painel ocupa tela
+   cheia "abaixo do header" — o .site-header do site continua visível
+   (não usa display:none), funcionando como uma barra de contexto/saída
+   fixa no topo (o visitante nunca perde de vista que está no site da
+   Refúgio Tech, e pode, por exemplo, tocar em "Fale com a gente" para
+   sair do chat). Troca: um pouco menos imersivo que as opções 1/2
+   (sobra uma faixa de ~64px do header no topo), mas mantém mais
+   contexto de navegação — mais "âncora" pra quem está menos
+   acostumado com apps de chat em tela cheia.
+
+   top: var(--chat-fs-header-h) é calculado em JS (chat-widget.js,
+   mede .site-header.offsetHeight) e cai num custom property no
+   <html> — evita cravar um valor de altura de header em px fixo no
+   CSS (frágil a qualquer mudança futura no header).
+
+   Botão de fechar também redesenhado: pílula com texto "Fechar"
+   visível ao lado do ×, mais fácil de notar/ler do que um × solto
+   (ideia sugerida no briefing: "botão de fechar mais proeminente").
+   Sem transição de entrada/saída (igual à opção 1 — instantâneo).
+   =================================================================== */
+@media (max-width: 1023px) {
+  body.is-chat-fullscreen-open {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .chat-widget.is-open .chat-widget__panel {
+    position: fixed;
+    top: var(--chat-fs-header-h, 64px);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 500;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+  }
+
+  .chat-widget.is-open .chat-widget__close {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    height: 40px;
+    padding: 0 16px 0 12px;
+    border-radius: var(--radius-pill, 999px);
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 1.15rem;
+  }
+  .chat-widget.is-open .chat-widget__close::after {
+    content: "Fechar";
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+}

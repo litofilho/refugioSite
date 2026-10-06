@@ -151,12 +151,31 @@
       });
     }
 
+    // PROPOSTA (full-screen mobile): classe no <body> usada pelo CSS
+    // (chat-widget.css, media query max-width:1023px) só para travar o
+    // scroll da página por trás do painel enquanto ele ocupa a tela
+    // inteira. Em telas >=1024px essa classe não tem nenhum efeito
+    // visual (a media query correspondente não existe lá).
+    //
+    // OPÇÃO 3 (header do site continua visível): o painel não cobre o
+    // header, começa logo abaixo dele (CSS: top: var(--chat-fs-header-h)).
+    // Mede a altura real do header em JS (em vez de cravar um valor fixo
+    // no CSS) pra não desalinhar se o header mudar de altura no futuro
+    // (ex.: notificação, banner, etc.).
+    function atualizarAlturaHeaderFullscreen() {
+      var header = document.querySelector('.site-header');
+      if (!header) return;
+      document.documentElement.style.setProperty('--chat-fs-header-h', header.offsetHeight + 'px');
+    }
+
     function abrirPainel() {
       if (root.classList.contains('is-open')) {
         input.focus();
         return;
       }
+      atualizarAlturaHeaderFullscreen();
       root.classList.add('is-open');
+      document.body.classList.add('is-chat-fullscreen-open');
       panel.hidden = false;
       launcher.setAttribute('aria-expanded', 'true');
       if (!enviouPrimeiraMensagem) {
@@ -166,6 +185,7 @@
     }
     function fecharPainel() {
       root.classList.remove('is-open');
+      document.body.classList.remove('is-chat-fullscreen-open');
       panel.hidden = true;
       launcher.setAttribute('aria-expanded', 'false');
     }
