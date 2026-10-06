@@ -65,7 +65,17 @@
        (lede) deixou de ficar entre o título e o chat e passou para DEPOIS
        do launcher — mais destaque pro chat, menos texto antes da ação.
        Ver docs/agente-conversacional-descoberta.md (repositório
-       Consultoria) para o registro desta rodada. -->
+       Consultoria) para o registro desta rodada.
+
+       Rodada 16 (decisão do fundador): o badge de 128px, que ficava
+       empilhado sozinho acima do kicker/título (lendo como centralizado
+       na página, já que .bussola-hero__inner é uma coluna de leitura
+       centrada no viewport), passou a ficar em LINHA, ancorado à
+       esquerda, ao lado do kicker/título (novo wrapper
+       .bussola-hero__intro-text). Mesmo SVG do ícone, sem alteração de
+       arte — só a aplicação mudou. Ver
+       docs/agente-conversacional-descoberta.md (repositório Consultoria)
+       para o registro completo desta decisão. -->
   <section class="bussola-hero" aria-labelledby="bussola-headline">
     <div class="bussola-hero__facet" aria-hidden="true"></div>
     <div class="container bussola-hero__inner">
@@ -74,8 +84,10 @@
         <div class="bussola-hero__badge-wrap">
           <img src="../assets/bussola-icone.svg" alt="" aria-hidden="true" class="bussola-hero__badge">
         </div>
-        <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
-        <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h1>
+        <div class="bussola-hero__intro-text">
+          <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
+          <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h1>
+        </div>
       </div>
 
       <!-- ===================== AGENTE CONVERSACIONAL "BÚSSOLA" (piloto) =====================

@@ -48,21 +48,39 @@
 
 .bussola-hero__intro {
   margin-bottom: var(--sp-4);
+  /* Rodada 16 (decisão do fundador): badge deixa de ficar empilhado
+     sozinho acima do texto (padrão anterior, lia como "badge centralizado
+     no topo da página") e passa para uma linha, ancorado à esquerda, ao
+     lado do kicker/título -- ver comentário no index.html e
+     docs/agente-conversacional-descoberta.md (repositório Consultoria). */
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
-/* Badge da pagina /bussola: 56px -> 128px. Pedido do fundador apos ver o
-   preview da rodada anterior ("ficou meio perdido e pequeno, precisa de
-   mais presenca visual"). Testado contra 2 alternativas menores (88px e
-   112px+halo) em preview local -- ver docs/agente-conversacional-
-   descoberta.md (repositorio Consultoria) para o relatorio com as 3
-   opcoes. O wrapper .bussola-hero__badge-wrap existe para permitir um
-   halo decorativo atras do icone no futuro sem mexer na estrutura; nesta
-   versao escolhida ele fica inerte (sem halo), so o tamanho do icone
-   carrega a presenca. */
+.bussola-hero__intro-text {
+  min-width: 0;
+}
+
+/* Badge da pagina /bussola. Historico: 56px -> 128px (rodada anterior,
+   pedido do fundador: "ficou meio perdido e pequeno, precisa de mais
+   presenca visual" -- testado contra 88px e 112px+halo, ver
+   docs/agente-conversacional-descoberta.md no repositorio Consultoria).
+   Rodada 16 (decisao do fundador): o badge sai de empilhado/centralizado
+   no topo da coluna de leitura e passa para uma linha ao lado do
+   kicker/titulo, ancorado a ESQUERDA do container (lado esquerdo e
+   decisao fixa do fundador). Com o icone agora ao lado do texto (e nao
+   mais sozinho, ocupando a largura toda da coluna), 128px ficaria grande
+   demais e empurraria o titulo -- tamanho ajustado para
+   proporcional/legivel (96px mobile -> 132px desktop ≥1024px), sempre
+   acima dos tamanhos ja rejeitados por falta de legibilidade (56/88/112px)
+   na rodada anterior. O wrapper .bussola-hero__badge-wrap existe para
+   permitir um halo decorativo atras do icone no futuro sem mexer na
+   estrutura; nesta versao ele fica inerte (sem halo). */
 .bussola-hero__badge-wrap {
   position: relative;
   display: inline-flex;
-  margin-bottom: var(--sp-2);
+  flex: none;
 }
 
 .bussola-hero__badge-wrap::before {
@@ -78,8 +96,8 @@
 
 .bussola-hero__badge {
   display: block;
-  width: 128px;
-  height: 128px;
+  width: 96px;
+  height: 96px;
 }
 
 .bussola-hero__headline {
@@ -230,4 +248,11 @@
 @media (min-width: 1024px) {
   .bussola-hero { padding-top: var(--sp-10); padding-bottom: calc(var(--sp-10) + 56px); }
   .bussola-explicacao { padding-top: var(--sp-12); padding-bottom: var(--sp-12); }
+
+  /* Rodada 16: em telas largas ha espaco de sobra ao lado do titulo --
+     badge cresce de 96px para 132px, continua bem acima dos tamanhos
+     rejeitados por falta de legibilidade na rodada anterior (56/88/112px)
+     e ainda proporcional ao lado do h1 maior do desktop. */
+  .bussola-hero__badge { width: 132px; height: 132px; }
+  .bussola-hero__intro { gap: var(--sp-3); }
 }

@@ -56,7 +56,6 @@
   <section class="hero" aria-labelledby="hero-headline">
     <div class="hero__facet hero__facet--one" aria-hidden="true"></div>
     <div class="hero__facet hero__facet--two" aria-hidden="true"></div>
-    <img src="assets/bussola-icone.svg" alt="" aria-hidden="true" class="hero__bussola-bg">
 
     <div class="container hero__grid">
       <div class="hero__content reveal">
@@ -64,6 +63,15 @@
       </div>
 
       <div class="hero__cta reveal">
+        <!-- Rodada 16 (decisão do fundador): o "ghost" de fundo (hero__bussola-bg,
+             rosa dos ventos gigante e translúcida atrás do card, criada na
+             rodada 14) foi removido. No lugar, o ícone normal (mesmo SVG,
+             sem alteração de arte) volta em tamanho visível (60px), ancorado
+             no canto superior direito do card, como um selo/acento — não
+             mais como fundo decorativo de baixa opacidade. Ver
+             docs/agente-conversacional-descoberta.md (repositório
+             Consultoria) para o registro da decisão. -->
+        <img src="assets/bussola-icone.svg" alt="" aria-hidden="true" class="hero__cta-icon">
         <div class="hero__cta-card">
           <div class="hero__cta-card-accent" aria-hidden="true"></div>
           <div class="hero__cta-card-body">
