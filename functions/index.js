@@ -181,6 +181,28 @@ const AVISO_BACKUP = 'Antes de qualquer coisa: garanta (ou confirme que já exis
 
 const MENSAGEM_HANDOFF_PADRAO = 'Vou registrar isso para um especialista humano da Refúgio Tech continuar com você.';
 
+// Etapa de avaliação da Bússola, combinação A+B+C (ver decisoes/2026-10-05-
+// agente-piloto-descoberta-pme.md, repositório Consultoria, seção "Etapa de
+// avaliação da Bússola (2026-10-06)").
+//
+// Parte A: pergunta de satisfação (👍/👎) dentro do chat, disparada pelo
+// client quando a resposta do /chat vem com mostrarSatisfacao=true — que o
+// código abaixo só marca true no MESMO turno em que escalarFinal vira true
+// pela primeira vez na sessão (mesma condição que já disparava a frase de
+// handoff e a criação do lead: `escalarFinal && !sessionData.leadCriado`,
+// ver variável primeiraVezEscalando dentro de exports.chat). O clique do PME
+// chama o endpoint exports.satisfacao abaixo, que grava
+// `satisfacao: { valor, timestamp }` no documento da sessão — sessão sem
+// clique fica sem o campo (não é "neutro", é "não respondeu"; o script de
+// exportação trata essa ausência explicitamente).
+const SATISFACAO_VALORES = ['positiva', 'negativa'];
+const MAX_SATISFACAO_POR_IP_POR_DIA = 20; // proteção leve de abuso — clique de botão é raro por IP/dia no volume do piloto.
+
+// Parte B.1: origem da mensagem do PME — registrada a partir daqui (sessões
+// anteriores a esta rodada não têm o campo; o script de exportação trata
+// como "desconhecida").
+const ORIGEM_MENSAGEM_VALORES = ['chip', 'digitado'];
+
 let roteiro;
 try {
   // eslint-disable-next-line global-require
@@ -249,6 +271,20 @@ async function checkAndIncrementAnexoUrlLimit(ip) {
       return false;
     }
     tx.set(ref, { anexoUrls: current + 1, ip, data: todayKey() }, { merge: true });
+    return true;
+  });
+}
+
+/** Teto leve de cliques de satisfação (👍/👎) por IP/dia — ver SATISFACAO_VALORES. */
+async function checkAndIncrementSatisfacaoLimit(ip) {
+  const ref = db.collection('rate_limits').doc(`${ip}_${todayKey()}`);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const current = snap.exists ? snap.data().satisfacoes || 0 : 0;
+    if (current >= MAX_SATISFACAO_POR_IP_POR_DIA) {
+      return false;
+    }
+    tx.set(ref, { satisfacoes: current + 1, ip, data: todayKey() }, { merge: true });
     return true;
   });
 }
@@ -528,6 +564,65 @@ exports.anexoUrl = onRequest({ cors: false }, async (req, res) => {
   }
 });
 
+/**
+ * Endpoint novo (etapa de avaliação da Bússola, parte A): grava a resposta
+ * de satisfação (👍/👎) clicada pelo PME dentro do chat, imediatamente
+ * depois da frase de handoff. Não bloqueia nada — se der erro, o client só
+ * mostra uma mensagem amigável e segue, sem travar a conversa.
+ */
+exports.satisfacao = onRequest({ cors: false }, async (req, res) => {
+  const origin = req.headers.origin;
+  if (origemPermitida(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+  }
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+  if (req.method !== 'POST') {
+    res.status(405).json({ erro: 'method_not_allowed' });
+    return;
+  }
+
+  try {
+    const { sessionId, valor } = req.body || {};
+    if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 128 || !/^[a-zA-Z0-9-]+$/.test(sessionId)) {
+      res.status(400).json({ erro: 'sessionId_invalido' });
+      return;
+    }
+    if (!SATISFACAO_VALORES.includes(valor)) {
+      res.status(400).json({ erro: 'valor_invalido' });
+      return;
+    }
+
+    const ip = getClientIp(req);
+    const okIp = await checkAndIncrementSatisfacaoLimit(ip);
+    if (!okIp) {
+      res.status(429).json({ erro: 'limite_diario_excedido' });
+      return;
+    }
+
+    const sessionRef = db.collection('conversas_piloto_descoberta').doc(sessionId);
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      res.status(404).json({ erro: 'sessao_nao_encontrada' });
+      return;
+    }
+
+    await sessionRef.set({
+      satisfacao: { valor, timestamp: admin.firestore.FieldValue.serverTimestamp() },
+    }, { merge: true });
+
+    res.status(200).json({ ok: true });
+  } catch (err) {
+    logger.error('Erro no endpoint /satisfacao', err);
+    res.status(500).json({ erro: 'erro_interno' });
+  }
+});
+
 exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, async (req, res) => {
   const origin = req.headers.origin;
   if (origemPermitida(origin)) {
@@ -546,7 +641,12 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
   }
 
   try {
-    const { sessionId, message, turnstileToken, anexo } = req.body || {};
+    const { sessionId, message, turnstileToken, anexo, origem } = req.body || {};
+    // Parte B.1 da etapa de avaliação: origem da mensagem do PME (clique em
+    // chip de sugestão vs. texto digitado). Campo opcional no payload (client
+    // antigo sem essa versão não envia) — qualquer valor fora do enum vira
+    // 'digitado', nunca quebra a requisição.
+    const origemMensagem = ORIGEM_MENSAGEM_VALORES.includes(origem) ? origem : 'digitado';
     if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 128) {
       res.status(400).json({ erro: 'sessionId_invalido' });
       return;
@@ -711,14 +811,20 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     // modelo tenha preenchido nesse campo.
     const respostaComposta = comporRespostaBase(corpoResposta, resultado.pergunta_continuidade, escalarFinal);
 
+    // Etapa de avaliação da Bússola, parte A: este é o único ponto de "fim"
+    // bem definido do fluxo atual — escalarFinal virando true pela PRIMEIRA
+    // vez na sessão (mesma condição que já decide se a frase de handoff e o
+    // lead são criados agora, não repetidos nos turnos seguintes).
+    const primeiraVezEscalando = escalarFinal && !sessionData.leadCriado;
+
     let respostaFinal = aplicarPisoSeguranca(respostaComposta);
-    if (escalarFinal && !sessionData.leadCriado) {
+    if (primeiraVezEscalando) {
       respostaFinal = respostaFinal + '\n\n' + MENSAGEM_HANDOFF_PADRAO;
     }
 
     const batch = db.batch();
     const agora = admin.firestore.FieldValue.serverTimestamp();
-    const pmeMsgData = { autor: 'pme', texto: message, timestamp: agora };
+    const pmeMsgData = { autor: 'pme', texto: message, timestamp: agora, origem: origemMensagem };
     if (anexoParaFirestore) pmeMsgData.anexo = anexoParaFirestore;
     batch.set(mensagensRef.doc(), pmeMsgData);
     batch.set(mensagensRef.doc(), { autor: 'agente', texto: respostaFinal, timestamp: agora });
@@ -735,7 +841,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
 
     await batch.commit();
 
-    if (escalarFinal && !sessionData.leadCriado) {
+    if (primeiraVezEscalando) {
       await sessionRef.set({ leadCriado: true }, { merge: true });
       const leadRef = db.collection('leads').doc();
       await leadRef.set({
@@ -759,7 +865,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       });
     }
 
-    res.status(200).json({ resposta: respostaFinal, escalado: escalarFinal });
+    res.status(200).json({ resposta: respostaFinal, escalado: escalarFinal, mostrarSatisfacao: primeiraVezEscalando });
   } catch (err) {
     logger.error('Erro no endpoint /chat', err);
     res.status(500).json({ erro: 'erro_interno' });

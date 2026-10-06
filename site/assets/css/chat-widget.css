@@ -224,6 +224,43 @@
   40% { opacity: 0.9; transform: translateY(-3px); }
 }
 
+/* ---------- Etapa de avaliação da Bússola, parte A (2026-10-06):
+   pergunta de satisfação (👍/👎) depois do handoff. Opcional — visual
+   discreto, mesma bolha do agente, não parece um bloqueio/formulário. ---------- */
+.chat-widget__satisfacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.chat-widget__satisfacao-texto {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+.chat-widget__satisfacao-botoes {
+  display: flex;
+  gap: 8px;
+}
+.chat-widget__satisfacao-btn {
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 6px 16px;
+  border: 1px solid rgba(69, 82, 89, 0.2);
+  border-radius: var(--radius-pill, 999px);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease), transform 0.15s var(--ease);
+}
+.chat-widget__satisfacao-btn:hover:not(:disabled),
+.chat-widget__satisfacao-btn:focus-visible:not(:disabled) {
+  border-color: var(--verde-pastel);
+  background: var(--off-white);
+  transform: translateY(-1px);
+}
+.chat-widget__satisfacao-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ---------- Sugestões de início (estado vazio, antes da 1ª mensagem) ---------- */
 .chat-widget__suggestions {
   padding: var(--sp-1) var(--sp-3) var(--sp-3);

@@ -32,6 +32,7 @@
 
   var CHAT_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/chat';
   var ANEXO_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/anexoUrl';
+  var SATISFACAO_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/satisfacao';
   var TURNSTILE_SITE_KEY = '0x4AAAAAAFOdF-ZOtkuLF9u6';
   var STORAGE_KEY = 'refugio_chat_session_id';
   // Teto de auto-resize do textarea (~6 linhas) — mantido em sincronia com
@@ -100,6 +101,65 @@
     function hideTyping() {
       if (typingEl && typingEl.parentNode) typingEl.parentNode.removeChild(typingEl);
       typingEl = null;
+    }
+
+    // --- Etapa de avaliação da Bússola, parte A (2026-10-06): pergunta de
+    // satisfação (👍/👎), opcional, aparece imediatamente depois da frase de
+    // handoff quando o /chat responde mostrarSatisfacao=true (ver
+    // functions/index.js — só true no turno em que escalarFinal vira true
+    // pela primeira vez na sessão). Não bloqueia nada: o visitante pode
+    // ignorar e continuar digitando normalmente. ---
+    function addSatisfacaoPrompt() {
+      var wrap = document.createElement('div');
+      wrap.className = 'chat-widget__bubble chat-widget__bubble--agente chat-widget__satisfacao';
+
+      var texto = document.createElement('p');
+      texto.className = 'chat-widget__satisfacao-texto';
+      texto.textContent = 'Essa conversa te ajudou?';
+      wrap.appendChild(texto);
+
+      var botoes = document.createElement('div');
+      botoes.className = 'chat-widget__satisfacao-botoes';
+
+      var btnPos = document.createElement('button');
+      btnPos.type = 'button';
+      btnPos.className = 'chat-widget__satisfacao-btn';
+      btnPos.textContent = '👍';
+      btnPos.setAttribute('aria-label', 'Sim, essa conversa ajudou');
+
+      var btnNeg = document.createElement('button');
+      btnNeg.type = 'button';
+      btnNeg.className = 'chat-widget__satisfacao-btn';
+      btnNeg.textContent = '👎';
+      btnNeg.setAttribute('aria-label', 'Não, essa conversa não ajudou');
+
+      function registrarSatisfacao(valor) {
+        btnPos.disabled = true;
+        btnNeg.disabled = true;
+        fetch(SATISFACAO_URL_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sessionId, valor: valor }),
+        })
+          .then(function () {
+            texto.textContent = 'Obrigado pelo retorno!';
+            if (botoes.parentNode) botoes.parentNode.removeChild(botoes);
+          })
+          .catch(function () {
+            // Opcional, não bloqueia: se der erro de rede, só não insiste.
+            texto.textContent = 'Obrigado! (não consegui registrar agora)';
+            if (botoes.parentNode) botoes.parentNode.removeChild(botoes);
+          });
+      }
+
+      btnPos.addEventListener('click', function () { registrarSatisfacao('positiva'); });
+      btnNeg.addEventListener('click', function () { registrarSatisfacao('negativa'); });
+
+      botoes.appendChild(btnPos);
+      botoes.appendChild(btnNeg);
+      wrap.appendChild(botoes);
+      messagesEl.appendChild(wrap);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
     // --- Ajuste de UX (relatado pelo fundador): o textarea tinha altura
@@ -298,7 +358,7 @@
       });
     }
 
-    function enviarMensagem(texto) {
+    function enviarMensagem(texto, origem) {
       texto = (texto || '').trim();
       if (!texto && !anexoSelecionado) return;
       if (anexoEmUpload) return; // espera o upload terminar antes de enviar
@@ -314,7 +374,7 @@
           tentativas++;
           if (turnstileToken) {
             clearInterval(aguardarToken);
-            enviarMensagemReal(texto);
+            enviarMensagemReal(texto, origem);
           } else if (tentativas > 100) { // ~20s
             clearInterval(aguardarToken);
           }
@@ -322,10 +382,10 @@
         return;
       }
 
-      enviarMensagemReal(texto);
+      enviarMensagemReal(texto, origem);
     }
 
-    function enviarMensagemReal(texto) {
+    function enviarMensagemReal(texto, origem) {
       esconderSugestoes();
       var anexoParaEnvio = anexoSelecionado;
       addBubble('pme', texto || (anexoParaEnvio ? '📎 ' + '(anexo enviado)' : ''));
@@ -336,7 +396,10 @@
       chipButtons.forEach(function (btn) { btn.disabled = true; });
       showTyping();
 
-      var payload = { sessionId: sessionId, message: texto };
+      // Parte B.1 da etapa de avaliação: origem da mensagem (clique em chip
+      // de sugestão vs. texto digitado) — campo opcional, servidor trata
+      // qualquer valor fora do enum como 'digitado'.
+      var payload = { sessionId: sessionId, message: texto, origem: origem === 'chip' ? 'chip' : 'digitado' };
       if (anexoParaEnvio) payload.anexo = anexoParaEnvio;
       if (!enviouPrimeiraMensagem) {
         payload.turnstileToken = turnstileToken;
@@ -360,6 +423,7 @@
           colapsarTurnstile();
           hideTyping();
           addBubble('agente', data.resposta);
+          if (data.mostrarSatisfacao) addSatisfacaoPrompt();
           sendBtn.disabled = false;
         })
         .catch(function () {
@@ -371,7 +435,7 @@
 
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
-      enviarMensagem(input.value);
+      enviarMensagem(input.value, 'digitado');
     });
 
     // --- BUG 3: Enter envia, Shift+Enter quebra linha (padrão de chat) ---
@@ -381,7 +445,7 @@
     input.addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter' && !ev.shiftKey) {
         ev.preventDefault();
-        enviarMensagem(input.value);
+        enviarMensagem(input.value, 'digitado');
       }
     });
 
@@ -391,7 +455,7 @@
       btn.addEventListener('click', function () {
         if (btn.disabled) return;
         var texto = btn.getAttribute('data-suggestion') || btn.textContent;
-        enviarMensagem(texto);
+        enviarMensagem(texto, 'chip');
       });
     });
   });
