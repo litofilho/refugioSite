@@ -291,7 +291,7 @@ button:focus-visible {
 }
 
 .kicker {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--sp-1);
   font-family: var(--font-body);
@@ -300,11 +300,12 @@ button:focus-visible {
      era 0.8125rem (13px). Subiu para 0.875rem (14px) — ainda claramente
      menor que título/corpo (hierarquia preservada), só sai da faixa
      "pequeno demais mesmo sendo eyebrow em caixa alta". */
-  font-size: 0.875rem;
+  font-size: 1.125rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
   margin-bottom: var(--sp-4);
+  justify-content: space-between;
 }
 .kicker__dot {
   width: 8px;
@@ -395,8 +396,8 @@ button:focus-visible {
   margin-bottom: var(--sp-1);
 }
 .hero__cta-kicker-icon {
-  width: 24px;
-  height: 24px;
+  width: 60px;
+  height: 60px;
   flex-shrink: 0;
 }
 
