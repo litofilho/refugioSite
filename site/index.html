@@ -6,6 +6,13 @@
 <title>Refúgio Tech — Um refúgio sólido em meio à tecnologia</title>
 <meta name="description" content="Refúgio Tech é um ponto firme para pequenas e médias empresas que se sentem perdidas em meio à tecnologia — solidez e tranquilidade, não jargão.">
 
+<!-- Bug real (2026-10-06): sem color-scheme/theme-color, o Chrome/Android
+     aplica força-escuro (auto-darkening) por heurística própria, invertendo
+     a paleta da marca. Fixa o site no tema claro — ver styles.css :root e
+     docs/agente-conversacional-descoberta.md (repositório Consultoria). -->
+<meta name="color-scheme" content="only light">
+<meta name="theme-color" content="#F2F2F2">
+
 <link rel="icon" type="image/svg+xml" href="assets/refugio-tech.svg">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/favicon.png">

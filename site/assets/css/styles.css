@@ -32,6 +32,17 @@
 
 /* ---------- Design tokens ---------- */
 :root {
+  /* Fixa o site no tema claro da marca, independente da preferência do
+     sistema do visitante. Bug real (2026-10-06): sem este sinal, o Chrome/
+     Android aplica a própria heurística de "force dark" (auto-darkening),
+     invertendo cores e distorcendo a paleta — confirmado via CDP
+     (Emulation.setAutoDarkModeOverride) nas páginas home e /bussola antes
+     desta correção. `color-scheme: light` diz explicitamente ao navegador
+     que esta página só suporta o tema claro, desligando a heurística.
+     Decisão de ter um modo escuro de verdade fica para depois — ver
+     docs/agente-conversacional-descoberta.md (repositório Consultoria). */
+  color-scheme: only light;
+
   /* paleta oficial — hex exatos, não alterar */
   --verde-pastel: #B2C2B9;   /* primária — o refúgio, calma */
   --cinza-chumbo: #455259;   /* secundária — textos / estrutura, solidez */
