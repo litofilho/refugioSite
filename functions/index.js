@@ -257,6 +257,153 @@ const MAX_SATISFACAO_POR_IP_POR_DIA = 20; // proteção leve de abuso — clique
 // como "desconhecida").
 const ORIGEM_MENSAGEM_VALORES = ['chip', 'digitado'];
 
+// ---------------------------------------------------------------------
+// PREVIEW DE SOLUÇÃO (feature NOVA, NÃO publicada em produção) — rodada
+// 29 (2026-10-07). Construída seguindo exatamente as restrições já
+// levantadas na investigação de viabilidade (seção 37 de
+// docs/agente-conversacional-descoberta.md, repositório Consultoria):
+//   - Custo ~US$0,003–0,005/geração — só é desprezível se disparada no
+//     máximo 1–2 vezes por sessão (ver MAX_PREVIEWS_POR_SESSAO).
+//   - Mecanismo de renderização no client: iframe sandbox SEM
+//     allow-scripts — o HTML do modelo é só visual, nunca executa JS.
+//   - Endpoint assíncrono separado do /chat (latência medida
+//     7,5–9,8s com thinkingBudget=0) — nunca trava a conversa principal.
+//   - Marcação de "rascunho inicial" imposta DETERMINISTICAMENTE no
+//     código (aplicarAvisoRascunho), nunca só confiada ao prompt.
+// NÃO FAZER DEPLOY DE PRODUÇÃO desta feature sem autorização explícita
+// do fundador (ver decisão que autorizou construir, não publicar) —
+// commit/push no repositório Website são normais dentro deste trabalho,
+// `firebase deploy` não.
+// ---------------------------------------------------------------------
+const MAX_PREVIEWS_POR_SESSAO = 2; // 1 geração inicial + 1 iteração de ajuste — teto de custo/abuso (investigação, seção 37.2).
+const MAX_PREVIEWS_POR_IP_POR_DIA = 10;
+const PREVIEW_MOCKUP_MAX_BYTES = 60 * 1024; // teto de 40–60KB recomendado (investigação, seção 37.3, ponto 5) — acima disso, descarta o mockup e mantém só o esboço textual.
+
+const AVISO_RASCUNHO_TEXTO = 'RASCUNHO INICIAL — gerado por IA a partir do que você contou até agora. Revisão humana da Refúgio Tech é necessária antes de qualquer uso real.';
+
+function bannerRascunhoHtml() {
+  return '<div style="font-family:Roboto,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;background:#D9C583;color:#262E33;padding:8px 14px;border-bottom:2px solid #262E33;">⚠ Rascunho inicial — revisão humana da Refúgio Tech necessária antes de qualquer uso real</div>';
+}
+
+/**
+ * Marcação de rascunho IMPOSTA NO CÓDIGO, nunca dependente de o modelo
+ * lembrar (investigação, seção 37.4 — mesma filosofia "o código garante,
+ * o prompt reforça" já usada no piso de segurança do roteiro de
+ * diagnóstico, ver aplicarPisoSeguranca). Aplicada incondicionalmente,
+ * mesmo quando o modelo já incluiu seu próprio aviso.
+ */
+function aplicarAvisoRascunho(mockupHtmlSanitizado, esbocoArquitetura) {
+  const htmlComAviso = mockupHtmlSanitizado ? (bannerRascunhoHtml() + mockupHtmlSanitizado) : null;
+  const textoBase = (esbocoArquitetura || '').trim();
+  const textoComAviso = AVISO_RASCUNHO_TEXTO + '\n\n' + textoBase;
+  return { htmlComAviso, textoComAviso };
+}
+
+/**
+ * Sanitização defensiva do HTML do mockup — camada EXTRA de segurança,
+ * além do iframe sandbox sem allow-scripts (que já impede qualquer
+ * execução). Remove <script>, atributos on*="" e URIs javascript:.
+ * Limite aceito e declarado (mesmo espírito de TERMOS_DESTRUTIVOS_REGEX):
+ * não é um sanitizador HTML completo, é rede de segurança determinística
+ * contra o achado já confirmado na investigação — o modelo inclui
+ * <script> funcional no mockup mesmo sem pedir.
+ */
+function sanitizarMockupHtml(html) {
+  if (!html) return html;
+  return html
+    .replace(/<script[\s\S]*?<\/script\s*>/gi, '')
+    .replace(/<script[^>]*>/gi, '')
+    .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/<iframe[\s\S]*?<\/iframe\s*>/gi, '')
+    .replace(/<object[\s\S]*?<\/object\s*>/gi, '')
+    .replace(/<embed[^>]*>/gi, '');
+}
+
+function buildPreviewResponseSchema() {
+  return {
+    type: 'object',
+    properties: {
+      mockup_html: {
+        type: 'string',
+        description: 'HTML único e autocontido (CSS inline ou em <style> embutido, sem framework externo, SEM <script>, sem recurso externo) ilustrando visualmente uma possível solução. Rascunho inicial, não especificação final.',
+      },
+      esboco_arquitetura: {
+        type: 'string',
+        description: 'Esboço textual de 150 a 250 palavras descrevendo, em alto nível, uma possível abordagem técnica. Rascunho inicial, não decisão fechada.',
+      },
+    },
+    required: ['mockup_html', 'esboco_arquitetura'],
+  };
+}
+
+const SYSTEM_PROMPT_PREVIEW_SOLUCAO = `Você é o motor de geração de rascunho visual da Bússola, agente de IA da Refúgio Tech.
+
+A partir do resumo de diagnóstico de um PME (coletado numa conversa real), gere:
+1. mockup_html — HTML único e autocontido (CSS inline ou <style> embutido, SEM framework externo, SEM <script>, SEM qualquer recurso externo) que ilustra visualmente, de forma simples, como uma solução para o problema relatado poderia parecer.
+2. esboco_arquitetura — texto de 150 a 250 palavras descrevendo, em alto nível, uma possível abordagem técnica para resolver o problema relatado.
+
+Regras obrigatórias, sem exceção:
+- NUNCA inclua <script> nem qualquer JavaScript, inline ou externo.
+- NUNCA prometa prazo, preço ou compromisso contratual — isso não é decisão sua.
+- Deixe claro, nos dois campos, que é um RASCUNHO INICIAL sujeito a revisão humana da Refúgio Tech antes de qualquer uso real.
+- Responda só com os dois campos pedidos, em português do Brasil.`;
+
+/**
+ * Chamada ao modelo da feature de preview — endpoint e prompt totalmente
+ * separados da chamada 1/2 de diagnóstico (callDiagnostico/callGrounding).
+ * thinkingBudget=0 porque a investigação (37.2) mediu latência 2–2,5x
+ * menor com o mesmo custo de saída, sem perda observada de qualidade.
+ */
+async function callPreviewSolucao(brief) {
+  const vertexAI = new VertexAI({ project: PROJECT_ID, location: VERTEX_LOCATION });
+  const model = vertexAI.getGenerativeModel({
+    model: MODEL_NAME,
+    systemInstruction: SYSTEM_PROMPT_PREVIEW_SOLUCAO,
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: buildPreviewResponseSchema(),
+      temperature: 0.5,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  });
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: brief }] }],
+  });
+  const text = result.response.candidates[0].content.parts[0].text;
+  return JSON.parse(text);
+}
+
+/**
+ * Monta o brief só a partir do que a SESSÃO JÁ COLETOU no diagnóstico —
+ * nunca aceita texto livre arbitrário vindo do client como brief (evita
+ * abrir um vetor de uso fora do fluxo de diagnóstico real, e mantém o
+ * preview sempre ancorado na conversa de verdade).
+ */
+function montarBriefPreview(sessionData, categoriaFinal) {
+  const campos = sessionData.camposDiagnostico || {};
+  const linhasCampos = Object.entries(campos)
+    .filter(([, v]) => typeof v === 'string' && v.trim())
+    .map(([k, v]) => `- ${k}: ${v.trim()}`)
+    .join('\n');
+  return `Categoria de diagnóstico: ${categoriaFinal}\n\nDados coletados até agora nesta conversa:\n${linhasCampos || '(nenhum campo estruturado preenchido ainda)'}`;
+}
+
+/** Teto leve de gerações de preview por IP/dia — proteção de custo/abuso, mesmo padrão de checkAndIncrementSatisfacaoLimit. */
+async function checkAndIncrementPreviewLimit(ip) {
+  const ref = db.collection('rate_limits').doc(`${ip}_${todayKey()}`);
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const current = snap.exists ? snap.data().previews || 0 : 0;
+    if (current >= MAX_PREVIEWS_POR_IP_POR_DIA) {
+      return false;
+    }
+    tx.set(ref, { previews: current + 1, ip, data: todayKey() }, { merge: true });
+    return true;
+  });
+}
+
 let roteiro;
 try {
   // eslint-disable-next-line global-require
@@ -707,6 +854,113 @@ exports.satisfacao = onRequest({ cors: false }, async (req, res) => {
   }
 });
 
+/**
+ * Endpoint NOVO (feature de preview de solução, NÃO publicada em
+ * produção — ver bloco de comentário acima de MAX_PREVIEWS_POR_SESSAO).
+ * Assíncrono e separado do /chat por desenho (investigação, seção 37.5):
+ * a latência de geração (7,5–9,8s) não pode travar a conversa principal.
+ * Nunca aceita brief livre do client — monta o brief só a partir do que
+ * a sessão já coletou no Firestore (montarBriefPreview).
+ */
+exports.previewSolucao = onRequest({ cors: false }, async (req, res) => {
+  const origin = req.headers.origin;
+  if (origemPermitida(origin)) {
+    res.set('Access-Control-Allow-Origin', origin);
+  }
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+  if (req.method !== 'POST') {
+    res.status(405).json({ erro: 'method_not_allowed' });
+    return;
+  }
+
+  try {
+    const { sessionId } = req.body || {};
+    if (!sessionId || typeof sessionId !== 'string' || sessionId.length > 128 || !/^[a-zA-Z0-9-]+$/.test(sessionId)) {
+      res.status(400).json({ erro: 'sessionId_invalido' });
+      return;
+    }
+
+    const ip = getClientIp(req);
+    const okIp = await checkAndIncrementPreviewLimit(ip);
+    if (!okIp) {
+      res.status(429).json({ erro: 'limite_diario_excedido' });
+      return;
+    }
+
+    const sessionRef = db.collection('conversas_piloto_descoberta').doc(sessionId);
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      res.status(404).json({ erro: 'sessao_nao_encontrada' });
+      return;
+    }
+    const sessionData = sessionSnap.data();
+
+    // Teto de custo/abuso mais importante desta feature (investigação,
+    // seção 37.2): no máximo MAX_PREVIEWS_POR_SESSAO gerações por sessão,
+    // nunca uma por turno.
+    const previewCount = sessionData.previewCount || 0;
+    if (previewCount >= MAX_PREVIEWS_POR_SESSAO) {
+      res.status(429).json({ erro: 'limite_de_preview_da_sessao_excedido' });
+      return;
+    }
+
+    const categoriaFinal = sessionData.categoria;
+    if (!categoriaFinal || !CATEGORIAS.includes(categoriaFinal)) {
+      res.status(400).json({ erro: 'categoria_insuficiente' });
+      return;
+    }
+
+    const brief = montarBriefPreview(sessionData, categoriaFinal);
+    const resultado = await callPreviewSolucao(brief);
+
+    let mockupHtmlSanitizado = sanitizarMockupHtml(resultado.mockup_html);
+    let mockupDisponivel = Boolean(mockupHtmlSanitizado);
+    if (mockupHtmlSanitizado && Buffer.byteLength(mockupHtmlSanitizado, 'utf8') > PREVIEW_MOCKUP_MAX_BYTES) {
+      // Guardrail de tamanho (investigação, 37.3 ponto 5): acima do teto,
+      // nunca tenta renderizar algo parcial/truncado — cai só no esboço
+      // textual.
+      mockupHtmlSanitizado = null;
+      mockupDisponivel = false;
+    }
+
+    const { htmlComAviso, textoComAviso } = aplicarAvisoRascunho(mockupHtmlSanitizado, resultado.esboco_arquitetura);
+
+    const agora = admin.firestore.FieldValue.serverTimestamp();
+    const mensagensRef = sessionRef.collection('mensagens');
+    // Persistência/auditoria (investigação, 37.3 ponto 5): o preview vira
+    // mais uma mensagem gravada, mesmo padrão já usado para anexos — o
+    // fundador consegue auditar depois o que foi gerado em cada conversa.
+    await mensagensRef.doc().set({
+      autor: 'agente',
+      tipo: 'preview_solucao',
+      texto: textoComAviso,
+      mockupHtml: htmlComAviso,
+      mockupDisponivel,
+      timestamp: agora,
+    });
+    await sessionRef.set({
+      previewCount: previewCount + 1,
+      atualizadoEm: agora,
+    }, { merge: true });
+
+    res.status(200).json({
+      esbocoArquitetura: textoComAviso,
+      mockupHtml: htmlComAviso,
+      mockupDisponivel,
+      restantes: Math.max(0, MAX_PREVIEWS_POR_SESSAO - (previewCount + 1)),
+    });
+  } catch (err) {
+    logger.error('Erro no endpoint /previewSolucao', err);
+    res.status(500).json({ erro: 'erro_interno' });
+  }
+});
+
 exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, async (req, res) => {
   const origin = req.headers.origin;
   if (origemPermitida(origin)) {
@@ -969,6 +1223,23 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     // BUG 2 corrigido, isso só acontece quando já há contato — nunca antes.
     const primeiraVezEscalando = escalarFinal && !sessionData.leadCriado;
 
+    // --- Oferta de preview de solução (feature NOVA, NÃO publicada em
+    // produção — ver bloco de comentário de MAX_PREVIEWS_POR_SESSAO) ---
+    // Gate 100% determinístico no código, mesmo espírito do gate de
+    // escalonamento: oferece no máximo UMA vez por sessão (independente
+    // de quantas gerações o PME efetivamente pedir depois, ver
+    // MAX_PREVIEWS_POR_SESSAO no endpoint /previewSolucao), só quando o
+    // checklist já está substancialmente completo, a categoria é
+    // conhecida, e o turno não está escalando nem aguardando contato
+    // (nunca mistura a oferta de preview com o fluxo de escalonamento,
+    // mesma exclusão mútua já aplicada a pergunta_continuidade).
+    const previewJaOfertado = Boolean(sessionData.ofertaPreviewFeita);
+    const podeOfertarPreviewAgora = checklistCompleto
+      && Boolean(categoriaFinal) && categoriaFinal !== 'nenhuma'
+      && !escalarFinal && !aguardandoContatoAgora
+      && !previewJaOfertado
+      && (sessionData.previewCount || 0) === 0;
+
     let respostaFinal = aplicarPisoSeguranca(respostaComposta);
     if (primeiraVezEscalando) {
       respostaFinal = respostaFinal + '\n\n' + MENSAGEM_HANDOFF_PADRAO;
@@ -993,6 +1264,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       contatoColetado: contatoAtual,
       aguardandoContatoParaEscalar: aguardandoContatoAgora,
       motivoEscalonamentoPendente: aguardandoContatoAgora ? (motivoPendenteAnterior || motivoDetectadoAgora) : null,
+      ofertaPreviewFeita: previewJaOfertado || podeOfertarPreviewAgora,
     }, { merge: true });
 
     await batch.commit();
@@ -1021,7 +1293,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
       });
     }
 
-    res.status(200).json({ resposta: respostaFinal, escalado: escalarFinal, mostrarSatisfacao: primeiraVezEscalando });
+    res.status(200).json({ resposta: respostaFinal, escalado: escalarFinal, mostrarSatisfacao: primeiraVezEscalando, ofertarPreview: podeOfertarPreviewAgora });
   } catch (err) {
     logger.error('Erro no endpoint /chat', err);
     res.status(500).json({ erro: 'erro_interno' });
@@ -1052,4 +1324,16 @@ module.exports._testavel = {
   PLATEAU_TURNOS,
   MENSAGEM_HANDOFF_PADRAO,
   MENSAGEM_PEDIR_CONTATO,
+  // Feature de preview de solução (rodada 29, não publicada) — exportado
+  // pra permitir teste real isolado do pipeline completo (chamada ao
+  // modelo + sanitização + marcação determinística de rascunho) sem
+  // passar pelo endpoint HTTP/Firestore.
+  callPreviewSolucao,
+  sanitizarMockupHtml,
+  aplicarAvisoRascunho,
+  buildPreviewResponseSchema,
+  montarBriefPreview,
+  MAX_PREVIEWS_POR_SESSAO,
+  PREVIEW_MOCKUP_MAX_BYTES,
+  SYSTEM_PROMPT_PREVIEW_SOLUCAO,
 };

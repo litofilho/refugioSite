@@ -62,6 +62,12 @@
   /* tipografia */
   --font-display: "Jost", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
   --font-body: "Roboto", -apple-system, "Segoe UI", Arial, sans-serif;
+  /* Mono — elementos técnicos/de produto rodando (ver ativos/marca/branding.md
+     e o novo site institucional em construção). Introduzido nesta rodada
+     (redesenho visual do widget da Bússola) — direção híbrida aprovada:
+     claro por padrão, com este token aplicado só nos momentos "de produto
+     em ação" (status, rótulos técnicos), nunca no corpo da conversa em si. */
+  --font-mono: "JetBrains Mono", "Roboto Mono", "Courier New", monospace;
 
   /* grid base 8px */
   --sp-1: 8px;

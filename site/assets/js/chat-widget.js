@@ -40,6 +40,13 @@
   var CHAT_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/chat';
   var ANEXO_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/anexoUrl';
   var SATISFACAO_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/satisfacao';
+  // Feature NOVA (rodada 29, 2026-10-07) — preview de solução, NÃO
+  // publicada em produção (ver docs/agente-conversacional-descoberta.md,
+  // repositório Consultoria, seção 37, para a investigação que define
+  // estas restrições, e functions/index.js para o endpoint). Endpoint
+  // assíncrono separado do /chat de propósito — a geração leva 7,5–9,8s,
+  // não pode travar a conversa principal.
+  var PREVIEW_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/previewSolucao';
   var TURNSTILE_SITE_KEY = '0x4AAAAAAFOdF-ZOtkuLF9u6';
   var STORAGE_KEY = 'refugio_chat_session_id';
   // Teto de auto-resize do textarea (~6 linhas) — mantido em sincronia com
@@ -100,8 +107,8 @@
       if (typingEl) return;
       typingEl = document.createElement('div');
       typingEl.className = 'chat-widget__typing';
-      typingEl.setAttribute('aria-label', 'Bússola está digitando');
-      typingEl.innerHTML = '<span></span><span></span><span></span>';
+      typingEl.setAttribute('role', 'status');
+      typingEl.innerHTML = '<span class="chat-widget__typing-dots" aria-hidden="true"><span></span><span></span><span></span></span><span class="chat-widget__typing-label">Bússola está respondendo…</span>';
       messagesEl.appendChild(typingEl);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -166,6 +173,96 @@
       botoes.appendChild(btnNeg);
       wrap.appendChild(botoes);
       messagesEl.appendChild(wrap);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // --- Feature NOVA (rodada 29, 2026-10-07): preview de solução, NÃO
+    // publicada em produção — ver docs/agente-conversacional-
+    // descoberta.md (repositório Consultoria, seção 37) para as
+    // restrições que esta implementação segue à risca:
+    //   - disparada no máximo pelo gatilho que o /chat manda 1x por
+    //     sessão (data.ofertarPreview) + o teto do próprio endpoint
+    //     (MAX_PREVIEWS_POR_SESSAO em functions/index.js);
+    //   - renderizada em <iframe sandbox="allow-same-origin" srcdoc="…">
+    //     SEM allow-scripts — o HTML do modelo nunca executa JS dentro
+    //     do site de produção, só é desenhado;
+    //   - estado de carregamento explícito, sem travar o campo de texto
+    //     da conversa principal (chamada 100% separada do /chat). ---
+    function addPreviewPrompt() {
+      var wrap = document.createElement('div');
+      wrap.className = 'chat-widget__bubble chat-widget__bubble--agente chat-widget__preview-prompt';
+
+      var texto = document.createElement('p');
+      texto.className = 'chat-widget__preview-prompt-texto';
+      texto.textContent = 'Já tenho o suficiente pra esboçar uma ideia. Quer que eu te mostre um rascunho visual disso?';
+      wrap.appendChild(texto);
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chat-widget__preview-prompt-btn';
+      btn.textContent = 'Ver rascunho';
+
+      btn.addEventListener('click', function () {
+        btn.disabled = true;
+        btn.textContent = 'Gerando rascunho, alguns segundos…';
+
+        fetch(PREVIEW_URL_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: sessionId }),
+        })
+          .then(function (resp) {
+            if (!resp.ok) throw new Error('status ' + resp.status);
+            return resp.json();
+          })
+          .then(function (data) {
+            if (btn.parentNode) btn.parentNode.removeChild(btn);
+            texto.textContent = 'Aqui está um rascunho inicial — não é a solução final, é só pra dar uma ideia visual:';
+            addPreviewCard(data);
+          })
+          .catch(function () {
+            btn.disabled = false;
+            btn.textContent = 'Não consegui gerar agora — tentar de novo';
+          });
+      });
+
+      wrap.appendChild(btn);
+      messagesEl.appendChild(wrap);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // Monta o cartão do preview — iframe SEM allow-scripts (piso de
+    // segurança desta feature, ver comentário acima) + o esboço textual
+    // de arquitetura abaixo. mockupDisponivel=false (guardrail de
+    // tamanho/sanitização no servidor) cai só no texto, sem iframe.
+    function addPreviewCard(data) {
+      var card = document.createElement('div');
+      card.className = 'chat-widget__preview-card';
+
+      if (data.mockupDisponivel && data.mockupHtml) {
+        var frameLabel = document.createElement('p');
+        frameLabel.className = 'chat-widget__preview-card-label';
+        frameLabel.textContent = 'mockup visual · sandbox, sem script';
+        card.appendChild(frameLabel);
+
+        var frame = document.createElement('iframe');
+        frame.className = 'chat-widget__preview-frame';
+        // SEM allow-scripts, de propósito — ver docs/agente-
+        // conversacional-descoberta.md seção 37.3: o modelo já incluiu
+        // <script> funcional sem pedir num teste real; o mockup é só
+        // visual, nunca executa código dentro do site de produção.
+        frame.setAttribute('sandbox', 'allow-same-origin');
+        frame.setAttribute('title', 'Rascunho visual gerado pela Bússola');
+        frame.srcdoc = data.mockupHtml;
+        card.appendChild(frame);
+      }
+
+      var esboco = document.createElement('p');
+      esboco.className = 'chat-widget__preview-card-esboco';
+      esboco.textContent = data.esbocoArquitetura || '';
+      card.appendChild(esboco);
+
+      messagesEl.appendChild(card);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
@@ -473,6 +570,7 @@
           hideTyping();
           addBubble('agente', data.resposta);
           if (data.mostrarSatisfacao) addSatisfacaoPrompt();
+          if (data.ofertarPreview) addPreviewPrompt();
           sendBtn.disabled = false;
         })
         .catch(function () {
