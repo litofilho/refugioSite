@@ -236,14 +236,30 @@ const MAX_SATISFACAO_POR_IP_POR_DIA = 20; // proteção leve de abuso — clique
 // como "desconhecida").
 const ORIGEM_MENSAGEM_VALORES = ['chip', 'digitado'];
 
+// Instrumentação obrigatória do teste de variante de abertura (ver
+// decisoes/2026-10-05-agente-piloto-descoberta-pme.md, repositório
+// Consultoria, seção "Reabertura do ângulo de receita"): toda sessão grava
+// qual variante de abertura foi usada. Decidido e enviado pelo CLIENT
+// (site/assets/js/chat-widget.js, via ?angulo= na URL que o fundador
+// compartilha com cada PME — ver relatório da rodada para a justificativa
+// de não sortear automaticamente), validado e gravado aqui no primeiro
+// turno da sessão; qualquer valor ausente/inválido cai no default seguro
+// 'seguranca' (variante original, não um valor novo sem calibração).
+const ANGULO_VALORES = ['seguranca', 'receita'];
+const ANGULO_DEFAULT = 'seguranca';
+
 let roteiro;
 try {
   // eslint-disable-next-line global-require
   roteiro = require('./roteiro');
 } catch (e) {
+  const PLACEHOLDER = 'PLACEHOLDER — roteiro ainda não revisado pelo fundador. Ver docs/agente-conversacional-descoberta.md.';
   roteiro = {
-    SYSTEM_PROMPT_DIAGNOSTICO: 'PLACEHOLDER — roteiro ainda não revisado pelo fundador. Ver docs/agente-conversacional-descoberta.md.',
+    SYSTEM_PROMPT_DIAGNOSTICO: PLACEHOLDER,
+    SYSTEM_PROMPT_DIAGNOSTICO_RECEITA: PLACEHOLDER,
+    getSystemPromptDiagnostico: () => PLACEHOLDER,
     SYSTEM_PROMPT_GROUNDING: 'Responda de forma factual e curta, citando a fonte.',
+    ANGULOS_ABERTURA: ANGULO_VALORES,
   };
 }
 
@@ -400,13 +416,20 @@ function buildDiagnosticoResponseSchema() {
 /**
  * Chamada 1 — sempre executada. `novaMensagemParts` é um array de parts no
  * formato do Gemini (`[{ text }]` no caso comum; `[{ fileData }, { text }]`
- * quando há anexo nesta mensagem — ver exports.chat).
+ * quando há anexo nesta mensagem — ver exports.chat). `angulo` seleciona a
+ * variante de abertura do roteiro ('seguranca' | 'receita') — ver
+ * functions/roteiro.js, getSystemPromptDiagnostico(). Só afeta a primeira
+ * pergunta/gancho da conversa; categorias, checklist e gate de
+ * escalonamento são os mesmos para as duas variantes.
  */
-async function callDiagnostico(history, novaMensagemParts) {
+async function callDiagnostico(history, novaMensagemParts, angulo) {
   const vertexAI = new VertexAI({ project: PROJECT_ID, location: VERTEX_LOCATION });
+  const systemInstruction = roteiro.getSystemPromptDiagnostico
+    ? roteiro.getSystemPromptDiagnostico(angulo)
+    : roteiro.SYSTEM_PROMPT_DIAGNOSTICO;
   const model = vertexAI.getGenerativeModel({
     model: MODEL_NAME,
-    systemInstruction: roteiro.SYSTEM_PROMPT_DIAGNOSTICO,
+    systemInstruction,
     generationConfig: {
       responseMimeType: 'application/json',
       responseSchema: buildDiagnosticoResponseSchema(),
@@ -702,7 +725,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
   }
 
   try {
-    const { sessionId, message, turnstileToken, anexo, origem } = req.body || {};
+    const { sessionId, message, turnstileToken, anexo, origem, angulo } = req.body || {};
     // Parte B.1 da etapa de avaliação: origem da mensagem do PME (clique em
     // chip de sugestão vs. texto digitado). Campo opcional no payload (client
     // antigo sem essa versão não envia) — qualquer valor fora do enum vira
@@ -737,11 +760,18 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         res.status(403).json({ erro: 'verificacao_humana_falhou' });
         return;
       }
+      // Instrumentação obrigatória do teste de ângulo de abertura: gravado
+      // UMA VEZ, na criação da sessão — vale para a sessão inteira (uma
+      // conversa não troca de ângulo no meio). Valor decidido pelo client
+      // (ver chat-widget.js); qualquer coisa fora de ANGULO_VALORES cai no
+      // default seguro.
+      const anguloEscolhido = ANGULO_VALORES.includes(angulo) ? angulo : ANGULO_DEFAULT;
       await sessionRef.set({
         criadoEm: admin.firestore.FieldValue.serverTimestamp(),
         atualizadoEm: admin.firestore.FieldValue.serverTimestamp(),
         status: 'ativa',
         categoria: null,
+        angulo: anguloEscolhido,
         turnos: 0,
         turnosSemNovoCampo: 0,
         camposDiagnostico: {},
@@ -822,7 +852,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     }
     partesMensagemAtual.push({ text: textoEfetivo });
 
-    const resultado = await callDiagnostico(historico, partesMensagemAtual);
+    const resultado = await callDiagnostico(historico, partesMensagemAtual, sessionData.angulo);
 
     const categoriaFinal = CATEGORIAS.includes(resultado.categoria) ? resultado.categoria : (sessionData.categoria || null);
     const categoriaMudou = categoriaFinal !== sessionData.categoria;
@@ -1022,4 +1052,6 @@ module.exports._testavel = {
   PLATEAU_TURNOS,
   MENSAGEM_HANDOFF_PADRAO,
   MENSAGEM_PEDIR_CONTATO,
+  ANGULO_VALORES,
+  ANGULO_DEFAULT,
 };

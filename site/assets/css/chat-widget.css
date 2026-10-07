@@ -281,6 +281,13 @@
   flex-direction: column;
   gap: var(--sp-1);
 }
+/* Rodada 27 (variante de abertura, ângulo seguranca/receita): só um dos
+   grupos de chips fica visível por vez (ver chat-widget.js) — sem esta
+   regra, o atributo `hidden` nativo seria sobrescrito pela regra
+   `display: flex` acima (mesma classe, mesma especificidade; regra de
+   autor sempre vence a folha padrão do navegador). Mesmo padrão já usado
+   em `.chat-widget__suggestions[hidden]` acima. */
+.chat-widget__chips[hidden] { display: none; }
 
 .chat-widget__chip {
   display: block;

@@ -123,6 +123,15 @@ async function main() {
   const sessoesSnap = await db.collection('conversas_piloto_descoberta').get();
   let exportadas = 0;
   let comAbandonoAparente = 0;
+  // Leitura por variante (ver decisoes/2026-10-05-agente-piloto-descoberta-
+  // pme.md, seção "Critério de leitura do teste"): o critério de avanço
+  // passa a ser lido por ângulo, não como bloco único — este contador dá a
+  // primeira visão agregada sem precisar abrir cada arquivo individual.
+  const resumoPorAngulo = {
+    seguranca: { total: 0, leads: 0 },
+    receita: { total: 0, leads: 0 },
+    desconhecido: { total: 0, leads: 0 },
+  };
 
   for (const sessaoDoc of sessoesSnap.docs) {
     const sessao = sessaoDoc.data();
@@ -131,6 +140,10 @@ async function main() {
 
     const abandono = calcularAbandonoAparente(sessao, agora);
     if (abandono.abandonoAparente) comAbandonoAparente += 1;
+
+    const anguloChave = ['seguranca', 'receita'].includes(sessao.angulo) ? sessao.angulo : 'desconhecido';
+    resumoPorAngulo[anguloChave].total += 1;
+    if (sessao.leadCriado) resumoPorAngulo[anguloChave].leads += 1;
 
     const linhas = [];
     linhas.push('---');
@@ -142,6 +155,13 @@ async function main() {
     linhas.push(`# Conversa ${sessaoDoc.id}`);
     linhas.push('');
     linhas.push(`- status: ${sessao.status || '—'}`);
+    // Instrumentação obrigatória do teste de variante de abertura (ver
+    // decisoes/2026-10-05-agente-piloto-descoberta-pme.md, repositório
+    // Consultoria, seção "Reabertura do ângulo de receita"): sessões
+    // criadas antes desta rodada não têm o campo — mostrado como
+    // "desconhecido (sessão anterior a esta instrumentação)" em vez de
+    // inventar um valor ou presumir 'seguranca' silenciosamente.
+    linhas.push(`- ângulo de abertura (teste seguranca vs. receita): ${sessao.angulo || 'desconhecido (sessão anterior a esta instrumentação)'}`);
     linhas.push(`- categoria identificada pelo agente (roteamento técnico, não conclusão de negócio): ${sessao.categoria || '—'}`);
     linhas.push(`- escalada para lead: ${sessao.leadCriado ? 'sim' : 'não'}`);
     linhas.push(`- turnos: ${sessao.turnos || 0}`);
@@ -183,6 +203,12 @@ async function main() {
 
   console.log(`Exportadas ${exportadas} conversas para ${OUT_DIR}`);
   console.log(`Sinal de abandono aparente (B.2): ${comAbandonoAparente} de ${exportadas} sessão(ões).`);
+  console.log('Leitura por variante de abertura (ângulo):');
+  console.log(`  seguranca: ${resumoPorAngulo.seguranca.total} sessão(ões), ${resumoPorAngulo.seguranca.leads} lead(s)`);
+  console.log(`  receita:   ${resumoPorAngulo.receita.total} sessão(ões), ${resumoPorAngulo.receita.leads} lead(s)`);
+  if (resumoPorAngulo.desconhecido.total > 0) {
+    console.log(`  desconhecido (sessão anterior à instrumentação): ${resumoPorAngulo.desconhecido.total} sessão(ões), ${resumoPorAngulo.desconhecido.leads} lead(s)`);
+  }
 }
 
 main().catch((err) => {

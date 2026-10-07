@@ -135,12 +135,26 @@
 
             <div class="chat-widget__suggestions" role="group" aria-label="Sugestões para começar">
               <p class="chat-widget__suggestions-label">Pode começar por aqui:</p>
-              <div class="chat-widget__chips">
+              <!-- Variante de abertura "seguranca" (original) — ver
+                   decisoes/2026-10-05-agente-piloto-descoberta-pme.md,
+                   repositório Consultoria, seção "Reabertura do ângulo de
+                   receita". Mostrada por padrão; chat-widget.js troca para
+                   o grupo "receita" abaixo quando a URL traz ?angulo=receita. -->
+              <div class="chat-widget__chips" data-angulo="seguranca">
                 <button type="button" class="chat-widget__chip" data-suggestion="Meu backup não funciona — ou eu nem sei se funciona de verdade.">Meu backup não funciona (ou nem sei se funciona)</button>
                 <button type="button" class="chat-widget__chip" data-suggestion="Minha rede e os equipamentos da empresa só sobrevivem, não funcionam de verdade.">Minha rede só "sobrevive", não funciona de verdade</button>
                 <button type="button" class="chat-widget__chip" data-suggestion="Minhas planilhas e sistemas de gestão viraram um problema à parte em vez de ajudar.">Minhas planilhas viraram um problema à parte</button>
                 <button type="button" class="chat-widget__chip" data-suggestion="Meu fornecedor de TI cobra caro e demora para resolver qualquer coisa.">Meu fornecedor de TI cobra caro e demora</button>
                 <button type="button" class="chat-widget__chip" data-suggestion="Quero construir um sistema do zero em vez de usar uma solução pronta.">Quero construir um sistema do zero</button>
+              </div>
+              <!-- Variante de abertura "receita" (nova, 2026-10-06) — as duas
+                   hipóteses já registradas na decisão citada acima: "Raio-X
+                   Comercial com IA" e o pacote "WhatsApp manual → WhatsApp
+                   com IA + CRM simples". Oculta por padrão (hidden); exibida
+                   por chat-widget.js quando a conversa usa este ângulo. -->
+              <div class="chat-widget__chips" data-angulo="receita" hidden>
+                <button type="button" class="chat-widget__chip" data-suggestion="Quero entender como a inteligência artificial pode me ajudar a vender mais — um raio-x comercial da minha empresa.">Quero um raio-x comercial da minha empresa com IA</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Hoje eu vendo só pelo WhatsApp, respondendo tudo na mão. Quero saber como sair disso com IA e um CRM simples.">Vendo só no WhatsApp, na mão — quero organizar isso</button>
               </div>
             </div>
           </div>
