@@ -135,26 +135,19 @@
 
             <div class="chat-widget__suggestions" role="group" aria-label="Sugestões para começar">
               <p class="chat-widget__suggestions-label">Pode começar por aqui:</p>
-              <!-- Variante de abertura "seguranca" (original) — ver
-                   decisoes/2026-10-05-agente-piloto-descoberta-pme.md,
-                   repositório Consultoria, seção "Reabertura do ângulo de
-                   receita". Mostrada por padrão; chat-widget.js troca para
-                   o grupo "receita" abaixo quando a URL traz ?angulo=receita. -->
-              <div class="chat-widget__chips" data-angulo="seguranca">
-                <button type="button" class="chat-widget__chip" data-suggestion="Meu backup não funciona — ou eu nem sei se funciona de verdade.">Meu backup não funciona (ou nem sei se funciona)</button>
-                <button type="button" class="chat-widget__chip" data-suggestion="Minha rede e os equipamentos da empresa só sobrevivem, não funcionam de verdade.">Minha rede só "sobrevive", não funciona de verdade</button>
-                <button type="button" class="chat-widget__chip" data-suggestion="Minhas planilhas e sistemas de gestão viraram um problema à parte em vez de ajudar.">Minhas planilhas viraram um problema à parte</button>
-                <button type="button" class="chat-widget__chip" data-suggestion="Meu fornecedor de TI cobra caro e demora para resolver qualquer coisa.">Meu fornecedor de TI cobra caro e demora</button>
-                <button type="button" class="chat-widget__chip" data-suggestion="Quero construir um sistema do zero em vez de usar uma solução pronta.">Quero construir um sistema do zero</button>
-              </div>
-              <!-- Variante de abertura "receita" (nova, 2026-10-06) — as duas
-                   hipóteses já registradas na decisão citada acima: "Raio-X
-                   Comercial com IA" e o pacote "WhatsApp manual → WhatsApp
-                   com IA + CRM simples". Oculta por padrão (hidden); exibida
-                   por chat-widget.js quando a conversa usa este ângulo. -->
-              <div class="chat-widget__chips" data-angulo="receita" hidden>
-                <button type="button" class="chat-widget__chip" data-suggestion="Quero entender como a inteligência artificial pode me ajudar a vender mais — um raio-x comercial da minha empresa.">Quero um raio-x comercial da minha empresa com IA</button>
-                <button type="button" class="chat-widget__chip" data-suggestion="Hoje eu vendo só pelo WhatsApp, respondendo tudo na mão. Quero saber como sair disso com IA e um CRM simples.">Vendo só no WhatsApp, na mão — quero organizar isso</button>
+              <!-- Sugestões de início — uma por categoria de diagnóstico
+                   (ver functions/roteiro.js para a taxonomia completa).
+                   Rodada 28 (2026-10-07): troca de taxonomia de categoria +
+                   descarte do teste A/B de ângulo de abertura (rodada 27) —
+                   um único grupo de chips, sem mais variantes. Ver
+                   docs/agente-conversacional-descoberta.md, repositório
+                   Consultoria, seção da rodada 28. -->
+              <div class="chat-widget__chips">
+                <button type="button" class="chat-widget__chip" data-suggestion="Nosso sistema ficou difícil de mexer — toda mudança demora mais e acaba quebrando outra coisa.">Nosso sistema virou difícil de evoluir</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Não sei se os nossos dados e acessos estão realmente protegidos — nunca paramos pra olhar isso de verdade.">Não sei se estamos realmente protegidos</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Nossa conta de nuvem só sobe e eu não entendo direito por quê, nem se dá pra gastar menos.">Minha conta de nuvem só sobe, sem explicação</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Tem processo manual demais no dia a dia e eu queria entender onde dá pra usar automação ou IA de verdade.">Queria automatizar processo manual com IA</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Uso vários sistemas que não conversam entre si e fico com retrabalho ou perdendo informação.">Meus sistemas não conversam entre si</button>
               </div>
             </div>
           </div>

@@ -4,6 +4,18 @@
  * Cloud Function do agente conversacional de descoberta — piloto Segmento A,
  * nome de marca "Bússola" na página pública.
  *
+ * STATUS (rodada 28, 2026-10-07): troca de taxonomia de categoria (as cinco
+ * categorias antigas foram substituídas por inteiro — ver CATEGORIAS abaixo)
+ * e descarte do teste A/B de ângulo de abertura (rodada 27, seguranca vs
+ * receita), executando o reposicionamento aprovado pelo fundador em
+ * 2026-10-07 (engenharia de software, cloud, segurança e automação com IA
+ * aplicada ao que trava o crescimento do cliente). Ver
+ * docs/agente-conversacional-descoberta.md, repositório Consultoria, seção
+ * da rodada 28, para o relatório completo e o teste real de confirmação
+ * contra o Vertex AI. Resto da arquitetura (gate de escalonamento, piso de
+ * segurança, identidade de IA) INTACTO — só taxonomia de categoria e
+ * abertura (agora única, sem variante) mudaram.
+ *
  * STATUS (rodada 7, 2026-10-05): corrige 2 dos 4 bugs relatados pelo
  * fundador no teste real de conversa (ver docs/agente-conversacional-
  * descoberta.md, repositório Consultoria, seção da rodada 7, para o
@@ -27,8 +39,7 @@
  *     client declarou — relê os metadados reais do objeto no bucket antes
  *     de aceitar e montar a part multimodal (`fileData`) pro Gemini.
  *
- * Resumo do desenho (inalterado desde a rodada 4, exceto os dois pontos
- * acima):
+ * Resumo do desenho (inalterado desde a rodada 4, exceto os pontos acima):
  *   - Modelo: Gemini 2.5 Flash via Vertex AI, mesmo projeto GCP.
  *   - Persistência: Firestore (southamerica-east1), coleção
  *     conversas_piloto_descoberta (sessão) + subcoleção mensagens.
@@ -126,37 +137,47 @@ const MAX_BYTES_ANEXO_POR_IP_POR_DIA = 300 * 1024 * 1024; // 300MB/dia — teto 
 const MAX_ANEXO_URLS_POR_IP_POR_DIA = 40; // pedidos de signed URL por IP/dia — barato de gerar, mas limitado pra não virar vetor de martelo.
 const EXPIRACAO_SIGNED_URL_MS = 5 * 60 * 1000; // 5 minutos pra completar o upload.
 
+// TROCA DE TAXONOMIA (rodada 28, 2026-10-07): as cinco categorias antigas
+// (seguranca_basica, infraestrutura, ferramentas_gestao,
+// suporte_terceirizado, consultoria_produtiva) foram substituídas por
+// inteiro, executando o reposicionamento aprovado pelo fundador em
+// 2026-10-07 (engenharia de software, cloud, segurança e automação com IA
+// aplicada ao que trava o crescimento do cliente — ver
+// docs/agente-conversacional-descoberta.md, repositório Consultoria, seção
+// da rodada 28, para o relatório completo e o teste real de confirmação).
 const CATEGORIAS = [
-  'seguranca_basica',
-  'infraestrutura',
-  'ferramentas_gestao',
-  'suporte_terceirizado',
-  'consultoria_produtiva',
+  'arquitetura_divida_tecnica',
+  'seguranca_devsecops',
+  'cloud_custo_infraestrutura',
+  'automacao_ia_negocio',
+  'integracao_sistemas_dados',
 ];
 
 // Checklist fino de campos de diagnóstico por categoria — ver
-// docs/agente-conversacional-descoberta.md (rodada 4) para a justificativa
-// de cada campo. Usado tanto para montar o responseSchema quanto para
-// calcular o diff de "campo novo preenchido" turno a turno.
+// docs/agente-conversacional-descoberta.md (rodada 4, e rodada 28 para a
+// nova taxonomia) para a justificativa de cada campo. Usado tanto para
+// montar o responseSchema quanto para calcular o diff de "campo novo
+// preenchido" turno a turno.
 const CAMPOS_POR_CATEGORIA = {
-  seguranca_basica: ['alvo_protegido', 'existe_backup', 'onde_fica_backup', 'ja_teve_incidente', 'nivel_urgencia_percebido'],
-  infraestrutura: ['equipamento_envolvido', 'sintoma_principal', 'quantidade_pessoas_afetadas', 'ja_tentou_resolver', 'ambiente_fisico'],
-  ferramentas_gestao: ['ferramenta_atual', 'processo_afetado', 'volume_de_uso', 'dor_especifica', 'ja_tentou_resolver'],
-  suporte_terceirizado: ['tem_fornecedor_hoje', 'existe_contrato_ou_sla_escrito', 'tempo_resposta_relatado', 'custo_relatado', 'motivo_insatisfacao'],
-  consultoria_produtiva: ['o_que_quer_construir', 'motivo_construir_do_zero', 'orcamento_mencionado', 'prazo_mencionado'],
+  arquitetura_divida_tecnica: ['sistema_ou_produto_envolvido', 'sintoma_principal', 'frequencia_do_problema', 'documentacao_ou_testes_existem', 'ja_tentou_resolver'],
+  seguranca_devsecops: ['alvo_protegido', 'existe_backup', 'onde_fica_backup', 'ja_teve_incidente', 'nivel_urgencia_percebido'],
+  cloud_custo_infraestrutura: ['provedor_atual', 'sintoma_principal', 'custo_mensal_percebido', 'ja_tentou_otimizar', 'ambiente_atual'],
+  automacao_ia_negocio: ['processo_manual_hoje', 'volume_de_trabalho', 'ferramenta_ja_tentada', 'resultado_esperado', 'ja_tentou_resolver'],
+  integracao_sistemas_dados: ['sistemas_envolvidos', 'dado_duplicado_ou_perdido', 'processo_afetado', 'frequencia_do_problema', 'ja_tentou_resolver'],
 };
 
 // Validação de domínio por "melhor esforço + checagem pós-resposta" (ponto 3
-// da resolução) — não é allowlist garantido via Vertex AI Search, é uma
-// lista de referência conferida em código depois da busca livre. Domínio
-// vazio = categoria nunca aciona grounding (suporte_terceirizado: heurística
-// própria, sem fornecedor oficial a citar).
+// da resolução original) — não é allowlist garantido via Vertex AI Search, é
+// uma lista de referência conferida em código depois da busca livre. Domínio
+// vazio = categoria nunca aciona grounding (arquitetura_divida_tecnica:
+// heurística própria de engenharia, sem fornecedor oficial a citar — mesmo
+// papel que suporte_terceirizado tinha na taxonomia antiga).
 const DOMINIOS_APROVADOS = {
-  seguranca_basica: ['microsoft.com', 'google.com', 'kaspersky.com', 'kaspersky.com.br', 'avast.com'],
-  infraestrutura: ['intelbras.com.br', 'tp-link.com', 'tp-link.com.br'],
-  ferramentas_gestao: ['omie.com.br', 'bling.com.br', 'tiny.com.br', 'contaazul.com', 'microsoft.com', 'google.com'],
-  suporte_terceirizado: [],
-  consultoria_produtiva: ['omie.com.br', 'bling.com.br', 'tiny.com.br', 'contaazul.com', 'microsoft.com', 'google.com'],
+  arquitetura_divida_tecnica: [],
+  seguranca_devsecops: ['microsoft.com', 'google.com', 'kaspersky.com', 'kaspersky.com.br', 'avast.com', 'cloudflare.com', 'aws.amazon.com'],
+  cloud_custo_infraestrutura: ['aws.amazon.com', 'cloud.google.com', 'azure.microsoft.com', 'cloudflare.com'],
+  automacao_ia_negocio: ['openai.com', 'google.com', 'n8n.io', 'zapier.com', 'make.com'],
+  integracao_sistemas_dados: ['omie.com.br', 'bling.com.br', 'tiny.com.br', 'contaazul.com', 'microsoft.com', 'google.com'],
 };
 
 const MOTIVOS_ESCALONAMENTO = [
@@ -236,18 +257,6 @@ const MAX_SATISFACAO_POR_IP_POR_DIA = 20; // proteção leve de abuso — clique
 // como "desconhecida").
 const ORIGEM_MENSAGEM_VALORES = ['chip', 'digitado'];
 
-// Instrumentação obrigatória do teste de variante de abertura (ver
-// decisoes/2026-10-05-agente-piloto-descoberta-pme.md, repositório
-// Consultoria, seção "Reabertura do ângulo de receita"): toda sessão grava
-// qual variante de abertura foi usada. Decidido e enviado pelo CLIENT
-// (site/assets/js/chat-widget.js, via ?angulo= na URL que o fundador
-// compartilha com cada PME — ver relatório da rodada para a justificativa
-// de não sortear automaticamente), validado e gravado aqui no primeiro
-// turno da sessão; qualquer valor ausente/inválido cai no default seguro
-// 'seguranca' (variante original, não um valor novo sem calibração).
-const ANGULO_VALORES = ['seguranca', 'receita'];
-const ANGULO_DEFAULT = 'seguranca';
-
 let roteiro;
 try {
   // eslint-disable-next-line global-require
@@ -256,10 +265,7 @@ try {
   const PLACEHOLDER = 'PLACEHOLDER — roteiro ainda não revisado pelo fundador. Ver docs/agente-conversacional-descoberta.md.';
   roteiro = {
     SYSTEM_PROMPT_DIAGNOSTICO: PLACEHOLDER,
-    SYSTEM_PROMPT_DIAGNOSTICO_RECEITA: PLACEHOLDER,
-    getSystemPromptDiagnostico: () => PLACEHOLDER,
     SYSTEM_PROMPT_GROUNDING: 'Responda de forma factual e curta, citando a fonte.',
-    ANGULOS_ABERTURA: ANGULO_VALORES,
   };
 }
 
@@ -400,7 +406,7 @@ function buildDiagnosticoResponseSchema() {
       },
       categoria: { type: 'string', enum: [...CATEGORIAS, 'nenhuma'] },
       padrao_conhecido: { type: 'boolean', description: 'true se a situação casa com um padrão que o agente sabe resolver com orientação; false se é genuinamente atípica.' },
-      precisa_fonte_externa: { type: 'boolean', description: 'true só quando o passo exato depende de documentação oficial de um fornecedor específico. suporte_terceirizado nunca marca true.' },
+      precisa_fonte_externa: { type: 'boolean', description: 'true só quando o passo exato depende de documentação oficial de um fornecedor específico. arquitetura_divida_tecnica nunca marca true.' },
       consulta_busca: { type: 'string', description: 'Pergunta de busca objetiva, preenchida só quando precisa_fonte_externa=true.' },
       sinal_escalonamento: { type: 'string', enum: ['nenhum', ...SINAIS_ESCALONAMENTO_DO_MODELO] },
       campos_diagnostico: buildCamposDiagnosticoSchema(),
@@ -416,17 +422,11 @@ function buildDiagnosticoResponseSchema() {
 /**
  * Chamada 1 — sempre executada. `novaMensagemParts` é um array de parts no
  * formato do Gemini (`[{ text }]` no caso comum; `[{ fileData }, { text }]`
- * quando há anexo nesta mensagem — ver exports.chat). `angulo` seleciona a
- * variante de abertura do roteiro ('seguranca' | 'receita') — ver
- * functions/roteiro.js, getSystemPromptDiagnostico(). Só afeta a primeira
- * pergunta/gancho da conversa; categorias, checklist e gate de
- * escalonamento são os mesmos para as duas variantes.
+ * quando há anexo nesta mensagem — ver exports.chat).
  */
-async function callDiagnostico(history, novaMensagemParts, angulo) {
+async function callDiagnostico(history, novaMensagemParts) {
   const vertexAI = new VertexAI({ project: PROJECT_ID, location: VERTEX_LOCATION });
-  const systemInstruction = roteiro.getSystemPromptDiagnostico
-    ? roteiro.getSystemPromptDiagnostico(angulo)
-    : roteiro.SYSTEM_PROMPT_DIAGNOSTICO;
+  const systemInstruction = roteiro.SYSTEM_PROMPT_DIAGNOSTICO;
   const model = vertexAI.getGenerativeModel({
     model: MODEL_NAME,
     systemInstruction,
@@ -725,7 +725,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
   }
 
   try {
-    const { sessionId, message, turnstileToken, anexo, origem, angulo } = req.body || {};
+    const { sessionId, message, turnstileToken, anexo, origem } = req.body || {};
     // Parte B.1 da etapa de avaliação: origem da mensagem do PME (clique em
     // chip de sugestão vs. texto digitado). Campo opcional no payload (client
     // antigo sem essa versão não envia) — qualquer valor fora do enum vira
@@ -760,18 +760,18 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
         res.status(403).json({ erro: 'verificacao_humana_falhou' });
         return;
       }
-      // Instrumentação obrigatória do teste de ângulo de abertura: gravado
-      // UMA VEZ, na criação da sessão — vale para a sessão inteira (uma
-      // conversa não troca de ângulo no meio). Valor decidido pelo client
-      // (ver chat-widget.js); qualquer coisa fora de ANGULO_VALORES cai no
-      // default seguro.
-      const anguloEscolhido = ANGULO_VALORES.includes(angulo) ? angulo : ANGULO_DEFAULT;
+      // Instrumentação do teste A/B de ângulo de abertura (seguranca vs
+      // receita, rodada 27) DESCARTADA nesta rodada (2026-10-07) — decisão
+      // explícita do fundador aceitando que os dados parciais já coletados
+      // não servem mais para comparação limpa, junto com a troca de
+      // taxonomia de categoria. Sessões criadas antes desta rodada ainda
+      // têm o campo `angulo` gravado (histórico, lido só pelo script de
+      // exportação) — sessões novas não gravam mais esse campo.
       await sessionRef.set({
         criadoEm: admin.firestore.FieldValue.serverTimestamp(),
         atualizadoEm: admin.firestore.FieldValue.serverTimestamp(),
         status: 'ativa',
         categoria: null,
-        angulo: anguloEscolhido,
         turnos: 0,
         turnosSemNovoCampo: 0,
         camposDiagnostico: {},
@@ -852,7 +852,7 @@ exports.chat = onRequest({ cors: false, secrets: ['turnstile-secret-key'] }, asy
     }
     partesMensagemAtual.push({ text: textoEfetivo });
 
-    const resultado = await callDiagnostico(historico, partesMensagemAtual, sessionData.angulo);
+    const resultado = await callDiagnostico(historico, partesMensagemAtual);
 
     const categoriaFinal = CATEGORIAS.includes(resultado.categoria) ? resultado.categoria : (sessionData.categoria || null);
     const categoriaMudou = categoriaFinal !== sessionData.categoria;
@@ -1052,6 +1052,4 @@ module.exports._testavel = {
   PLATEAU_TURNOS,
   MENSAGEM_HANDOFF_PADRAO,
   MENSAGEM_PEDIR_CONTATO,
-  ANGULO_VALORES,
-  ANGULO_DEFAULT,
 };

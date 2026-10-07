@@ -27,18 +27,12 @@
         32MB do Cloud Functions). Depois do upload, a referência (path)
         viaja junto da próxima mensagem enviada.
 
-   RODADA 27 (2026-10-06) — variante de abertura ("ângulo"), ver
-   decisoes/2026-10-05-agente-piloto-descoberta-pme.md (repositório
-   Consultoria), seção "Reabertura do ângulo de receita". Este arquivo
-   resolve qual ângulo ('seguranca' | 'receita') esta conversa usa — ver
-   getAngulo() — a partir do parâmetro ?angulo= da URL (o fundador escolhe
-   manualmente qual link compartilhar com cada PME, prospecção ainda
-   manual), mostra o grupo de sugestões (chips) correspondente, e envia o
-   campo `angulo` em toda chamada a /chat (o servidor grava no documento da
-   sessão só no primeiro turno — ver functions/index.js). Nenhum conteúdo
-   de marca/roteiro mudou neste arquivo além do texto literal dos chips
-   (data-suggestion), que são conteúdo, não mecânica — mesma convenção já
-   declarada no aviso acima.
+   RODADA 28 (2026-10-07) — o teste A/B de ângulo de abertura (rodada 27,
+   "seguranca" vs "receita") foi DESCARTADO junto com a troca das cinco
+   categorias de diagnóstico (ver docs/agente-conversacional-descoberta.md,
+   repositório Consultoria, seção da rodada 28, e functions/roteiro.js).
+   Não existe mais parâmetro `angulo`, nem mais de um grupo de chips: um
+   único conjunto de sugestões, refletindo as cinco categorias novas.
    =================================================================== */
 (function () {
   'use strict';
@@ -48,18 +42,6 @@
   var SATISFACAO_URL_ENDPOINT = 'https://southamerica-east1-refugio-tech.cloudfunctions.net/satisfacao';
   var TURNSTILE_SITE_KEY = '0x4AAAAAAFOdF-ZOtkuLF9u6';
   var STORAGE_KEY = 'refugio_chat_session_id';
-  // Instrumentação obrigatória do teste de variante de abertura (ver
-  // decisoes/2026-10-05-agente-piloto-descoberta-pme.md, repositório
-  // Consultoria, seção "Reabertura do ângulo de receita"): qual ângulo de
-  // abertura ('seguranca' | 'receita') esta conversa usa. Decidido aqui no
-  // client, a partir do parâmetro ?angulo= da URL que o fundador
-  // compartilha com cada PME (prospecção ainda manual, sem anúncio pago —
-  // ver relatório da rodada para a justificativa de não sortear
-  // automaticamente), persistido em localStorage para a MESMA conversa
-  // continuar com o mesmo ângulo entre recarregamentos de página.
-  var ANGULO_STORAGE_KEY = 'refugio_chat_angulo';
-  var ANGULOS_VALIDOS = ['seguranca', 'receita'];
-  var ANGULO_DEFAULT = 'seguranca';
   // Teto de auto-resize do textarea (~6 linhas) — mantido em sincronia com
   // o max-height de .chat-widget__input em chat-widget.css. Acima disso o
   // campo passa a rolar internamente em vez de continuar crescendo.
@@ -74,27 +56,11 @@
     return id;
   }
 
-  // Resolve o ângulo de abertura desta conversa UMA VEZ (na primeira vez
-  // que o widget roda neste navegador/sessão) e reaproveita o mesmo valor
-  // em qualquer recarregamento de página, para a mesma conversa nunca
-  // trocar de variante no meio. Prioridade: ângulo já salvo > parâmetro de
-  // URL válido > default seguro ('seguranca', a variante original).
-  function getAngulo() {
-    var salvo = window.localStorage.getItem(ANGULO_STORAGE_KEY);
-    if (ANGULOS_VALIDOS.indexOf(salvo) !== -1) return salvo;
-    var params = new URLSearchParams(window.location.search);
-    var doParam = params.get('angulo');
-    var escolhido = ANGULOS_VALIDOS.indexOf(doParam) !== -1 ? doParam : ANGULO_DEFAULT;
-    window.localStorage.setItem(ANGULO_STORAGE_KEY, escolhido);
-    return escolhido;
-  }
-
   document.addEventListener('DOMContentLoaded', function () {
     var root = document.getElementById('refugio-chat-widget');
     if (!root) return;
 
     var sessionId = getSessionId();
-    var anguloAtual = getAngulo();
     var turnstileToken = null;
     var turnstileWidgetId = null;
     var enviouPrimeiraMensagem = false;
@@ -106,14 +72,6 @@
     var closeBtn = root.querySelector('.chat-widget__close');
     var messagesEl = root.querySelector('.chat-widget__messages');
     var suggestionsEl = root.querySelector('.chat-widget__suggestions');
-    var chipGroups = root.querySelectorAll('.chat-widget__chips[data-angulo]');
-    // Mostra só o grupo de sugestões que bate com o ângulo desta conversa —
-    // os outros ficam com o atributo `hidden` (ver chat-widget.css,
-    // `.chat-widget__chips[hidden]`). Grupo sem `data-angulo` (se existir,
-    // conteúdo legado) nunca é afetado por este loop.
-    chipGroups.forEach(function (grupo) {
-      grupo.hidden = grupo.getAttribute('data-angulo') !== anguloAtual;
-    });
     var chipButtons = root.querySelectorAll('.chat-widget__chip');
     var form = root.querySelector('.chat-widget__form');
     var input = root.querySelector('.chat-widget__input');
@@ -490,10 +448,7 @@
       // Parte B.1 da etapa de avaliação: origem da mensagem (clique em chip
       // de sugestão vs. texto digitado) — campo opcional, servidor trata
       // qualquer valor fora do enum como 'digitado'.
-      // Instrumentação obrigatória do teste de ângulo de abertura: enviado
-      // em toda chamada (o servidor só usa no primeiro turno da sessão,
-      // onde grava no documento — ver functions/index.js).
-      var payload = { sessionId: sessionId, message: texto, origem: origem === 'chip' ? 'chip' : 'digitado', angulo: anguloAtual };
+      var payload = { sessionId: sessionId, message: texto, origem: origem === 'chip' ? 'chip' : 'digitado' };
       if (anexoParaEnvio) payload.anexo = anexoParaEnvio;
       if (!enviouPrimeiraMensagem) {
         payload.turnstileToken = turnstileToken;
