@@ -96,6 +96,24 @@
    existe uma regra global em styles.css que zera a duração de toda
    transição/animação do site nesse caso; chat-widget.js checa a mesma
    preferência em paralelo só para pular a espera do evento/timeout.
+
+   AJUSTE DE UX (2026-10-08, pedido do fundador após revisão em produção,
+   pós-deploy do commit 89550de): o preview de solução (addPreviewCard,
+   feature real já existente — ver comentário na função, mais abaixo; NÃO
+   é o mock estático da hero, que é só ilustração) aparecia só como um
+   card pequeno dentro do fluxo da conversa. Agora o card ganha um botão
+   "expandir" (.chat-widget__preview-card-expand, no canto, ao lado do
+   label) que abre uma modal em tela cheia (abrirPreviewModal/
+   fecharPreviewModal/criarPreviewModalSeNecessario, mais abaixo) mostrando o
+   MESMO iframe sandboxed (mesmo srcdoc, mesmo sandbox="allow-same-origin"
+   SEM allow-scripts — essa restrição de segurança nunca muda) em tamanho
+   maior. A modal reaproveita a mesma lógica de transição/classes .is-open/
+   .is-closing do ajuste acima, e segue o padrão WAI-ARIA de "Dialog
+   (Modal)": role="dialog", aria-modal="true", aria-label próprio, ESC
+   fecha, foco preso dentro dela (Tab/Shift+Tab não escapam), foco inicial
+   no botão de fechar, foco devolvido pro botão que abriu quando fecha.
+   Ver o bloco de comentário grande junto das funções, mais abaixo, para o
+   racional completo.
    =================================================================== */
 (function () {
   'use strict';
@@ -304,10 +322,36 @@
       card.className = 'chat-widget__preview-card';
 
       if (data.mockupDisponivel && data.mockupHtml) {
+        // AJUSTE DE UX (pedido do fundador pós-revisão em produção, pós-
+        // deploy 89550de): label + botão de expandir agora vivem numa
+        // linha de cabeçalho própria (ver .chat-widget__preview-card-header
+        // em chat-widget.css) — o botão fica no canto, perto do label.
+        var header = document.createElement('div');
+        header.className = 'chat-widget__preview-card-header';
+
         var frameLabel = document.createElement('p');
         frameLabel.className = 'chat-widget__preview-card-label';
         frameLabel.textContent = 'mockup visual · sandbox, sem script';
-        card.appendChild(frameLabel);
+        header.appendChild(frameLabel);
+
+        // Botão "expandir": abre o MESMÍSSIMO mockup (mesmo srcdoc, mesmo
+        // sandbox SEM allow-scripts — nunca muda) numa modal em tela
+        // cheia (abrirPreviewModal, mais abaixo). Não gera nada de novo,
+        // não faz nenhuma chamada de rede — só mostra o mesmo conteúdo
+        // maior, pro visitante ver o rascunho com mais detalhe do que
+        // cabe no card pequeno dentro do fluxo da conversa.
+        var expandBtn = document.createElement('button');
+        expandBtn.type = 'button';
+        expandBtn.className = 'chat-widget__preview-card-expand';
+        expandBtn.setAttribute('aria-label', 'Ver mockup em tela cheia');
+        expandBtn.title = 'Ver em tela cheia';
+        expandBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M9 4H5a1 1 0 0 0-1 1v4M15 4h4a1 1 0 0 1 1 1v4M9 20H5a1 1 0 0 1-1-1v-4M15 20h4a1 1 0 0 0 1-1v-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        expandBtn.addEventListener('click', function () {
+          abrirPreviewModal(data.mockupHtml, expandBtn);
+        });
+        header.appendChild(expandBtn);
+
+        card.appendChild(header);
 
         var frame = document.createElement('iframe');
         frame.className = 'chat-widget__preview-frame';
@@ -328,6 +372,239 @@
 
       messagesEl.appendChild(card);
       messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // --- AJUSTE DE UX (pedido do fundador pós-revisão em produção, pós-
+    // deploy 89550de): expandir o preview de solução em tela cheia. Hoje
+    // o preview só aparece como o card pequeno acima (addPreviewCard),
+    // dentro do fluxo da conversa — o fundador quer uma forma de ver o
+    // MESMO mockup maior, numa modal que ocupa a maior parte da viewport.
+    //
+    // Reaproveita a MESMA lógica de transição de abrir/fechar do painel
+    // principal (commit 89550de, ver abrirPainel/fecharPainel acima): o
+    // elemento que anima ganha [hidden] removido + um reflow forçado +
+    // só então a classe .is-open (abertura), e perde .is-open na hora mas
+    // só ganha [hidden] de volta depois que a transição de saída termina,
+    // via transitionend + timeout de segurança (fechamento). Aqui o
+    // elemento que anima é o próprio overlay (.chat-widget__preview-
+    // modal) — não existe reparenting nem hack de tela cheia mobile
+    // envolvido, então não precisa de uma classe "is-closing" num
+    // elemento raiz separado só pra esconder outra coisa (diferença do
+    // painel); a classe is-closing aqui serve só pra evitar reentrância
+    // (clique duplo no meio do próprio fade-out) — mesmo papel, escopo
+    // menor. prefers-reduced-motion: nenhuma media query própria, mesma
+    // razão do painel (regra global em styles.css já zera toda transição
+    // do site; prefereMovimentoReduzido() aqui só evita esperar o
+    // evento/timeout).
+    //
+    // Acessibilidade (WAI-ARIA Authoring Practices — padrão de "Dialog
+    // (Modal)"): role="dialog" + aria-modal="true" + aria-label próprio;
+    // ESC fecha; foco preso dentro da modal (Tab/Shift+Tab não escapam
+    // pro resto da página enquanto aberta); foco inicial vai pro botão de
+    // fechar (primeiro elemento interativo útil); foco volta pro botão
+    // que abriu a modal (expandBtn, guardado em previewModalInvoker)
+    // quando ela fecha — nunca se perde no <body>.
+    //
+    // MESMO iframe sandboxed do card pequeno: sandbox="allow-same-origin"
+    // SEM allow-scripts, srcdoc idêntico — nunca gera/busca nada de novo,
+    // só reexibe o mesmo conteúdo maior. Essa restrição de segurança
+    // NUNCA muda (ver comentário em addPreviewCard, acima).
+    var previewModal = null;
+    var previewModalDialog = null;
+    var previewModalFrame = null;
+    var previewModalCloseBtn = null;
+    var previewModalFechandoTimeoutId = null;
+    var previewModalInvoker = null; // elemento a devolver o foco ao fechar
+
+    // Elementos realmente focáveis dentro da modal agora (fica só o botão
+    // de fechar — ver nota abaixo sobre por que o iframe fica de fora de
+    // propósito). Calculada de novo a cada Tab/Shift+Tab em vez de
+    // guardada uma única vez, por robustez.
+    //
+    // NOTA IMPORTANTE (achado real no teste local, não hipotético): o
+    // iframe NÃO entra na lista de focáveis (tabindex="-1" aplicado em
+    // criarPreviewModalSeNecessario) de propósito. Testado ao vivo: um
+    // mockup com um <a> focável no srcdoc faz o Tab entrar de verdade no
+    // CONTEÚDO do iframe (não só no elemento <iframe>) — e dali pra
+    // frente o keydown passa a disparar no DOCUMENTO INTERNO do iframe,
+    // que não propaga (bubble) pro document do painel pai. Resultado
+    // observado: o 2º Tab escapava da modal direto pro <body> da página,
+    // quebrando o focus trap — mesmo com sandbox sem allow-scripts, isso
+    // é comportamento nativo de navegação por teclado entre documentos,
+    // nada a ver com JS. Como o mockup é só visual (mesmíssima filosofia
+    // do sandbox sem allow-scripts — "só é desenhado", nunca interativo),
+    // a correção mais simples e robusta é excluir o iframe da ordem de
+    // tabulação: a modal fica com um único elemento focável (o botão de
+    // fechar), o que também é um padrão válido e comum de dialog modal.
+    function focaveisDentroDoPreviewModal() {
+      if (!previewModalDialog) return [];
+      var nodes = previewModalDialog.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      var lista = [];
+      for (var i = 0; i < nodes.length; i++) {
+        var el = nodes[i];
+        if (el.hasAttribute('disabled')) continue;
+        if (el.offsetParent === null) continue; // escondido, não foca de verdade
+        lista.push(el);
+      }
+      return lista;
+    }
+
+    // Focus trap + ESC — só ativo enquanto a modal está aberta (listener
+    // adicionado em abrirPreviewModal, removido em fecharPreviewModal/
+    // finalizarFechamentoPreviewModal).
+    function onPreviewModalKeydown(ev) {
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        fecharPreviewModal();
+        return;
+      }
+      if (ev.key !== 'Tab') return;
+      var focaveis = focaveisDentroDoPreviewModal();
+      if (focaveis.length === 0) return;
+      var primeiro = focaveis[0];
+      var ultimo = focaveis[focaveis.length - 1];
+      if (ev.shiftKey && document.activeElement === primeiro) {
+        ev.preventDefault();
+        ultimo.focus();
+      } else if (!ev.shiftKey && document.activeElement === ultimo) {
+        ev.preventDefault();
+        primeiro.focus();
+      } else if (focaveis.indexOf(document.activeElement) === -1) {
+        // Foco não está em nenhum elemento conhecido da modal (ex.: ainda
+        // no <body>, ou escapou por algum motivo) — devolve pro primeiro
+        // em vez de deixar vazar pro resto da página.
+        ev.preventDefault();
+        primeiro.focus();
+      }
+    }
+
+    // Monta a modal uma única vez (singleton reaproveitado por qualquer
+    // preview-card da sessão) e anexa direto em <body> — igual ao painel
+    // em modo fullscreen mobile, escapa de qualquer ancestral com
+    // overflow:hidden no caminho.
+    function criarPreviewModalSeNecessario() {
+      if (previewModal) return;
+
+      previewModal = document.createElement('div');
+      previewModal.className = 'chat-widget__preview-modal';
+      previewModal.hidden = true;
+
+      previewModalDialog = document.createElement('div');
+      previewModalDialog.className = 'chat-widget__preview-modal-dialog';
+      previewModalDialog.setAttribute('role', 'dialog');
+      previewModalDialog.setAttribute('aria-modal', 'true');
+      previewModalDialog.setAttribute('aria-label', 'Rascunho visual em tela cheia, gerado pela Bússola');
+      previewModalDialog.setAttribute('tabindex', '-1');
+
+      var header = document.createElement('div');
+      header.className = 'chat-widget__preview-modal-header';
+
+      var label = document.createElement('p');
+      label.className = 'chat-widget__preview-modal-label';
+      label.textContent = 'mockup visual · sandbox, sem script';
+      header.appendChild(label);
+
+      previewModalCloseBtn = document.createElement('button');
+      previewModalCloseBtn.type = 'button';
+      previewModalCloseBtn.className = 'chat-widget__preview-modal-close';
+      previewModalCloseBtn.setAttribute('aria-label', 'Fechar visualização em tela cheia');
+      previewModalCloseBtn.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+      previewModalCloseBtn.addEventListener('click', function () { fecharPreviewModal(); });
+      header.appendChild(previewModalCloseBtn);
+
+      previewModalDialog.appendChild(header);
+
+      previewModalFrame = document.createElement('iframe');
+      previewModalFrame.className = 'chat-widget__preview-modal-frame';
+      // MESMA restrição de segurança do card pequeno — nunca mudar.
+      previewModalFrame.setAttribute('sandbox', 'allow-same-origin');
+      previewModalFrame.setAttribute('title', 'Rascunho visual gerado pela Bússola, em tela cheia');
+      // tabindex="-1" de propósito: fora da ordem de tabulação — ver nota
+      // longa em focaveisDentroDoPreviewModal(), acima, sobre por que
+      // isso é necessário pro focus trap funcionar de verdade (achado em
+      // teste real: Tab entrando no conteúdo do iframe escapava da
+      // modal, porque o keydown ali não propaga pro document pai).
+      previewModalFrame.setAttribute('tabindex', '-1');
+      previewModalDialog.appendChild(previewModalFrame);
+
+      previewModal.appendChild(previewModalDialog);
+      document.body.appendChild(previewModal);
+
+      // Clique no backdrop (fora do dialog) também fecha — padrão comum
+      // de modal. O teste é só "o alvo do clique é o próprio overlay",
+      // nunca um filho (o dialog não precisa de stopPropagation).
+      previewModal.addEventListener('click', function (ev) {
+        if (ev.target === previewModal) fecharPreviewModal();
+      });
+    }
+
+    function onPreviewModalFechouTransicao(ev) {
+      if (ev.target !== previewModal || ev.propertyName !== 'opacity') return;
+      finalizarFechamentoPreviewModal();
+    }
+
+    function limparFechamentoPreviewModalPendente() {
+      if (previewModalFechandoTimeoutId !== null) {
+        clearTimeout(previewModalFechandoTimeoutId);
+        previewModalFechandoTimeoutId = null;
+      }
+      previewModal.removeEventListener('transitionend', onPreviewModalFechouTransicao);
+      previewModal.classList.remove('is-closing');
+    }
+
+    // Passo final do fechamento — só depois que a transição de saída já
+    // terminou visualmente (ou de imediato, com movimento reduzido).
+    // Esvazia o iframe (libera o conteúdo em memória) e devolve o foco
+    // pro elemento que abriu a modal (acessibilidade: nunca perder o
+    // foco no <body> ao fechar um dialog).
+    function finalizarFechamentoPreviewModal() {
+      limparFechamentoPreviewModalPendente();
+      previewModal.hidden = true;
+      previewModalFrame.srcdoc = '';
+      document.removeEventListener('keydown', onPreviewModalKeydown);
+      var devolverFocoPara = previewModalInvoker;
+      previewModalInvoker = null;
+      if (devolverFocoPara && typeof devolverFocoPara.focus === 'function') {
+        devolverFocoPara.focus();
+      }
+    }
+
+    // Abre a modal com o MESMO srcdoc do card pequeno (nunca gera/busca
+    // de novo). `invoker` é o botão de expandir clicado — guardado pra
+    // devolver o foco a ele quando a modal fechar.
+    function abrirPreviewModal(mockupHtml, invoker) {
+      criarPreviewModalSeNecessario();
+      limparFechamentoPreviewModalPendente();
+      previewModalInvoker = invoker || null;
+      previewModalFrame.srcdoc = mockupHtml;
+      previewModal.hidden = false;
+      if (!prefereMovimentoReduzido()) {
+        // Mesmo reflow forçado do painel principal (ver abrirPainel) —
+        // sem isso, hidden=false + .is-open se fundem na mesma atualização
+        // de estilo e a transição de entrada não anima.
+        void previewModal.offsetHeight;
+      }
+      previewModal.classList.add('is-open');
+      document.addEventListener('keydown', onPreviewModalKeydown);
+      // Foco inicial dentro do dialog (WAI-ARIA Authoring Practices): o
+      // botão de fechar é o primeiro elemento interativo útil.
+      previewModalCloseBtn.focus();
+    }
+
+    function fecharPreviewModal() {
+      if (!previewModal || previewModal.hidden || previewModal.classList.contains('is-closing')) return;
+      previewModal.classList.remove('is-open');
+      previewModal.classList.add('is-closing');
+      document.removeEventListener('keydown', onPreviewModalKeydown);
+
+      if (prefereMovimentoReduzido()) {
+        finalizarFechamentoPreviewModal();
+        return;
+      }
+      previewModal.addEventListener('transitionend', onPreviewModalFechouTransicao);
+      previewModalFechandoTimeoutId = setTimeout(finalizarFechamentoPreviewModal, PANEL_TRANSITION_MS + 80);
     }
 
     // --- Ajuste de UX (relatado pelo fundador): o textarea tinha altura
