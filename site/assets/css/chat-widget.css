@@ -173,11 +173,23 @@
   color: rgba(242, 242, 242, 0.68);
   margin: 0;
 }
+/* Pedido direto do fundador pós-revisão visual (commit 1321d0e, 2026-10-08):
+   voltar o dot pra VERDE. A rodada 29 (comentário no topo do arquivo) tinha
+   trocado o verde solto (#6fbf8b, fora da paleta) por --amarelo-suave, pra
+   alinhar com os tokens da marca — mas o fundador julgou que amarelo não
+   comunica "sessão ativa/online" com clareza (convenção universal de UI é
+   verde = online). Testado visualmente (screenshot local, 8px sobre o fundo
+   escuro do header, --preto-antifragil): --verde-pastel (#B2C2B9) é um
+   verde-acinzentado/claro demais pra essa função — em 8px lê como um ponto
+   cinza-claro, não "sinal verde de online". Optei por um verde convencional
+   de indicador de status (#4CAF50, mesma família do Material Design usado
+   em badges "online/ativo") — prioriza a função de sinalização clara sobre
+   a aderência estrita à paleta da marca, exatamente como o fundador pediu. */
 .chat-widget__status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--amarelo-suave);
+  background: #4CAF50;
   flex: none;
 }
 .chat-widget__header-title {
@@ -606,10 +618,11 @@
    navegador usa um cinza padrão (UA-dependente, não auditável). Cor
    escolhida e medida: preto-antifragil a 0.72 de opacidade sobre
    --off-white (fundo real do campo) dá 5.29:1, acima do mínimo AA
-   (4.5:1). Também é o convite real ("Pergunte alguma coisa sobre o seu
-   negócio…", ver index.html) que substitui o selo "produto ao vivo"
-   removido na Correção 2 — parte da comunicação por affordance, não por
-   rótulo. */
+   (4.5:1). Também é o convite real ("Me conte o seu problema…", ver
+   index.html — texto trocado a pedido do fundador em 2026-10-08, pós-commit
+   1321d0e; era "Pergunte alguma coisa sobre o seu negócio…") que substitui
+   o selo "produto ao vivo" removido na Correção 2 — parte da comunicação
+   por affordance, não por rótulo. */
 .chat-widget__input::placeholder {
   color: rgba(38, 46, 51, 0.72);
 }
