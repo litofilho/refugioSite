@@ -109,11 +109,48 @@
   color: var(--cinza-chumbo);
 }
 
-.chat-widget.is-open .chat-widget__launcher {
+.chat-widget.is-open .chat-widget__launcher,
+.chat-widget.is-closing .chat-widget__launcher {
+  /* .is-closing (ver chat-widget.js, fecharPainel): mantém o launcher
+     escondido durante todo o fade-out do painel, não só enquanto
+     .is-open está presente. root.is-open sai IMEDIATAMENTE no início do
+     fechamento (pra manter a lógica de abrir/fechar simples no resto do
+     arquivo) — sem essa regra extra, o launcher reapareceria no fluxo do
+     layout NO MEIO da transição de saída do painel, criando um salto de
+     layout bem no momento que este ajuste existe pra evitar. */
   display: none;
 }
 
-/* ---------- Estado 2: painel aberto ---------- */
+/* ---------- Estado 2: painel aberto ----------
+   Ajuste de UX (pedido do fundador pós-revisão em produção, pós-deploy do
+   commit 917a4da): abrir/fechar trocava de estado instantaneamente (o
+   [hidden] nativo some/aparece sem transição — display:none não anima).
+   Agora o painel só ganha [hidden] (sai do layout de vez) DEPOIS que a
+   transição de SAÍDA termina (ver chat-widget.js: fecharPainel remove a
+   classe .is-open do painel na hora, mas só aplica hidden=true no fim —
+   onPanelFechouTransicao/finalizarFechamentoPainel). Enquanto o painel
+   está fechado mas ainda sem [hidden] (ou, de forma simétrica, assim que
+   hidden é removido na abertura, antes da classe .is-open ser aplicada
+   num segundo passo), ele fica com opacity:0 + leve scale/translateY e
+   pointer-events:none — presente no DOM, invisível e não-interativo, que
+   é exatamente o que permite a transição de FECHAR aparecer (um elemento
+   que já virou display:none não tem como animar sua própria saída).
+   Propriedades animadas: opacity + transform (scale 0.97→1, translateY
+   6px→0). Duração: 0.26s (dentro da faixa 200–300ms pedida), num só
+   easing (--ease, já usado no resto do site). Funciona igual no modo
+   embutido (home) e no modo launcher flutuante — a classe .is-open vai
+   no PRÓPRIO painel (não no elemento raiz .chat-widget), porque no modo
+   launcher o painel é reparentado para <body> em telas <1024px (ver
+   .chat-widget__panel--fullscreen abaixo) e um seletor dependente do
+   ancestral .chat-widget não acompanharia esse reparenting.
+   Acessibilidade: não precisa de media query própria aqui — já existe uma
+   regra global em styles.css (@media prefers-reduced-motion: reduce)
+   que força transition-duration/animation-duration para 0.01ms em TODO
+   elemento do site, então quem tem essa preferência do sistema já recebe
+   a troca praticamente instantânea automaticamente. chat-widget.js checa
+   a mesma preferência de novo, em paralelo, só para pular a espera do
+   fallback/timeout e aplicar o estado final sem depender de nenhum
+   evento de transição. */
 .chat-widget__panel[hidden] {
   display: none;
 }
@@ -129,6 +166,17 @@
   border-radius: var(--radius-lg, 24px);
   box-shadow: var(--shadow-lift, 0 24px 64px rgba(38, 46, 51, 0.16));
   overflow: hidden;
+
+  opacity: 0;
+  transform: scale(0.97) translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.26s var(--ease), transform 0.26s var(--ease);
+}
+
+.chat-widget__panel.is-open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
 }
 
 .chat-widget__header {

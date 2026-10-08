@@ -78,6 +78,24 @@
         o autofoco, era um bloqueio de interação real. Corrigido: a classe
         só é adicionada quando !embedded (mesma guarda já usada pro
         reparenting de tela cheia).
+
+   AJUSTE DE UX (2026-10-08, pedido do fundador pós-revisão em produção,
+   pós-deploy do commit 917a4da): abrir/fechar o painel (embutido ou
+   launcher) trocava de estado instantaneamente ([hidden] nativo —
+   display:none/flex sem transição). Agora abrirPainel()/fecharPainel()
+   coordenam uma transição real de opacity+transform (CSS em
+   chat-widget.css, ~0.26s) com a classe .is-open no PRÓPRIO painel: o
+   [hidden] só é removido no início da abertura (antes da classe, com um
+   reflow forçado no meio) e só é reaplicado no FIM do fechamento, depois
+   que a transição de saída termina (evento transitionend + timeout de
+   segurança como fallback) — ver os comentários junto às funções
+   abrirPainel/fecharPainel/finalizarFechamentoPainel, mais abaixo, para o
+   racional completo de cada decisão (por que a classe vai no painel e não
+   no elemento raiz, por que opts.animar existe, etc.). Não depende de
+   nenhuma media query própria para respeitar prefers-reduced-motion: já
+   existe uma regra global em styles.css que zera a duração de toda
+   transição/animação do site nesse caso; chat-widget.js checa a mesma
+   preferência em paralelo só para pular a espera do evento/timeout.
    =================================================================== */
 (function () {
   'use strict';
@@ -416,21 +434,121 @@
       panelEstaFullscreen = false;
     }
 
+    // AJUSTE DE UX (2026-10-08, pedido do fundador pós-revisão em produção,
+    // pós-deploy do commit 917a4da): abrir/fechar o painel trocava de
+    // estado instantaneamente ([hidden] nativo — display:none não anima).
+    // Agora existe uma transição real (opacity + transform, CSS em
+    // chat-widget.css, ~0.26s): ao ABRIR, o painel sai do [hidden] e SÓ
+    // DEPOIS ganha a classe .is-open que dispara a transição pro estado
+    // visível — precisa de um reflow forçado (void panel.offsetHeight)
+    // entre as duas mudanças, senão o navegador funde display:none→flex e
+    // a classe na mesma atualização de estilo e pula a transição (o
+    // elemento nunca existiu visualmente no estado de partida pra
+    // interpolar a partir dele). Ao FECHAR, a classe .is-open sai do
+    // painel IMEDIATAMENTE (dispara a transição de saída), mas o [hidden]
+    // só é aplicado no fim de verdade — via evento `transitionend` da
+    // própria propriedade opacity, com um setTimeout de segurança como
+    // fallback (caso o evento não dispare por algum motivo: troca de aba
+    // no meio da transição, etc.). Isso é o que permite a transição de
+    // FECHAR aparecer — um elemento display:none não anima a própria
+    // saída.
+    //
+    // A classe .is-open fica no PRÓPRIO painel (não no elemento raiz
+    // .chat-widget) de propósito: no modo launcher (não-embutido) o
+    // painel é reparentado para <body> em telas <1024px
+    // (moverPainelParaFullscreen) — um seletor dependente do ancestral
+    // .chat-widget perderia o match depois do reparenting.
+    //
+    // root.is-open sai IMEDIATAMENTE no clique de fechar (mesma semântica
+    // simples de sempre: "aberto" é só o estado estável aberto, não
+    // inclui "fechando") — é o que o resto do arquivo usa pra decidir
+    // abrir/fechar (ex.: o handler de clique do launcher, mais abaixo).
+    // Só que isso sozinho reexibiria o launcher (ele reaparece no fluxo
+    // do layout) ENQUANTO o painel ainda está visualmente desaparecendo
+    // por cima — um salto de layout no meio da própria transição que
+    // este ajuste existe pra eliminar. Por isso existe root.is-closing,
+    // junto: adicionada no mesmo instante que is-open sai, removida só no
+    // FIM do fechamento (finalizarFechamentoPainel) — chat-widget.css
+    // esconde o launcher enquanto QUALQUER uma das duas classes estiver
+    // presente.
+    var PANEL_TRANSITION_MS = 260; // em sincronia com chat-widget.css
+    var panelFechandoTimeoutId = null;
+
+    function prefereMovimentoReduzido() {
+      // Mesma preferência de sistema que styles.css já respeita
+      // globalmente (@media prefers-reduced-motion: reduce, que força
+      // transition-duration/animation-duration pra 0.01ms em todo
+      // elemento do site — inclusive este painel). Checar de novo aqui,
+      // em paralelo, só evita depender de um evento `transitionend` (que
+      // ainda dispara, só que quase instantâneo) pra aplicar o estado
+      // final: quem tem essa preferência vê a troca sem nenhuma
+      // animação, nem mínima, de forma explícita.
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+
+    function onPanelFechouTransicao(ev) {
+      // Reage só à transição de opacidade do PRÓPRIO painel — ignora
+      // qualquer transição de elemento filho que borbulhe até aqui.
+      if (ev.target !== panel || ev.propertyName !== 'opacity') return;
+      finalizarFechamentoPainel();
+    }
+
+    function limparFechamentoPendente() {
+      if (panelFechandoTimeoutId !== null) {
+        clearTimeout(panelFechandoTimeoutId);
+        panelFechandoTimeoutId = null;
+      }
+      panel.removeEventListener('transitionend', onPanelFechouTransicao);
+      root.classList.remove('is-closing');
+    }
+
+    // Passo final do fechamento — só executa depois que a transição de
+    // saída já terminou visualmente (ou de imediato, com movimento
+    // reduzido). Remove de vez o painel do layout (hidden=true), destrava
+    // o scroll do body (modo fullscreen mobile) e devolve o painel pro
+    // lugar original no DOM, se tinha sido reparentado. root.is-open já
+    // foi removida no INÍCIO do fechamento (ver fecharPainel) — aqui só
+    // falta tirar o is-closing (feito dentro de limparFechamentoPendente).
+    function finalizarFechamentoPainel() {
+      limparFechamentoPendente();
+      document.body.classList.remove('is-chat-fullscreen-open');
+      panel.hidden = true;
+      devolverPainelAoLugarOriginal();
+    }
+
     // opts.foco (default true) controla só o foco de teclado no campo de
     // texto — nunca o layout/visibilidade do painel. Chamadas originadas
     // de interação real do usuário (clique no launcher, em
     // [data-chat-reopen], reabertura manual) mantêm o default true: focar
     // depois de um clique é comportamento esperado, não interrupção.
-    // A abertura automática do modo embutido no load passa foco=false
-    // explicitamente (ver chamada no fim deste arquivo) — carregar a
-    // página nunca deve roubar foco de teclado nem abrir o teclado
-    // virtual sozinho no mobile.
+    // A abertura automática do modo embutido no load passa opts.foco=false
+    // explicitamente — o campo de texto só recebe foco quando o próprio
+    // usuário clica no launcher, no campo, ou em [data-chat-reopen].
+    // Nenhum auto-scroll foi encontrado neste arquivo (confirmado por
+    // busca em todo o código por scrollIntoView/scrollTo no root/body —
+    // só existe scrollTop interno em .chat-widget__messages, que rola a
+    // LISTA DE MENSAGENS, não a página).
+    //
+    // opts.animar (default true) controla só a transição visual de
+    // abertura. A abertura automática do modo embutido no load passa
+    // animar=false explicitamente: o painel embutido já nasce
+    // visualmente presente/aberto na home (é o produto da seção, não algo
+    // escondido atrás de um clique) — animá-lo na primeira pintura da
+    // página pareceria um "pop" inesperado no load, não o reforço de
+    // fluidez que este ajuste pede. Toda reabertura real feita pelo
+    // visitante (launcher, [data-chat-reopen], reabrir depois de fechar)
+    // sempre anima, inclusive no modo embutido.
     function abrirPainel(opts) {
       var foco = !opts || opts.foco !== false;
-      if (root.classList.contains('is-open')) {
+      var animar = !opts || opts.animar !== false;
+      if (root.classList.contains('is-open') && panel.classList.contains('is-open')) {
         if (foco) input.focus();
         return;
       }
+      // Cancela um fechamento em andamento (usuário reabriu no meio da
+      // transição de saída) — sem isso, o timeout/listener pendente
+      // aplicaria hidden=true por cima da reabertura em breve.
+      limparFechamentoPendente();
       atualizarAlturaHeaderFullscreen();
       // Mudança 3: widget embutido na home nunca usa o hack de tela cheia
       // no celular (ver header do arquivo) — fica sempre inline, como
@@ -449,6 +567,16 @@
         document.body.classList.add('is-chat-fullscreen-open');
       }
       panel.hidden = false;
+      if (animar) {
+        // Reflow forçado: garante que o navegador registre o estado
+        // "fechado" (opacity/transform definidos em chat-widget.css pro
+        // painel sem .is-open) antes de aplicar a classe que dispara a
+        // transição pro estado aberto — sem isso as duas mudanças de
+        // estilo (hidden=false + .is-open) se fundem na mesma atualização
+        // e o navegador pula direto pro estado final, sem animar.
+        void panel.offsetHeight;
+      }
+      panel.classList.add('is-open');
       launcher.setAttribute('aria-expanded', 'true');
       if (!enviouPrimeiraMensagem) {
         renderTurnstileSeNecessario();
@@ -456,11 +584,30 @@
       if (foco) input.focus();
     }
     function fecharPainel() {
+      // Guarda contra clique duplo durante a própria transição de saída:
+      // root.is-open já sai IMEDIATAMENTE aqui (mesma semântica simples
+      // de antes do ajuste — "aberto" é só o estado estável, não inclui
+      // "fechando"), então quem decide fechar/abrir de novo em outro
+      // lugar (ex.: o próprio handler de clique do launcher, mais abaixo)
+      // já vê o estado certo e reabre em vez de tentar fechar de novo.
+      // is-closing é só o sinal interno de "já está fechando, não repetir
+      // a mesma chamada" + mantém o launcher escondido durante o fade
+      // (ver chat-widget.css — a regra de esconder o launcher olha tanto
+      // .is-open quanto .is-closing).
+      if (!root.classList.contains('is-open') || root.classList.contains('is-closing')) return;
       root.classList.remove('is-open');
-      document.body.classList.remove('is-chat-fullscreen-open');
-      panel.hidden = true;
+      root.classList.add('is-closing');
+      panel.classList.remove('is-open'); // dispara a transição de saída
       launcher.setAttribute('aria-expanded', 'false');
-      devolverPainelAoLugarOriginal();
+
+      if (prefereMovimentoReduzido()) {
+        finalizarFechamentoPainel();
+        return;
+      }
+      panel.addEventListener('transitionend', onPanelFechouTransicao);
+      // Fallback de segurança: se `transitionend` não disparar por algum
+      // motivo, garante que o painel termina de fechar mesmo assim.
+      panelFechandoTimeoutId = setTimeout(finalizarFechamentoPainel, PANEL_TRANSITION_MS + 80);
     }
 
     launcher.addEventListener('click', function () {
@@ -690,7 +837,7 @@
     // então aqui isso só afeta um clique novo em [data-chat-reopen] ou no
     // próprio campo — ou clique direto no textarea).
     if (embedded) {
-      abrirPainel({ foco: false });
+      abrirPainel({ foco: false, animar: false });
     }
   });
 })();
