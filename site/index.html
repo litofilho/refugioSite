@@ -432,77 +432,48 @@
     </div>
   </section>
 
-  <!-- ---- Correção de contraste (2026-10-08, autorizada pelo fundador após
-       revisão visual ao vivo): mesmo depois da diferenciação de composição
-       (layout assimétrico, painel sem chrome, mono estendido), Bússola e
-       Bunker continuavam em tonalidades muito próximas — as duas usavam
-       fundo escuro Preto Antifragil, só o acento de cor mudava (verde vs
-       amarelo). O fundador pediu CONTRASTE real, não só troca de acento:
-       o Bunker passa a ter registro CLARO (fundo Off-White), enquanto a
-       Bússola continua escura. Racional: a Bússola é produto rodando
-       agora — console técnico escuro faz sentido. O Bunker é piloto
-       privado em construção, ainda não testável como produto — faz
-       sentido ser uma seção mais calma/anúncio, não a mesma "tela de
-       produto ligado" da Bússola. Ver bloco ".bunker" em home.css para o
-       detalhe token-a-token da inversão de registro.
+  <!-- ---- Correção de hierarquia (2026-10-08, "Correção 2" — autorizada
+       pelo fundador): direcionamento explícito recebido: "a Bússola é a
+       coisa mais importante do site nesse primeiro momento, o site deve
+       apontar pra ela como o principal produto; o Bunker deve ser apenas
+       uma citação secundária de produto em teste/desenvolvimento."
 
-       Consequência estrutural: a transição entre as 2 seções de produto
-       deixa de ser escura→escura (linha fina, .seam-products) e passa a
-       ser escura→clara — por isso a curva .seam-to-light (mesmo padrão
-       já usado entre a seção escura de soluções e a seção clara de
-       pilares) entra aqui também, em vez da linha fina antiga. A curva
-       .seam-to-light que havia DEPOIS do Bunker (transição escura→clara
-       para os Pilares) foi removida: Bunker e Pilares são agora as duas
-       seções claras, adjacentes, sem precisar de curva de transição
-       entre elas. ---- -->
+       Isso reverte o peso estrutural que a rodada anterior (commit
+       c51206a e anteriores) tinha dado ao Bunker: lá, o Bunker tinha
+       SEÇÃO PRÓPRIA — layout assimétrico de 2 colunas, painel estilo
+       "log de sistema" (.bunker__panel, com status/readout), seam de
+       transição dedicada (.seam-to-light) — do MESMO nível estrutural
+       que a seção da Bússola. O fundador pediu para isso encolher.
+
+       O que mudou: a seção .bunker inteira (facet, layout assimétrico,
+       painel log de sistema, CSS .bunker__*) foi REMOVIDA e substituída
+       por uma faixa estreita — .bunker-note, um <aside> de 1 eyebrow +
+       1 frase + 1 link, sem painel, sem grid, sem pompa de seção própria
+       — ver bloco ".bunker-note" em home.css. O registro claro
+       (Off-White) herdado da correção de contraste da rodada anterior
+       foi mantido de propósito: já diferencia visualmente a faixa do
+       preto da seção da Bússola logo acima, sem precisar repetir a
+       mesma composição elaborada. Resultado: a seção da Bússola (fundo
+       escuro, widget funcional embutido, bento-grid, badge "produto ao
+       vivo") ocupa muito mais espaço vertical e peso visual na página do
+       que essa menção ao Bunker agora.
+
+       A curva .seam-to-light (transição escura→clara) é mantida aqui,
+       pois a faixa do Bunker também é clara — mesmo papel que já tinha
+       antes. Não há seam entre a faixa e os Pilares logo abaixo: ambos
+       claros, mesmo padrão já usado no resto da página entre blocos
+       claros adjacentes (isso já era assim na rodada anterior). ---- -->
   <div class="seam-to-light" aria-hidden="true">
     <svg viewBox="0 0 1200 72" preserveAspectRatio="none"><path d="M0,36 C300,0 900,68 1200,30 L1200,0 L0,0 Z" fill="#F2F2F2"></path></svg>
   </div>
 
-  <!-- ---- Bunker: registro NOVO e deliberadamente diferente do da Bússola,
-       dentro da mesma família tipográfica (Jost + Roboto + JetBrains
-       Mono) e paleta oficial, sem cor nova. Ênfase de cor invertida —
-       Amarelo Suave dominante em vez de Verde Pastel — e layout de bloco
-       único (sem bento-grid: é 1 produto só, não precisa comparar itens).
-       Painel em formato de "log de sistema" (1 voz, monitoramento/
-       vigilância) em vez do chat de 2 vozes da Bússola, reforçando o
-       conceito do próprio nome Bunker (fortaleza solo). CTA continua link
-       suave, não botão sólido — produto em piloto privado, sem
-       self-serve (regra do fundador, já registrada no commit anterior
-       desta seção). Registro CLARO (fundo Off-White, textos em Cinza
-       Chumbo/Preto Antifragil, Amarelo Suave só como acento de destaque)
-       desde a correção de contraste de 2026-10-08 — ver nota acima. ---- -->
-  <section class="bunker reveal" id="bunker" aria-labelledby="bunker-heading">
-    <div class="bunker__facet" aria-hidden="true"></div>
-    <div class="container bunker__inner">
-      <div class="bunker__head">
-        <span class="bunker__eyebrow">// refugio.tech/bunker · piloto privado</span>
-        <h2 id="bunker-heading">O Bunker: a mesma estrutura, para quem toca o negócio sozinho.</h2>
-        <p>O Bunker existe para o consultor de TI solo que sente a mesma sobrecarga de tocar o próprio negócio sozinho. Produto diferente da Bússola, mesmo refúgio por trás dos dois.</p>
-      </div>
-      <div class="bunker__panel">
-        <div class="bunker__status">
-          <span class="bunker__status-dot" aria-hidden="true"></span>
-          <span>sistema de agentes · operando em modo solo</span>
-        </div>
-        <div class="bunker__readout" aria-hidden="true">
-          <span class="bunker__readout-line">monitorando a operação 24/7</span>
-          <span class="bunker__readout-line">agentes ativos: diagnóstico, suporte, backoffice</span>
-          <span class="bunker__readout-line">piloto privado — vagas limitadas<span class="console__cursor"></span></span>
-        </div>
-        <p class="bunker__text">O Bunker empacota a mesma estrutura de agentes de IA que já roda a Refúgio Tech por dentro, para o consultor de TI solo que sente a mesma sobrecarga que ajudamos nossos clientes a resolver. Em construção com os primeiros parceiros.</p>
-        <a href="#fale-com-a-gente" class="bunker__link">Quero saber mais sobre o Bunker →</a>
-      </div>
+  <aside class="bunker-note" id="bunker" aria-labelledby="bunker-note-heading">
+    <div class="container bunker-note__inner">
+      <span class="bunker-note__eyebrow" id="bunker-note-heading">Também em construção</span>
+      <p class="bunker-note__text">Também estamos construindo o <strong>Bunker</strong> — a mesma estrutura de agentes de IA da Refúgio Tech, empacotada para o consultor de TI solo. Em piloto privado.</p>
+      <a href="#fale-com-a-gente" class="bunker-note__link">Saiba mais sobre o Bunker →</a>
     </div>
-  </section>
-
-  <!-- Transição Bunker → Pilares removida na correção de contraste de
-       2026-10-08: as duas seções agora são claras (Off-White) e
-       adjacentes — a curva .seam-to-light que existia aqui pressupunha
-       Bunker escuro antes dela (fundo preto-antifragil por baixo da
-       curva), o que ficaria errado agora que o Bunker é a própria seção
-       clara. Sem seam entre 2 seções do mesmo registro — mesmo padrão já
-       usado onde 2 blocos claros se sucedem no resto da página. -->
+  </aside>
 
   <!-- ===================== PILARES (clara) ===================== -->
   <section class="pillars reveal" id="pilares" aria-labelledby="pillars-heading">

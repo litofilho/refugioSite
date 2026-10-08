@@ -435,205 +435,84 @@
    órfão; se precisar recuperar o padrão de linha fina, ver histórico git
    deste arquivo. */
 
-/* ---------- Seção clara: Bunker (registro vigilância/fortaleza solo) ----------
-   Correção de CONTRASTE (2026-10-08, autorizada pelo fundador após revisão
-   visual ao vivo): até esta rodada, Bunker e Bússola usavam o mesmo fundo
-   escuro (Preto Antifragil) — só o acento de cor diferia (Amarelo Suave vs
-   Verde Pastel). Mesmo com a diferenciação de composição já feita (layout
-   assimétrico, painel sem chrome, mono estendido — pontos 2–4 do histórico
-   abaixo), as duas seções ficavam tonalmente próximas demais. O fundador
-   pediu contraste de LUMINÂNCIA real, não só troca de acento.
+/* ---------- Faixa secundária: menção ao Bunker (.bunker-note) ----------
+   Correção de hierarquia (2026-10-08, "Correção 2" — autorizada pelo
+   fundador): direcionamento explícito recebido: a Bússola é o produto
+   mais importante do site nesse primeiro momento, o site deve chamar
+   toda a atenção pra ela; o Bunker deve ser apenas uma citação
+   secundária de produto em teste/desenvolvimento.
 
-   Racional (pode entrar no copy/apresentação se fizer sentido): a Bússola
-   é produto rodando agora — console técnico escuro faz sentido para ela.
-   O Bunker é piloto privado em construção, ainda não testável como
-   produto — faz mais sentido como seção calma/anúncio do que repetir a
-   "tela de produto ligado" da Bússola.
-
-   Mudança desta rodada — INVERSÃO DE REGISTRO (claro/escuro), composição
-   intacta:
-   - Fundo: de gradiente escuro (--facet-6 → --preto-antifragil) para
-     Off-White, com um leve aquecimento usando o próprio Amarelo Suave em
-     baixa opacidade sobre a base clara (não é uma cor nova — é o token
-     --amarelo-suave translúcido por cima de --off-white, mesmo recurso já
-     usado no .bunker__facet antes desta rodada, só que agora também no
-     fundo da seção).
-   - Texto: de Off-White/rgba(242,242,242,·) para Cinza Chumbo (corpo) e
-     Preto Antifragil (headings) — inverso do padrão anterior.
-   - Amarelo Suave mantido como ÚNICO acento de destaque (continua a amarrar
-     visualmente ao resto do sistema de marca mesmo com o fundo trocado),
-     mas restrito a elementos não-textuais ou de reforço — borda do painel
-     (border-left), status-dot, sublinhado/realce do link, traço do
-     readout — nunca como cor de texto corrido. Amarelo Suave (#D9C583)
-     sobre Off-White (#F2F2F2) tem contraste de luminância baixo demais
-     para texto legível (duas cores claras); sobre Preto Antifragil (fundo
-     da Bússola) o mesmo amarelo funciona bem como texto porque o fundo é
-     escuro. Por isso o link, o eyebrow e o readout do Bunker passam a ter
-     a COR DE TEXTO em Cinza Chumbo/Preto Antifragil, com o Amarelo Suave
-     aplicado como acento ao redor do texto (borda, sublinhado, ponto),
-     não como a cor das letras.
-
-   Histórico mantido desta rodada (não desfeito, só o registro de cor
-   inverte):
-   1) Layout ASSIMÉTRICO em 2 colunas (texto à esquerda, mais largo;
-      painel à direita, mais estreito, tipo "status strip") em vez do
-      empilhamento vertical bloco único/full-width da Bússola. Colapsa
-      para 1 coluna abaixo de 1024px, mesmo breakpoint do bento da
-      Bússola.
-   2) Painel SEM chrome de janela — sem borda ao redor, sem cantos
-      arredondados, sem sombra. Só uma régua de acento à esquerda
-      (border-left, Amarelo Suave), lendo como um log/terminal cru, não
-      um card.
-   3) Mono (JetBrains Mono) estendido ao corpo de texto e ao link do
-      painel (.bunker__text, .bunker__link), não só eyebrow/status/
-      readout — reforça o tom "técnico cru" do Bunker.
-   CTA continua link suave (não botão sólido) — produto em piloto
-   privado, sem self-serve (regra do fundador já registrada em commits
-   anteriores desta seção).
-
-   Transição visual: a seam entre Bússola (escura) e Bunker (clara desde
-   esta rodada) deixou de ser a linha fina .seam-products (pensada para
-   2 seções escuras) e passou a usar a curva .seam-to-light (mesmo
-   componente já usado entre a seção escura de soluções e a seção clara
-   de pilares, ver bloco de transições acima) — sem isso o corte entre as
-   2 seções ficaria abrupto. A curva .seam-to-light que havia depois do
-   Bunker (para os Pilares) foi removida: as duas são claras e adjacentes
-   agora, sem necessidade de transição. Ver index.html para o HTML das
-   seams.
-
-   Correção de bug preservada (2026-10-08, revisão visual ao vivo):
-   .bunker__inner não deve ter max-width próprio — herda só de .container
-   (mesma regra de alinhamento horizontal já corrigida na rodada
-   anterior). */
-.bunker {
+   Isso substitui TODO o bloco ".bunker" da rodada anterior (seção
+   própria, layout assimétrico em 2 colunas, painel "log de sistema" com
+   status/readout/pulse, facet decorativo) — removido por inteiro (ver
+   histórico git deste arquivo se precisar recuperar o registro
+   anterior). No lugar, uma faixa única, estreita, sem grid assimétrico
+   e sem painel: eyebrow pequeno + 1 frase + 1 link, em um único bloco
+   inline que quebra para coluna só no mobile. Mantido o fundo Off-White
+   (mesmo token --off-white) com um traço discreto de Amarelo Suave
+   (acento, não fundo dominante) — o suficiente para diferenciar do preto
+   da seção da Bússola logo acima, sem repetir a pompa visual de seção
+   completa que essa faixa está substituindo. Altura total da faixa é uma
+   fração pequena da altura da seção da Bússola (ver teste visual no
+   relatório de entrega). */
+.bunker-note {
   position: relative;
-  background:
-    linear-gradient(165deg, rgba(217, 197, 131, 0.14) 0%, rgba(217, 197, 131, 0) 55%),
-    var(--off-white);
-  color: var(--cinza-chumbo);
-  padding: var(--sp-10) 0 var(--sp-12);
-  overflow: hidden;
+  background: var(--off-white);
+  border-top: 1px solid rgba(217, 197, 131, 0.4);
+  border-bottom: 1px solid rgba(69, 82, 89, 0.08);
+  padding: var(--sp-3) 0;
 }
-.bunker__facet {
-  position: absolute;
-  top: -15%; right: -8%;
-  width: 50%; height: 160%;
-  background: linear-gradient(185deg, rgba(217, 197, 131, 0.22), rgba(217, 197, 131, 0) 72%);
-  clip-path: polygon(32% 0, 100% 0, 100% 100%, 0% 100%);
-  pointer-events: none;
-}
-.bunker__inner {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-  column-gap: var(--sp-8);
-  row-gap: var(--sp-6);
-  align-items: start;
-}
-.bunker__eyebrow {
+.bunker-note__inner {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.1em;
-  color: var(--cinza-chumbo);
-  margin-bottom: var(--sp-2);
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: var(--sp-3);
+  row-gap: var(--sp-1);
 }
-/* ponto Amarelo Suave como acento do eyebrow — mesma lógica de "amarelo só
-   em elemento não-textual" aplicada ao resto da seção, aqui reaproveitando
-   o padrão de bullet já usado em .hero__pillars-tag span::before. */
-.bunker__eyebrow::before {
+.bunker-note__eyebrow {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cinza-chumbo);
+  opacity: 0.8;
+}
+.bunker-note__eyebrow::before {
   content: "";
-  width: 7px; height: 7px;
+  width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--amarelo-suave);
   flex-shrink: 0;
 }
-.bunker__head h2 {
-  font-family: var(--font-display);
-  font-weight: 300;
-  color: var(--preto-antifragil);
-  font-size: clamp(1.75rem, 3.4vw, 2.625rem);
-  line-height: 1.2;
-  margin-bottom: var(--sp-3);
-}
-.bunker__head p {
+.bunker-note__text {
+  flex: 1 1 360px;
   font-family: var(--font-body);
   font-weight: 300;
-  font-size: 1rem;
-  line-height: 1.65;
-  color: var(--cinza-chumbo);
-  max-width: 620px;
-}
-.bunker__panel {
-  position: relative;
-  background: rgba(38, 46, 51, 0.035);
-  border: none;
-  border-left: 2px solid var(--amarelo-suave);
-  border-radius: 0;
-  padding: var(--sp-5, 40px) var(--sp-4);
-  box-shadow: none;
-}
-.bunker__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--cinza-chumbo);
-  margin-bottom: var(--sp-3);
-}
-.bunker__status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--amarelo-suave);
-  animation: bunker-pulse 2s ease-out infinite;
-}
-@keyframes bunker-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(217, 197, 131, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(217, 197, 131, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(217, 197, 131, 0); }
-}
-.bunker__readout {
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.9;
-  color: var(--cinza-chumbo);
-  margin-bottom: var(--sp-4);
-  padding-bottom: var(--sp-4);
-  border-bottom: 1px dashed rgba(217, 197, 131, 0.55);
-}
-.bunker__readout-line { display: block; }
-.bunker__readout-line::before { content: "> "; color: var(--preto-antifragil); opacity: 0.55; }
-.bunker__text {
-  font-family: var(--font-mono);
-  font-weight: 400;
   font-size: 0.9375rem;
-  line-height: 1.7;
+  line-height: 1.5;
   color: var(--cinza-chumbo);
-  max-width: 60ch;
-  margin-bottom: var(--sp-3);
+  margin: 0;
 }
-.bunker__link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
+.bunker-note__text strong { font-weight: 500; color: var(--preto-antifragil); }
+.bunker-note__link {
+  flex: none;
+  font-family: var(--font-body);
   font-weight: 500;
   font-size: 0.875rem;
   color: var(--preto-antifragil);
   text-decoration: none;
   border-bottom: 1px solid var(--amarelo-suave);
-  padding-bottom: 2px;
-  transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+  padding-bottom: 1px;
+  white-space: nowrap;
+  transition: opacity 0.2s var(--ease);
 }
-.bunker__link:hover,
-.bunker__link:focus-visible {
-  opacity: 0.7;
+.bunker-note__link:hover,
+.bunker-note__link:focus-visible {
+  opacity: 0.65;
 }
 
 /* ticker kinético — único ponto de texto em movimento da página, igual
@@ -733,18 +612,18 @@
   .solutions__bento { grid-template-columns: 1fr; grid-template-rows: auto; }
   .solutions__card--1, .solutions__card--4 { grid-column: 1; grid-row: auto; }
   .pillars__grid { grid-template-columns: 1fr; }
-  /* Bunker: colunas assimétricas (texto | painel) só fazem sentido com
-     espaço horizontal de desktop — abaixo de 1024px (mesmo breakpoint
-     do bento da Bússola) empilha em 1 coluna, texto acima, painel
-     abaixo, igual ao padrão de empilhamento do resto do site em telas
-     estreitas. */
-  .bunker__inner { grid-template-columns: 1fr; }
-  .bunker__head p { margin-bottom: var(--sp-6); }
 }
 
+/* Faixa do Bunker (.bunker-note): só precisa de 1 ajuste em mobile —
+   eyebrow, texto e link empilham em coluna em vez da linha única de
+   desktop (o layout flex com flex-wrap já cuida da quebra de linha;
+   align-items: baseline fica estranho quando empilhado, então vira
+   flex-start). Removidos nesta rodada (correção de hierarquia
+   2026-10-08) os ajustes responsivos antigos de .bunker__inner/
+   .bunker__head/.bunker__panel/.bunker__facet — classes que não existem
+   mais (ver bloco ".bunker-note" acima e histórico git). */
 @media (max-width: 600px) {
-  .bunker__panel { padding: var(--sp-4) var(--sp-3); }
-  .bunker__facet { width: 70%; }
+  .bunker-note__inner { align-items: flex-start; }
 }
 
 @media (min-width: 600px) {
