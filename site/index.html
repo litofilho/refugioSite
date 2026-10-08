@@ -180,7 +180,14 @@
              própria operação, com ou sem equipe, preservando as duas
              audiências reais (negócio com time e consultor solo) sem
              nomear porte. -->
-        <span class="eyebrow hero__eyebrow">Para quem toca a tecnologia da própria operação — sozinho ou em equipe</span>
+        <!-- Ajuste fino pós-revisão visual (2026-10-08, commit ba732e8,
+             autorizado pelo fundador): o eyebrow da hero (rótulo de
+             público-alvo acima do H1) foi removido por inteiro. O
+             .hero__eyebrow só existia em home.css para dar margin-bottom
+             a este span (ver nota lá); sem o elemento, essa margem some
+             junto — não sobra respiro extra entre a faceta decorativa do
+             topo e o H1. Conferido visualmente em 1280px e 390px, sem
+             buraco no layout. -->
         <h1 id="hero-headline" class="hero__headline">Onde a tecnologia encontra um <mark>porto seguro</mark>.</h1>
         <p class="hero__lede">Sistema que você não entende mais, decisão que depende de alguém de confiança, sensação de estar exposto sem saber onde — se a tecnologia virou um peso para o seu negócio, você não precisa resolver isso sozinho. A Refúgio Tech existe para ser esse ponto firme. A profundidade técnica entra depois, como prova, quando é hora de agir — não como a primeira coisa que você precisa entender.</p>
         <div class="hero__ctas">
@@ -360,7 +367,14 @@
              aviso de "antes que vire crise" que já funcionava. O H3 do card 1
              (abaixo, solutions__card--1) parava de ser um duplicado literal
              deste H2 nesta mesma correção — ver nota lá. -->
-        <h2 id="solutions-heading">A Bússola: o agente de IA que guia você até o que trava o crescimento da sua operação, antes que vire crise.</h2>
+        <!-- Ajuste fino pós-revisão visual (2026-10-08, commit ba732e8,
+             direção do fundador): headline simplificado. Versão anterior
+             enumerava "o que trava o crescimento" + "antes que vire
+             crise" — informação que já está no parágrafo abaixo, redundante
+             no H2. Novo texto segue a direção literal dada pelo fundador
+             ("guia você até a solução dos seus problemas"), só com leve
+             ajuste de ritmo em português. -->
+        <h2 id="solutions-heading">A Bússola: o agente de IA que guia você até a solução dos seus problemas.</h2>
         <p>A Bússola existe para quem se sente perdido na própria operação de TI — conversa com o seu negócio, mapeia as 5 frentes que mais travam o crescimento técnico e traduz cada achado numa decisão clara.</p>
       </div>
 
@@ -463,12 +477,24 @@
 
       <div class="solutions__bento">
         <div class="solutions__card solutions__card--1">
-          <span class="solutions__card-idx">01 · bússola · para quem está perdido na própria operação de ti</span>
+          <!-- Ajuste fino pós-revisão visual (2026-10-08, commit ba732e8):
+               prefixo "01 · bússola · " removido do card-idx (pedido
+               específico do fundador só para este card — é o único card
+               do bento hoje, ver nota mais abaixo sobre o card--4 removido
+               antes, então não há outro card com prefixo numérico pra
+               manter padrão). Frase capitalizada (antes começava em
+               minúscula só porque vinha colada ao prefixo) e "ti" virou
+               "TI" (sigla). -->
+          <span class="solutions__card-idx">Para quem está perdido na própria operação de TI</span>
           <!-- Correção 3 adicional (2026-10-08): este H3 era um duplicado
                literal do H2 da seção (ver comentário acima). Diferenciado
                agora, mantendo a menção explícita a "agente de IA" também
                aqui (o fundador pediu que isso ficasse claro em qualquer
-               headline/subheadline imediatamente visível, não só no H2). -->
+               headline/subheadline imediatamente visível, não só no H2).
+               Ajuste fino 2026-10-08 (commit ba732e8): continua
+               deliberadamente diferente do novo H2 da seção ("...guia você
+               até a solução dos seus problemas") — não precisou de edição
+               nesta rodada, só verificação de que não ficou idêntico. -->
           <h3>Um agente de IA que mapeia onde sua operação trava antes que vire crise.</h3>
           <p>A Bússola conversa com sua empresa, mapeia as 5 frentes que mais travam o crescimento técnico — arquitetura, segurança, cloud, automação, integração — e traduz cada achado numa frase que qualquer dono de empresa entende e pode decidir.</p>
           <div class="solutions__ticker" aria-hidden="true">
