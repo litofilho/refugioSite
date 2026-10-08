@@ -301,10 +301,15 @@
             widget.js/css, inalterados em sua lógica central — sessão,
             Turnstile, fetch para /chat, /anexoUrl, /satisfacao,
             /previewSolucao), só adiciona um modo "embutido" (atributo
-            data-embed="inline" no elemento raiz) que: (a) abre o painel
-            automaticamente ao carregar a página, em vez de esperar clique
-            no launcher — é o próprio produto da seção, não algo escondido
-            atrás de um botão; (b) NÃO aciona o hack de "tela cheia no
+            data-embed="inline" no elemento raiz) que: (a) deixa o painel
+            visualmente aberto/presente no layout ao carregar a página, em
+            vez de esperar clique no launcher — é o próprio produto da
+            seção, não algo escondido atrás de um botão (NOTA — correção
+            de UX de 2026-10-08, autorizada pelo fundador: isso é só
+            LAYOUT; carregar a página não foca o campo de texto nem rola a
+            tela sozinha — ver comentário na seção .solutions__head mais
+            abaixo e o cabeçalho de chat-widget.js); (b) NÃO aciona o hack
+            de "tela cheia no
             celular" (reparenting do painel pra <body>, ver chat-
             widget.js) que existia especificamente para a hero de
             /bussola ocupar a tela inteira no mobile — aqui o widget é só
@@ -353,21 +358,37 @@
            fundador: "se precisamos dizer que o produto está ao vivo,
            falhamos no design"): .solutions__live-badge (selo "Produto ao
            vivo" com ponto pulsante) foi REMOVIDO. No lugar, o próprio
-           widget comunica por design que é um chat de verdade: abre com o
-           campo já focado (abrirPainel() chama input.focus() no load do
-           modo embutido — ver chat-widget.js, bloco final "if (embedded)")
-           dando o cursor piscando real do navegador sem precisar de
-           clique; placeholder convidativo e em forma de convite (ver
-           abaixo); indicador de "Bússola está respondendo…" quando
+           widget comunica por design que é um chat de verdade: fica
+           visualmente aberto no layout da seção (sem precisar de clique
+           pra aparecer), placeholder convidativo e em forma de convite
+           (ver abaixo), indicador de "Bússola está respondendo…" quando
            aplicável (chat-widget.js, showTyping/hideTyping, já existia).
-           Ver histórico git deste arquivo para o selo removido. -->
+
+           CORREÇÃO DE UX (2026-10-08, autorizada pelo fundador após
+           revisão visual, commit 05a209c): a versão anterior deste
+           comentário dizia que o widget "abre com o campo já focado
+           (cursor piscando real do navegador, sem clique)" no load — o
+           fundador reverteu isso explicitamente. Forçar foco de teclado
+           (ou abrir o teclado virtual sozinho no mobile) ao carregar a
+           página é o tipo de comportamento de popup/interrupção que ele
+           não quer, mesmo que a intenção fosse só comunicar "isso é
+           real". Promoção da Bússola é tarefa de DESIGN/COPY (hierarquia
+           visual, posição, tamanho, selo, contraste — já resolvido antes
+           e mantido), não de interface que interrompe o usuário no load.
+           chat-widget.js (abrirPainel) agora só foca o campo quando o
+           PRÓPRIO usuário interage (clique no launcher, no campo, ou em
+           [data-chat-reopen]) — ver cabeçalho e bloco final desse
+           arquivo. Ver histórico git deste arquivo para o selo removido. -->
 
       <!-- Widget real da Bússola (chat-widget.js/css) — mesma infraestrutura
            de site/bussola/index.html (removida, ver Mudança 4), agora
            embutida direto na home. data-embed="inline" liga o modo
-           "embutido" em chat-widget.js: abre sozinho ao carregar a página
-           e não aciona o modo tela-cheia do celular (ver nota grande
-           acima e o próprio chat-widget.js). -->
+           "embutido" em chat-widget.js: fica visualmente aberto/presente
+           no layout da seção desde o load (sem exigir clique) e não
+           aciona o modo tela-cheia do celular (ver nota grande acima e o
+           próprio chat-widget.js). Isso é só LAYOUT — nenhum auto-foco de
+           teclado nem auto-scroll acontece ao carregar a página (ver
+           correção de UX acima e cabeçalho de chat-widget.js). -->
       <div id="refugio-chat-widget" class="chat-widget chat-widget--embedded" data-embed="inline">
         <button type="button" class="chat-widget__launcher" aria-expanded="false" aria-controls="refugio-chat-panel">
           <span class="chat-widget__launcher-icon" aria-hidden="true">

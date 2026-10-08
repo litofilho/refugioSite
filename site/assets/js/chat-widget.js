@@ -40,14 +40,44 @@
    arquivo é o MESMO usado em produção (nenhuma lógica de sessão/Turnstile/
    rede foi alterada) — só ganhou um modo "embutido", ativado por
    data-embed="inline" no elemento raiz (#refugio-chat-widget):
-     - abre o painel sozinho ao carregar a página (é o produto da seção,
-       não algo escondido atrás de um clique no launcher);
+     - o painel fica visualmente presente/aberto ao carregar a página (é
+       o produto da seção, não algo escondido atrás de um clique no
+       launcher) — isso é só LAYOUT: painel.hidden=false, sem exigir
+       interação prévia;
      - nunca aciona o reparenting de "tela cheia no celular" (pensado
        originalmente para a hero de /bussola ocupar a viewport inteira no
        mobile) — embutido, o widget é só mais um bloco no fluxo normal da
        seção, em qualquer tamanho de tela.
    Fora isso, todo o resto (fechar/reabrir, Turnstile, anexos, chips,
    preview de solução) funciona exatamente igual ao modo não-embutido.
+
+   CORREÇÃO DE UX (2026-10-08, autorizada pelo fundador após revisão
+   visual, commit 05a209c): a rodada anterior tinha feito o modo embutido
+   chamar input.focus() no load (abrirPainel() sem distinguir origem), o
+   que forçava foco de teclado na página inteira assim que ela carregava
+   — em mobile isso abre o teclado virtual sozinho. O fundador pediu
+   explicitamente para a Bússola ser PROMOVIDA por design/copy (isso já
+   estava resolvido: ocupa a maior parte visual da home), nunca por
+   comportamento que interrompe o usuário no load. Dois ajustes:
+     1. abrirPainel(opts) agora recebe opts.foco (default true). A
+        abertura automática do modo embutido no load passa opts.foco=false
+        explicitamente — o campo de texto só recebe foco quando o próprio
+        usuário clica no launcher, no campo, ou em [data-chat-reopen].
+        Nenhum auto-scroll foi encontrado neste arquivo (confirmado por
+        busca em todo o código por scrollIntoView/scrollTo no root/body —
+        só existe scrollTop interno em .chat-widget__messages, que rola a
+        LISTA DE MENSAGENS, não a página).
+     2. Bug encontrado nesta revisão (não reportado antes, achado ao
+        auditar o fluxo): abrirPainel() adicionava a classe
+        is-chat-fullscreen-open ao <body> incondicionalmente, mesmo no
+        modo embutido. Essa classe só tem efeito dentro de
+        @media(max-width:1023px) (chat-widget.css) e trava o scroll da
+        PÁGINA TODA (overflow:hidden). Como o modo embutido nunca usa o
+        hack de tela cheia, isso travava a rolagem da home inteira em
+        qualquer celular (<1024px) assim que a página carregava — pior que
+        o autofoco, era um bloqueio de interação real. Corrigido: a classe
+        só é adicionada quando !embedded (mesma guarda já usada pro
+        reparenting de tela cheia).
    =================================================================== */
 (function () {
   'use strict';
@@ -386,9 +416,19 @@
       panelEstaFullscreen = false;
     }
 
-    function abrirPainel() {
+    // opts.foco (default true) controla só o foco de teclado no campo de
+    // texto — nunca o layout/visibilidade do painel. Chamadas originadas
+    // de interação real do usuário (clique no launcher, em
+    // [data-chat-reopen], reabertura manual) mantêm o default true: focar
+    // depois de um clique é comportamento esperado, não interrupção.
+    // A abertura automática do modo embutido no load passa foco=false
+    // explicitamente (ver chamada no fim deste arquivo) — carregar a
+    // página nunca deve roubar foco de teclado nem abrir o teclado
+    // virtual sozinho no mobile.
+    function abrirPainel(opts) {
+      var foco = !opts || opts.foco !== false;
       if (root.classList.contains('is-open')) {
-        input.focus();
+        if (foco) input.focus();
         return;
       }
       atualizarAlturaHeaderFullscreen();
@@ -399,13 +439,21 @@
         moverPainelParaFullscreen();
       }
       root.classList.add('is-open');
-      document.body.classList.add('is-chat-fullscreen-open');
+      // Correção de UX (ver header do arquivo): esta classe só existe pra
+      // travar o scroll do <body> atrás do painel em tela cheia no
+      // celular (chat-widget.css, @media max-width:1023px). O modo
+      // embutido nunca entra em tela cheia — aplicá-la mesmo assim
+      // travava a rolagem da home inteira em qualquer celular ao carregar
+      // a página. Mesma guarda do reparenting acima.
+      if (!embedded) {
+        document.body.classList.add('is-chat-fullscreen-open');
+      }
       panel.hidden = false;
       launcher.setAttribute('aria-expanded', 'true');
       if (!enviouPrimeiraMensagem) {
         renderTurnstileSeNecessario();
       }
-      input.focus();
+      if (foco) input.focus();
     }
     function fecharPainel() {
       root.classList.remove('is-open');
@@ -625,14 +673,24 @@
       });
     });
 
-    // Mudança 3 (2026-10-08): instância embutida na home abre direto, sem
-    // esperar clique no launcher — é o próprio produto da seção (ver
-    // comentário grande em index.html, #solucoes, e no header deste
-    // arquivo). abrirPainel() já guarda `!embedded` antes de acionar o
-    // hack de tela cheia do celular, então isso aqui é seguro em qualquer
-    // tamanho de tela.
+    // Mudança 3 (2026-10-08): instância embutida na home fica visualmente
+    // aberta no load, sem esperar clique no launcher — é o próprio
+    // produto da seção (ver comentário grande em index.html, #solucoes, e
+    // no header deste arquivo). abrirPainel() já guarda `!embedded` antes
+    // de acionar o hack de tela cheia do celular e de travar o scroll do
+    // body, então isso aqui é seguro em qualquer tamanho de tela.
+    //
+    // Correção de UX (2026-10-08, autorizada pelo fundador): foco=false
+    // explícito — carregar a página NUNCA deve roubar foco de teclado
+    // (nem abrir o teclado virtual sozinho no mobile). A Bússola é
+    // promovida por layout/copy (já resolvido antes), não por interromper
+    // o usuário no load. O campo só foca quando o usuário interage de
+    // verdade (clique no launcher — que fica escondido via CSS
+    // .chat-widget.is-open .chat-widget__launcher quando já está aberto,
+    // então aqui isso só afeta um clique novo em [data-chat-reopen] ou no
+    // próprio campo — ou clique direto no textarea).
     if (embedded) {
-      abrirPainel();
+      abrirPainel({ foco: false });
     }
   });
 })();
