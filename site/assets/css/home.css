@@ -1,0 +1,432 @@
+/* ===================================================================
+   Refúgio Tech — home.css
+   Integração do reposicionamento 2026-10 (engenharia de software, cloud,
+   DevSecOps, automação com IA) na home real. Fonte do conteúdo/estrutura:
+   ativos/marca/propostas-site-2026-10/pagina-inicial-final-2026-10.html
+   (repositório Consultoria, protótipo aprovado — só leitura/referência).
+
+   Este arquivo NÃO redefine tokens — usa só os já existentes em
+   styles.css (:root). Carregar DEPOIS de styles.css no <head> do
+   index.html. Adaptações feitas na integração (não é cópia cega do
+   protótipo):
+   - Pesos de título ficam em 300/500 (escala tipográfica já em uso no
+     site real — Jost carregado só em 200/300/400/500), não 600/700 como
+     no protótipo (que carregava pesos extras só para si mesmo).
+   - Mono (--font-mono) reservado à "casca" do produto (rótulos, prompts,
+     barra do console), nunca ao texto corrido que o visitante lê — mesma
+     regra híbrida já aprovada e aplicada no widget da Bússola
+     (chat-widget.css, rodada 29). O protótipo original usava mono no
+     corpo inteiro do console à direita; aqui isso foi corrigido para
+     manter a mesma convenção de legibilidade do produto real.
+   - Links do protótipo (#bussola, /bussola) adaptados para a estrutura
+     real de páginas (bussola/ como página própria, não uma âncora).
+   =================================================================== */
+
+/* ---------- Eyebrow (seções claras) ---------- */
+.eyebrow {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cinza-chumbo);
+  opacity: 0.72;
+}
+
+/* ---------- Hero: eyebrow, lede, CTAs, slogan, pilares ---------- */
+.hero__eyebrow {
+  margin-bottom: var(--sp-3);
+}
+
+.hero__headline mark {
+  background: linear-gradient(transparent 62%, var(--verde-pastel) 62%);
+  color: inherit;
+  padding: 0 2px;
+}
+
+.hero__lede {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  line-height: 1.6;
+  color: var(--cinza-chumbo);
+  max-width: 50ch;
+  margin-top: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.hero__ctas {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-4);
+}
+
+.btn-primary,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-pill);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--amarelo-suave);
+  color: var(--preto-antifragil);
+  border: none;
+  box-shadow: 0 1px 2px rgba(38, 46, 51, 0.1);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(38, 46, 51, 0.18);
+  background: #e4d39a;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--preto-antifragil);
+  border: 1.5px solid var(--cinza-chumbo);
+}
+.btn-ghost:hover {
+  border-color: var(--preto-antifragil);
+  background: rgba(69, 82, 89, 0.06);
+}
+
+.hero__slogan {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.9375rem;
+  color: var(--cinza-chumbo);
+  opacity: 0.85;
+  max-width: 460px;
+  border-left: 2px solid var(--verde-pastel);
+  padding-left: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.hero__pillars-tag {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cinza-chumbo);
+  opacity: 0.65;
+}
+.hero__pillars-tag span { position: relative; padding-left: 14px; }
+.hero__pillars-tag span::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--amarelo-suave);
+  transform: translateY(-50%);
+}
+
+/* ---------- Componente reutilizável: console (preview de conversa) ----------
+   Usado 2x: variante clara (.console--light) no card do hero, variante
+   escura (default) na seção de produto. Mono só na barra/rótulos — ver
+   nota no topo do arquivo sobre a regra híbrida. */
+.console {
+  position: relative;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(217, 197, 131, 0.22);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lift);
+}
+.console__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px var(--sp-3);
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(217, 197, 131, 0.14);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: rgba(242, 242, 242, 0.55);
+}
+.console__dots { display: flex; gap: 6px; flex-shrink: 0; }
+.console__dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(242, 242, 242, 0.18); }
+.console__body { padding: var(--sp-3); min-height: 150px; }
+.console__line {
+  display: flex;
+  gap: 10px;
+  margin-bottom: var(--sp-1);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: rgba(242, 242, 242, 0.88);
+}
+.console__line .tag {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--verde-pastel);
+  padding-top: 3px;
+}
+.console__line.reply .tag { color: var(--amarelo-suave); font-weight: 600; }
+.console__line.hint {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: var(--sp-1);
+  color: rgba(242, 242, 242, 0.7);
+}
+.console__cursor {
+  display: inline-block;
+  width: 6px; height: 13px;
+  background: var(--amarelo-suave);
+  margin-left: 2px;
+  vertical-align: -2px;
+  animation: console-blink 1s steps(1) infinite;
+}
+@keyframes console-blink { 50% { opacity: 0; } }
+
+/* variante clara — hero */
+.console--light { background: #fff; border: 1px solid rgba(69, 82, 89, 0.14); }
+.console--light .console__bar { background: var(--off-white); color: var(--cinza-chumbo); border-bottom: 1px solid rgba(69, 82, 89, 0.12); }
+.console--light .console__dots span { background: rgba(69, 82, 89, 0.18); }
+.console--light .console__line { color: var(--preto-antifragil); }
+.console--light .console__line .tag { color: var(--cinza-chumbo); opacity: 0.6; }
+.console--light .console__line.reply .tag { color: var(--preto-antifragil); }
+.console--light .console__line.hint { color: var(--cinza-chumbo); opacity: 0.65; }
+
+/* ---------- Card de pré-visualização da Bússola no hero ----------
+   Visual/estático por decisão de engenharia desta integração: representa
+   a Bússola sem duplicar a infraestrutura do widget real (Turnstile,
+   sessão, chamadas de rede) na home. O card inteiro é um link para a
+   página real do produto (site/bussola/), onde o widget funcional já
+   existe — ver nota de adaptação no relatório de entrega. */
+.hero__preview-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-lg);
+}
+.hero__preview-link .console {
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.hero__preview-link:hover .console,
+.hero__preview-link:focus-visible .console {
+  transform: translateY(-3px);
+  box-shadow: 0 30px 64px -16px rgba(38, 46, 51, 0.32);
+}
+
+/* ---------- Transições entre seções claro/escuro ---------- */
+.seam-to-dark {
+  position: relative;
+  height: clamp(36px, 6vw, 72px);
+  background: var(--off-white);
+}
+.seam-to-dark svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+.seam-to-light {
+  position: relative;
+  height: clamp(36px, 6vw, 72px);
+  background: var(--preto-antifragil);
+}
+.seam-to-light svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- Seção escura: soluções / Bússola ---------- */
+.solutions {
+  position: relative;
+  background: var(--preto-antifragil);
+  color: var(--off-white);
+  padding: var(--sp-10) 0 var(--sp-12);
+  overflow: hidden;
+}
+.solutions__eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: none;
+  color: var(--amarelo-suave);
+  margin-bottom: var(--sp-2);
+}
+.solutions__head { max-width: 680px; margin-bottom: var(--sp-6); }
+.solutions__head h2 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--off-white);
+  font-size: clamp(1.75rem, 3.4vw, 2.625rem);
+  line-height: 1.2;
+  margin-bottom: var(--sp-3);
+}
+.solutions__head p {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(242, 242, 242, 0.72);
+  max-width: 620px;
+}
+
+.solutions .console { margin-bottom: var(--sp-6); }
+
+.solutions__bento {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: auto auto;
+  gap: var(--sp-3);
+}
+.solutions__card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(242, 242, 242, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  transition: border-color 0.2s var(--ease);
+}
+.solutions__card:hover { border-color: rgba(217, 197, 131, 0.4); }
+.solutions__card-idx {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--amarelo-suave);
+  opacity: 0.9;
+  margin-bottom: var(--sp-2);
+}
+.solutions__card h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--off-white);
+  font-size: 1.0625rem;
+  margin-bottom: var(--sp-1);
+  letter-spacing: -0.01em;
+}
+.solutions__card p {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 0.9375rem;
+  color: rgba(242, 242, 242, 0.64);
+  line-height: 1.55;
+}
+.solutions__card--1 { grid-column: 1 / span 2; grid-row: 1; }
+.solutions__card--2 { grid-column: 3; grid-row: 1; }
+.solutions__card--3 { grid-column: 1; grid-row: 2; }
+.solutions__card--4 {
+  grid-column: 2 / span 2; grid-row: 2;
+  display: flex; flex-direction: column; justify-content: center;
+  background: rgba(217, 197, 131, 0.08);
+  border-color: rgba(217, 197, 131, 0.3);
+}
+.solutions__card--4 .solutions__cta {
+  margin-top: var(--sp-2);
+}
+
+/* ticker kinético — único ponto de texto em movimento da página, igual
+   decisão do protótipo (1 só lugar com motion-type, resto estático) */
+.solutions__ticker {
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: var(--off-white);
+  height: 26px;
+  overflow: hidden;
+  position: relative;
+  margin-top: var(--sp-2);
+}
+.solutions__ticker-item {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  opacity: 0; transform: translateY(12px);
+  animation: solutions-ticker 9s linear infinite;
+}
+.solutions__ticker-item::before { content: "→ "; color: var(--amarelo-suave); margin-right: 6px; }
+.solutions__ticker-item:nth-child(1) { animation-delay: 0s; }
+.solutions__ticker-item:nth-child(2) { animation-delay: 3s; }
+.solutions__ticker-item:nth-child(3) { animation-delay: 6s; }
+@keyframes solutions-ticker {
+  0% { opacity: 0; transform: translateY(12px); }
+  4% { opacity: 1; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(0); }
+  36% { opacity: 0; transform: translateY(-12px); }
+  100% { opacity: 0; }
+}
+
+/* ---------- Pilares (claro) ---------- */
+.pillars { padding: var(--sp-12) 0; background: var(--off-white); }
+.pillars__head { max-width: 640px; margin: 0 auto var(--sp-6); text-align: center; }
+.pillars__head .eyebrow { margin-bottom: var(--sp-2); }
+.pillars__head h2 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--preto-antifragil);
+  font-size: clamp(1.5rem, 3vw, 2.125rem);
+  margin-bottom: var(--sp-3);
+}
+.pillars__head p { font-family: var(--font-body); font-size: 1rem; color: var(--cinza-chumbo); }
+.pillars__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-4); margin-top: var(--sp-6); }
+.pillar-card {
+  background: #fff;
+  border: 1px solid rgba(69, 82, 89, 0.12);
+  border-top: 3px solid var(--verde-pastel);
+  border-radius: var(--radius-md);
+  padding: var(--sp-6) var(--sp-4);
+}
+.pillar-card:nth-child(2) { border-top-color: var(--amarelo-suave); }
+.pillar-card:nth-child(3) { border-top-color: var(--cinza-chumbo); }
+.pillar-card__tag {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cinza-chumbo);
+  opacity: 0.6;
+  margin-bottom: var(--sp-2);
+}
+.pillar-card__word {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+  color: var(--preto-antifragil);
+  line-height: 1.05;
+}
+.pillar-card__word::after {
+  content: "";
+  display: block;
+  width: 40px; height: 3px;
+  margin-top: var(--sp-3);
+  background: var(--verde-pastel);
+  opacity: 0.7;
+}
+.pillar-card:nth-child(2) .pillar-card__word::after { background: var(--amarelo-suave); }
+.pillar-card:nth-child(3) .pillar-card__word::after { background: var(--cinza-chumbo); }
+.pillar-card p { font-family: var(--font-body); font-size: 0.9375rem; color: var(--cinza-chumbo); margin-top: var(--sp-3); }
+
+/* ---------- FAQ (claro) ---------- */
+.faq { padding: 0 0 var(--sp-12); background: var(--off-white); }
+.faq__head { max-width: 640px; margin: 0 auto var(--sp-6); text-align: center; }
+.faq__head .eyebrow { margin-bottom: var(--sp-2); }
+.faq__head h2 { font-family: var(--font-display); font-weight: 300; color: var(--preto-antifragil); font-size: clamp(1.375rem, 2.6vw, 1.75rem); }
+.faq__list { max-width: 740px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-3); }
+.faq-item { background: #fff; border: 1px solid rgba(69, 82, 89, 0.12); border-radius: var(--radius-md); padding: var(--sp-4) var(--sp-4); }
+.faq-item h3 { font-family: var(--font-display); font-weight: 500; font-size: 1.0625rem; color: var(--preto-antifragil); margin-bottom: var(--sp-1); }
+.faq-item p { font-family: var(--font-body); font-size: 0.9375rem; color: var(--cinza-chumbo); line-height: 1.6; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1023px) {
+  .solutions__bento { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .solutions__card--1, .solutions__card--2, .solutions__card--3, .solutions__card--4 { grid-column: 1; grid-row: auto; }
+  .pillars__grid { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 600px) {
+  .pillars__grid { grid-template-columns: repeat(3, 1fr); }
+}

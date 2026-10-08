@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Refúgio Tech — Um refúgio sólido em meio à tecnologia</title>
-<meta name="description" content="Refúgio Tech é um ponto firme para pequenas e médias empresas que se sentem perdidas em meio à tecnologia — solidez e tranquilidade, não jargão.">
+<title>Refúgio Tech — Engenharia de Software, Cloud e IA para Crescer</title>
+<meta name="description" content="Refúgio Tech entrega engenharia de software, cloud, segurança e automação com IA para resolver o que trava o crescimento do seu negócio. Comece pela Bússola.">
 
 <!-- Bug real (2026-10-06): sem color-scheme/theme-color, o Chrome/Android
      aplica força-escuro (auto-darkening) por heurística própria, invertendo
@@ -19,9 +19,66 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- JetBrains Mono adicionado nesta rodada (integração do reposicionamento
+     2026-10) — mesma fonte/pesos já carregados em bussola/index.html, só
+     usada na "casca" de produto (rótulos, prompts), nunca no corpo de
+     texto corrido. Pesos de Jost/Roboto inalterados (escala tipográfica já
+     em uso no site real, sem precisar dos pesos 600/700 do protótipo). -->
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Roboto:wght@300;400;500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="assets/css/styles.css">
+<link rel="stylesheet" href="assets/css/home.css">
+
+<!-- Dados estruturados — adaptados do protótipo aprovado (ativos/marca/
+     propostas-site-2026-10/pagina-inicial-final-2026-10.html, repositório
+     Consultoria) para o domínio e os caminhos reais de produção. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Refúgio Tech",
+  "alternateName": "Bússola",
+  "description": "Engenharia de software, cloud, segurança e automação com IA para pequenas e médias empresas brasileiras, resolvendo o que trava o crescimento do negócio. Criadora da Bússola, agente de diagnóstico por IA que mapeia as 5 frentes técnicas críticas de uma operação.",
+  "url": "https://refugio.tech",
+  "logo": "https://refugio.tech/assets/refugio-tech.svg",
+  "areaServed": "BR",
+  "slogan": "Não somos apenas consultoria. Somos o fundamento sólido para a sua Transformação Tecnológica.",
+  "knowsAbout": ["Engenharia de software", "Cloud e infraestrutura", "Segurança e DevSecOps", "Automação e IA aplicada ao negócio", "Integração de sistemas e dados"],
+  "sameAs": []
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "O que é a Bússola da Refúgio Tech?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A Bússola é o agente de diagnóstico por IA da Refúgio Tech, disponível em /bussola. Em uma conversa, ela mapeia as 5 frentes que mais travam o crescimento técnico de uma empresa — arquitetura, segurança, cloud, automação e integração — e devolve uma lista priorizada do que resolver primeiro."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "A Bússola substitui a engenharia da Refúgio Tech?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Não. A Bússola faz o diagnóstico inicial. A Refúgio Tech entra com a engenharia de verdade: arquitetura, software, cloud, segurança e automação com IA que resolve o problema, não só aponta onde ele está."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "A Refúgio Tech é consultoria de TI genérica?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Não. Diagnóstico solto ou TI genérica não fazem parte da entrega. Todo trabalho é solução de engenharia — software, integração, automação ou IA — com o crescimento real do cliente como critério de sucesso, não um relatório para guardar na gaveta."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -33,7 +90,10 @@
       <img src="assets/refugio-tech-mark.svg" alt="" aria-hidden="true" class="brand__mark">
       <span class="brand__name">Refúgio Tech</span>
     </a>
-    <nav class="site-header__nav" aria-label="Contato">
+    <nav class="site-header__nav" aria-label="Navegação principal">
+      <a class="site-header__link site-header__link--extra" href="#solucoes">Soluções</a>
+      <a class="site-header__link site-header__link--extra-narrow" href="bussola/">Bússola</a>
+      <a class="site-header__link site-header__link--extra" href="#pilares">Pilares</a>
       <a class="site-header__link" href="#fale-com-a-gente">
         <span class="site-header__link-full">Fale com a gente</span>
         <span class="site-header__link-short">Contato</span>
@@ -44,59 +104,176 @@
 
 <main id="conteudo">
 
-  <!-- ===================== HERO (título + card da Bússola) =====================
-       Rodada 6: o CTA da Bússola (antes numa seção .home-cta separada, depois
-       de .intro — exigia 2 telas de rolagem no celular) passou a viver dentro
-       do próprio bloco da hero.
-       Rodada 7 (2026-10-05, pedido explícito do fundador): a marca grande
-       (símbolo geométrico + "Refúgio Tech") que ocupava a coluna da direita
-       no desktop foi REMOVIDA da hero — ela já aparece no header do site,
-       não precisa se repetir aqui. O card da Bússola agora ocupa o lugar
-       onde a marca estava (desktop: coluna da direita, ver
-       @media (min-width: 1024px) em styles.css; mobile: segue o fluxo
-       natural do DOM, abaixo do título).
-       Rodada 11 (2026-10-05, pedido do fundador): removido do card o
-       <p class="hero__cta-paragraph"> (parágrafo longo explicando a
-       Bússola) — card mais direto, menos texto antes da ação. Kicker,
-       título (h2) e botão permanecem. Não afeta a página /bussola, que
-       mantém o texto completo abaixo do chat. -->
+  <!-- ===================== HERO =====================
+       Integração 2026-10-07 do reposicionamento aprovado (ver protótipo
+       no repositório Consultoria, só leitura). Estrutura: eyebrow + título
+       + lede + 2 CTAs + citação do slogan + tags dos 3 pilares, na coluna
+       de texto; card de pré-visualização da Bússola (estático, link para
+       a página real do widget) na coluna da direita. -->
   <section class="hero" aria-labelledby="hero-headline">
     <div class="hero__facet hero__facet--one" aria-hidden="true"></div>
     <div class="hero__facet hero__facet--two" aria-hidden="true"></div>
 
     <div class="container hero__grid">
       <div class="hero__content reveal">
-        <h1 id="hero-headline" class="hero__headline">Onde a tecnologia encontra um porto seguro.</h1>
+        <span class="eyebrow hero__eyebrow">Engenharia de software, cloud e IA para PMEs brasileiras</span>
+        <h1 id="hero-headline" class="hero__headline">Engenharia que resolve o que <mark>trava seu crescimento</mark>.</h1>
+        <p class="hero__lede">A Bússola conversa com sua operação e mapeia as 5 frentes que mais travam crescimento — arquitetura, segurança, cloud, automação e integração. A Refúgio Tech entra depois, com engenharia de software, cloud e IA, para resolver de verdade, não só apontar.</p>
+        <div class="hero__ctas">
+          <a href="bussola/" class="btn-primary">Falar com a Bússola</a>
+          <a href="#fale-com-a-gente" class="btn-ghost">Agendar conversa</a>
+        </div>
+        <p class="hero__slogan">"Não somos apenas consultoria. Somos o fundamento sólido para a sua Transformação Tecnológica."</p>
+        <div class="hero__pillars-tag">
+          <span>Antifragilidade</span>
+          <span>Maestria Boutique</span>
+          <span>Vanguarda Estratégica</span>
+        </div>
       </div>
 
       <div class="hero__cta reveal">
-        <div class="hero__cta-card">
-          <div class="hero__cta-card-accent" aria-hidden="true"></div>
-          <div class="hero__cta-card-body">
-            <p class="hero__cta-kicker">Bússola · agente de IA da Refúgio Tech<img src="assets/bussola-icone.svg" alt="" aria-hidden="true" class="hero__cta-kicker-icon"></p>
-            <h2 id="home-cta-heading" class="hero__cta-heading">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h2>
-            <a class="contact__cta hero__cta-button" href="bussola/">Falar com a Bússola</a>
+        <!-- Pré-visualização estática da Bússola — decisão de engenharia desta
+             integração: em vez de embutir o widget funcional (Turnstile,
+             sessão, chamadas de rede) duplicado na home, o card é só visual
+             e inteiro clicável para site/bussola/, onde o widget real já
+             funciona. Ver nota de adaptação no relatório de entrega. -->
+        <a href="bussola/" class="hero__preview-link" aria-label="Ver pré-visualização e conversar com a Bússola de verdade">
+          <div class="console console--light" role="img" aria-label="Pré-visualização de uma conversa de diagnóstico com a Bússola">
+            <div class="console__bar">
+              <span>bússola — pré-visualização</span>
+              <div class="console__dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="console__body">
+              <div class="console__line"><span class="tag">&gt;</span><span class="text">nossa fatura de nuvem triplicou em 6 meses e não sabemos por quê</span></div>
+              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Categoria: cloud e custo de infraestrutura. Indício de recursos superdimensionados sem autoscaling.</span></div>
+              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Prioridade 2 — ação recomendada nos próximos 30 dias.<span class="console__cursor"></span></span></div>
+              <div class="console__line hint">clique para conversar com a Bússola de verdade →</div>
+            </div>
           </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TRANSIÇÃO: clara → escura ===================== -->
+  <div class="seam-to-dark" aria-hidden="true">
+    <svg viewBox="0 0 1200 72" preserveAspectRatio="none"><path d="M0,30 C300,68 900,0 1200,36 L1200,72 L0,72 Z" fill="#262E33"></path></svg>
+  </div>
+
+  <!-- ===================== SOLUÇÕES / BÚSSOLA (escura) ===================== -->
+  <section class="solutions reveal" id="solucoes" aria-labelledby="solutions-heading">
+    <div class="container">
+      <div class="solutions__head">
+        <span class="solutions__eyebrow">// refugio.tech/bussola</span>
+        <h2 id="solutions-heading">As 5 frentes que travam o crescimento da sua empresa.</h2>
+        <p>A Bússola é o agente da Refúgio Tech, embutido em /bussola. Em uma conversa de texto, ela mapeia as 5 frentes mais comuns de travamento técnico — arquitetura e dívida técnica, segurança e DevSecOps, cloud e custo de infraestrutura, automação e IA aplicada ao negócio, integração de sistemas e dados fragmentados — e devolve uma lista priorizada do que resolver primeiro.</p>
+      </div>
+
+      <div class="console">
+        <div class="console__bar">
+          <span>bussola — sessão de diagnóstico</span>
+          <div class="console__dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="console__body">
+          <div class="console__line"><span class="tag">&gt;</span><span class="text">iniciar diagnóstico de arquitetura e cloud</span></div>
+          <div class="console__line hint">mapeando arquitetura, segurança, cloud e integrações…</div>
+          <div class="console__line reply"><span class="tag">bússola</span><span class="text">5 frentes mapeadas. 2 travando crescimento agora.</span></div>
+          <div class="console__line"><span class="tag">&gt;</span><span class="text">qual o de maior impacto?</span></div>
+          <div class="console__line reply"><span class="tag">bússola</span><span class="text">Dívida técnica na arquitetura core limitando throughput. Prioridade 1.<span class="console__cursor"></span></span></div>
+        </div>
+      </div>
+
+      <div class="solutions__bento">
+        <div class="solutions__card solutions__card--1">
+          <span class="solutions__card-idx">01 · arquitetura e dívida técnica</span>
+          <h3>Você vê a dívida técnica antes que ela pare seu roadmap.</h3>
+          <p>A Bússola audita arquitetura, segurança, cloud e integrações e aponta quando uma frente começa a travar — antes de virar gargalo de produto.</p>
+          <div class="solutions__ticker" aria-hidden="true">
+            <span class="solutions__ticker-item">mapeando arquitetura e dívida técnica</span>
+            <span class="solutions__ticker-item">auditando segurança e devsecops</span>
+            <span class="solutions__ticker-item">revisando automação e integrações</span>
+          </div>
+        </div>
+        <div class="solutions__card solutions__card--2">
+          <span class="solutions__card-idx">02 · priorização por impacto</span>
+          <h3>Prioridade por impacto no crescimento, não por volume de página.</h3>
+          <p>Cada achado vem ordenado pelo quanto está custando o crescimento do seu negócio. Você decide em minutos, não depois de ler um relatório de 40 páginas.</p>
+        </div>
+        <div class="solutions__card solutions__card--3">
+          <span class="solutions__card-idx">03 · tradução sem jargão</span>
+          <h3>Decisão de negócio, não relatório técnico.</h3>
+          <p>A Bússola traduz cada achado — de dívida técnica a custo de cloud — em uma frase que qualquer dono de empresa entende e pode decidir.</p>
+        </div>
+        <div class="solutions__card solutions__card--4">
+          <span class="solutions__card-idx">disponível agora em /bussola</span>
+          <h3>Teste a Bússola antes de contratar.</h3>
+          <p>A mesma Bússola que mapeia as 5 frentes do seu negócio está ativa agora — converse com ela e veja o diagnóstico acontecer, de graça.</p>
+          <a href="bussola/" class="btn-primary solutions__cta">Testar a Bússola agora</a>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- ===================== INTRODUÇÃO (fundo escuro) ===================== -->
-  <section class="intro" aria-labelledby="intro-heading">
-    <h2 id="intro-heading" class="visually-hidden">Sobre a Refúgio Tech</h2>
-    <img src="assets/refugio-tech-mark.svg" alt="" aria-hidden="true" class="intro__watermark">
-    <div class="container intro__inner">
-      <div class="intro__bar" aria-hidden="true"></div>
-      <p class="intro__paragraph reveal">A Refúgio Tech existe para ser um ponto firme em meio à tecnologia: solidez para sustentar as decisões que importam, tranquilidade para quem não precisa entender de tudo — só precisa de alguém em quem confiar. É essa a bússola de tudo o que construímos aqui, desde já.</p>
-      <p class="intro__paragraph intro__paragraph--second reveal">Isso significa paciência deliberada: preferimos entender a fundo o problema real de cada empresa a empurrar solução pronta de prateleira. E significa permanência — um refúgio que segue de pé não porque uma aposta específica deu certo, mas porque o compromisso com quem está perdido na tecnologia não muda.</p>
+  <!-- ===================== TRANSIÇÃO: escura → clara ===================== -->
+  <div class="seam-to-light" aria-hidden="true">
+    <svg viewBox="0 0 1200 72" preserveAspectRatio="none"><path d="M0,36 C300,0 900,68 1200,30 L1200,0 L0,0 Z" fill="#F2F2F2"></path></svg>
+  </div>
+
+  <!-- ===================== PILARES (clara) ===================== -->
+  <section class="pillars reveal" id="pilares" aria-labelledby="pillars-heading">
+    <div class="container">
+      <div class="pillars__head">
+        <span class="eyebrow">Como a Refúgio Tech trabalha</span>
+        <h2 id="pillars-heading">Três pilares, uma única disciplina</h2>
+        <p>Toda decisão de engenharia que tomamos por um cliente passa pelo mesmo filtro: a solução é robusta o suficiente para aguentar pressão, e o negócio cresce de verdade por causa dela. Qualidade de engenharia é meio. Crescimento real do cliente é o critério de sucesso.</p>
+      </div>
+      <div class="pillars__grid">
+        <div class="pillar-card">
+          <span class="pillar-card__tag">Antifragilidade</span>
+          <div class="pillar-card__word">Solidez</div>
+          <p>Sistemas que não só resistem a falhas, mas prosperam sob pressão e crescem de forma sustentável.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="pillar-card__tag">Maestria Boutique</span>
+          <div class="pillar-card__word">Precisão</div>
+          <p>Profundidade técnica de elite — especialista humano apoiado por agentes de IA especializados, sem perder o cuidado artesanal.</p>
+        </div>
+        <div class="pillar-card">
+          <span class="pillar-card__tag">Vanguarda Estratégica</span>
+          <div class="pillar-card__word">Visão</div>
+          <p>Direção clara, inovação com fundamento. Não vende buzzwords, vende a arquitetura para o futuro.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- O CTA da Bússola (antes aqui, seção .home-cta) foi movido para dentro
-       da .hero, rodada 6 — ver comentário acima da seção hero. -->
+  <!-- ===================== FAQ (clara, schema FAQPage) ===================== -->
+  <section class="faq reveal" id="faq" aria-labelledby="faq-heading">
+    <div class="container">
+      <div class="faq__head">
+        <span class="eyebrow">Perguntas frequentes</span>
+        <h2 id="faq-heading">Dúvidas comuns sobre a Bússola e a Refúgio Tech</h2>
+      </div>
+      <div class="faq__list">
+        <div class="faq-item">
+          <h3>O que é a Bússola da Refúgio Tech?</h3>
+          <p>A Bússola é o agente de diagnóstico por IA da Refúgio Tech, disponível em /bussola. Em uma conversa, ela mapeia as 5 frentes que mais travam o crescimento técnico de uma empresa — arquitetura, segurança, cloud, automação e integração — e devolve uma lista priorizada do que resolver primeiro.</p>
+        </div>
+        <div class="faq-item">
+          <h3>A Bússola substitui a engenharia da Refúgio Tech?</h3>
+          <p>Não. A Bússola faz o diagnóstico inicial. A Refúgio Tech entra com a engenharia de verdade: arquitetura, software, cloud, segurança e automação com IA que resolve o problema, não só aponta onde ele está.</p>
+        </div>
+        <div class="faq-item">
+          <h3>A Refúgio Tech é consultoria de TI genérica?</h3>
+          <p>Não. Diagnóstico solto ou TI genérica não fazem parte da entrega. Todo trabalho é solução de engenharia — software, integração, automação ou IA — com o crescimento real do cliente como critério de sucesso, não um relatório para guardar na gaveta.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  <!-- ===================== CONTATO ===================== -->
+  <!-- ===================== CONTATO (verde pastel) =====================
+       Infra real inalterada (Web3Forms, campos ocultos, honeypot) — só
+       cabeçalho/subtexto revisados para o novo tom. -->
   <section class="contact" id="fale-com-a-gente" aria-labelledby="contact-heading">
     <div class="contact__facet" aria-hidden="true"></div>
     <div class="container contact__inner">
@@ -106,7 +283,7 @@
         <polygon points="80,60 120,0 120,60" fill="#4A5759"/>
       </svg>
       <h2 id="contact-heading" class="contact__heading reveal">Fale com a gente</h2>
-      <p class="contact__subtext reveal">Se o tema interessa, escreva. Queremos ouvir.</p>
+      <p class="contact__subtext reveal">Quer entender se a Refúgio Tech resolve o que está travando sua empresa? Escreva.</p>
 
       <form class="contact__form reveal" id="contact-form" action="https://api.web3forms.com/submit" method="POST">
         <input type="hidden" name="access_key" value="42c4dfd1-6c78-4315-96a7-fa770bf176f7">
@@ -145,10 +322,12 @@
 
 <script src="assets/js/main.js"></script>
 
-<!-- O agente conversacional "Bússola" tem página própria agora
+<!-- O agente conversacional "Bússola" tem página própria
      (site/bussola/index.html) — ver decisoes/2026-10-05-agente-piloto-
      descoberta-pme.md (repositório Consultoria, "Achado do primeiro teste
-     manual"). O widget de chat não fica mais solto na home. -->
+     manual"). O widget de chat não fica solto na home — a home só mostra
+     uma pré-visualização estática que linka para a página real (ver
+     .hero__preview-link acima). -->
 
 <!-- Cloudflare Web Analytics — beacon sem cookie, sem fingerprint por
      IP/User-Agent (decisão do fundador, aprovada em cima da proposta de

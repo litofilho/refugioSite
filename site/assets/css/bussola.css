@@ -62,6 +62,24 @@
   min-width: 0;
 }
 
+/* Eyebrow mono (rodada 2026-10-07, integração do reposicionamento) — elo
+   visual com a seção escura da home (.solutions__eyebrow, home.css),
+   mesma convenção "// caminho" em JetBrains Mono. Só aqui, acima do
+   kicker/título; não se repete no resto da página clara (mono fica
+   reservado à casca do produto, mesma regra já usada no widget). */
+.bussola-hero__path {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  /* cinza-chumbo, não amarelo-suave: amarelo sobre off-white falha
+     contraste AA pra texto (auditoria de acessibilidade rodada 19 já
+     pegou esse mesmo tipo de problema alhures — amarelo fica só para
+     acento/dot decorativo em fundo claro, nunca como cor de texto). */
+  color: var(--cinza-chumbo);
+  opacity: 0.75;
+  margin: 0 0 var(--sp-1);
+}
+
 /* Badge da pagina /bussola. Historico: 56px -> 128px (rodada anterior,
    pedido do fundador: "ficou meio perdido e pequeno, precisa de mais
    presenca visual" -- testado contra 88px e 112px+halo, ver

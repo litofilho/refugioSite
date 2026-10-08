@@ -200,6 +200,19 @@ button:focus-visible {
   line-height: 1;
 }
 
+/* .site-header__nav nunca precisou de display:flex enquanto só existia 1
+   link ("Fale com a gente") — um <a> inline já ficava bem sozinho. Rodada
+   2026-10-07 (integração do reposicionamento) adicionou mais 3 links
+   (Soluções/Bússola/Pilares) nas duas páginas (home e /bussola); sem
+   flex, o <nav> (display:block por padrão) deixava os <a> empilharem
+   verticalmente por cima da marca — bug real, pego em teste manual em
+   390px antes do commit. */
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
 .site-header__link {
   font-family: var(--font-body);
   font-weight: 500;
@@ -210,6 +223,26 @@ button:focus-visible {
   border-radius: 4px;
   transition: color 0.2s var(--ease), background-color 0.2s var(--ease);
   white-space: nowrap;
+}
+
+/* Links "extra" (Soluções/Pilares — âncoras de rolagem, não CTAs
+   primários): escondidos abaixo de 700px para não competir por espaço
+   com a marca e os 2 links que importam mais no mobile (Bússola e
+   Contato, que levam a uma ação). Mesmo critério de priorização já
+   usado no swap "Fale com a gente" -> "Contato" logo abaixo. */
+.site-header__link--extra { display: inline; }
+@media (max-width: 700px) {
+  .site-header__link--extra { display: none; }
+}
+
+/* Telas muito estreitas (<480px): o link "Bússola" do nav também sai —
+   a mesma ação já está coberta pelo CTA principal da hero ("Falar com a
+   Bússola", visível sem rolar) e pela /bussola linkada no card de
+   pré-visualização. Evita competir por espaço com a marca, que já
+   encolhe bastante nessa faixa (ver .brand__name abaixo). */
+.site-header__link--extra-narrow { display: inline; }
+@media (max-width: 479px) {
+  .site-header__link--extra-narrow { display: none; }
 }
 .site-header__link:hover {
   color: var(--preto-antifragil);
@@ -345,105 +378,22 @@ button:focus-visible {
 }
 
 /* ===================================================================
-   CTA da Bússola, embutido na hero (rodada 6 — antes era a seção
-   .home-cta, separada, depois de .intro: exigia 2 telas de rolagem no
-   mobile antes de qualquer convite de ação). Mesmo texto, só reposicionado
-   para aparecer logo abaixo do título, visível sem rolar em 390px.
+   Rodada 2026-10-07 (integração do reposicionamento): o card de CTA
+   antigo (.hero__cta-card, kicker com ícone da Bússola, heading e botão
+   único) foi REMOVIDO — a coluna da direita da hero agora usa o card de
+   pré-visualização da Bússola (.hero__preview-link/.console, definidos
+   em home.css) + os CTAs/slogan/pilares ficam na coluna de texto
+   (.hero__eyebrow/.hero__lede/.hero__ctas/.hero__slogan/.hero__pillars-tag,
+   também em home.css). As classes .hero__cta-card*, .hero__cta-kicker*,
+   .hero__cta-heading, .hero__cta-button e .hero__cta-icon (este último já
+   estava sem uso — a posição absoluta nunca foi aplicada à marcação real,
+   só ao ícone inline em .hero__cta-kicker-icon) foram removidas daqui. O
+   wrapper .hero__cta (área de grid) continua definido abaixo, só sem
+   position:relative (não precisa mais ancorar ícone absoluto). Histórico
+   completo de ambos (CSS e HTML) no git log deste arquivo e de
+   site/index.html antes desta data.
    =================================================================== */
-.hero__cta {
-  /* ancora .hero__cta-icon (abaixo) -- precisa ficar FORA do
-     .hero__cta-card porque o card tem overflow:hidden (cantos
-     arredondados) e cortaria o ícone se ele ficasse dentro. */
-  position: relative;
-}
-
-/* Rodada 16 (decisão do fundador): ícone normal da Bússola (mesmo SVG,
-   sem alteração de arte -- as 3 variações de refinamento visual da
-   rodada 14/proposta "bussola-icone-refinamento" foram descartadas),
-   em tamanho visível (60px fixo, decisão do fundador), ancorado no
-   canto superior direito do card -- lado direito também é decisão
-   fixa do fundador. Funciona como selo/acento sobre o card, não mais
-   como fundo gigante de baixa opacidade (.hero__bussola-bg, removida).
-   Posição testada via CDP em 1440px e 390px -- ver
-   docs/agente-conversacional-descoberta.md (repositório Consultoria). */
-.hero__cta-icon {
-  position: absolute;
-  top: -22px;
-  right: 20px;
-  width: 60px;
-  height: 60px;
-  z-index: 2;
-  filter: drop-shadow(0 10px 20px rgba(38, 46, 51, 0.22));
-  pointer-events: none;
-}
-
-.hero__cta-card {
-  position: relative;
-  display: flex;
-  background: #fff;
-  border: 1px solid rgba(178, 194, 185, 0.5);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lift);
-  overflow: hidden;
-}
-
-.hero__cta-card-accent {
-  flex: none;
-  width: 6px;
-  background: var(--amarelo-suave);
-}
-
-.hero__cta-card-body {
-  /* mobile-first: padding bem enxuto na base, cresce no desktop */
-  padding: var(--sp-3) var(--sp-3);
-}
-
-.hero__cta-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-family: var(--font-body);
-  font-weight: 500;
-  /* Auditoria de acessibilidade rodada 19 (achado 1, baixa severidade):
-     mesmo ajuste do .kicker — 0.8125rem (13px) -> 0.875rem (14px). */
-  font-size: 0.875rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cinza-chumbo);
-  margin-bottom: var(--sp-1);
-}
-.hero__cta-kicker-icon {
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
-}
-
-.hero__cta-heading {
-  font-family: var(--font-display);
-  font-weight: 300;
-  color: var(--preto-antifragil);
-  /* mobile-first: compacto na base, cresce com a viewport */
-  font-size: clamp(1.25rem, 5.6vw, 2.25rem);
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  max-width: 30ch;
-  /* Rodada 11 (2026-10-05, pedido do fundador): o parágrafo explicativo
-     (.hero__cta-paragraph) que vinha depois foi removido do card da home
-     (card mais direto, menos texto antes da ação — a /bussola mantém o
-     texto completo abaixo do chat, inalterada). Sem o parágrafo fazendo a
-     transição visual até o botão, o espaço que antes era só a margem do
-     título (var(--sp-2), pensada pra separar do parágrafo que vinha a
-     seguir) ficou curto demais entre o título e o botão — subiu para
-     var(--sp-4) para o card não parecer com um vão vazio estranho. */
-  margin-bottom: var(--sp-4);
-}
-
-/* .hero__cta-paragraph removida nesta mesma rodada — o elemento <p> que
-   usava essa classe não existe mais no index.html (ver nota acima). Se
-   precisar recuperar o texto/estilo, ver o git log deste arquivo
-   (repositório Website) antes de 2026-10-05, rodada 11. */
-
-.hero__cta-button { display: inline-block; }
+.hero__cta { }
 
 /* ===================================================================
    Rodada 7 (2026-10-05): a marca grande (símbolo + legenda "Refúgio
@@ -454,89 +404,21 @@ button:focus-visible {
    precisar recuperar o histórico, ver o git log deste arquivo
    (repositório Website) antes desta data. */
 
-/* seam diagonal: hero (claro) -> introdução (escuro) */
-.hero::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: clamp(40px, 7vw, 96px);
-  background: var(--preto-antifragil);
-  clip-path: polygon(0 100%, 100% 35%, 100% 100%);
-}
+/* Rodada 2026-10-07 (integração do reposicionamento): a seção .intro
+   (fundo escuro, 2 parágrafos institucionais "ponto firme em meio à
+   tecnologia") foi REMOVIDA do fluxo da home — substituída pela seção
+   .solutions (produto/Bússola, fundo escuro, ver home.css), que carrega
+   o mesmo peso visual (única seção escura da página) com o novo
+   reposicionamento de engenharia. O selo diagonal .hero::after também
+   saiu — a transição clara->escura agora é o elemento .seam-to-dark
+   (SVG, home.css + index.html), para não acoplar a cor de destino ao
+   seletor .hero. Histórico de ambos (CSS e HTML) no git log deste
+   arquivo e de site/index.html antes desta data. */
 
-/* ===================================================================
-   Introdução — fundo escuro (Preto Antifrágil)
-   =================================================================== */
-.intro {
-  position: relative;
-  background: var(--preto-antifragil);
-  padding-top: var(--sp-15);
-  padding-bottom: calc(var(--sp-15) + 56px);
-  overflow: hidden;
-}
-
-.intro__watermark {
-  position: absolute;
-  top: 50%;
-  right: -8%;
-  transform: translateY(-50%);
-  width: clamp(360px, 48vw, 640px);
-  opacity: 0.05;
-  pointer-events: none;
-}
-
-.intro__inner {
-  position: relative;
-  z-index: 1;
-  /* trocado de flex-row para posicionamento com padding: evita o
-     bug clássico de overflow de texto em filho flex (min-width:auto
-     + max-width em ch não encolhia corretamente em telas estreitas,
-     confirmado visualmente — texto cortado no mobile). Bloco normal
-     sempre respeita a largura do contêiner. */
-  padding-left: calc(var(--sp-4) + 3px);
-}
-
-.intro__bar {
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 3px;
-  background: var(--amarelo-suave);
-  border-radius: 2px;
-}
-
-.intro__paragraph {
-  font-family: var(--font-body);
-  font-weight: 300;
-  font-size: clamp(1.125rem, 2vw, 1.5rem);
-  line-height: 1.75;
-  color: var(--off-white);
-  max-width: 42ch;
-}
-
-/* segundo parágrafo da introdução — mesmo estilo, só com respiro acima */
-.intro__paragraph--second {
-  margin-top: var(--sp-4);
-}
-
-/* seam diagonal: introdução (escuro) -> contato (verde pastel) */
-.intro::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: clamp(40px, 7vw, 96px);
-  background: var(--verde-pastel);
-  clip-path: polygon(0 35%, 100% 100%, 0 100%);
-}
-
-/* O CTA da Bússola deixou de ser uma seção própria (.home-cta) entre
-   .intro e .contact — rodada 6 moveu o card para dentro da .hero (ver
-   .hero__cta-* acima), para ficar visível sem rolar no mobile. */
+/* .intro::after (seam escuro -> verde pastel) removido junto com .intro —
+   ver nota acima. A seção .contact agora vem depois de .pillars/.faq
+   (fundo claro -> fundo claro, sem seam necessário entre eles; ver
+   .seam-to-light em home.css para a transição .solutions -> .pillars). */
 
 /* ===================================================================
    Contato — fundo Verde Pastel Suave

@@ -13,20 +13,20 @@
      do painel, ver chat-widget.js) — não substitui ela. -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <!-- ===================================================================
-     RASCUNHO — texto desta página ainda NÃO foi aprovado pelo fundador.
-     Produzido por agente efêmero de conteúdo em 2026-10-05, dentro do
-     briefing de posicionamento fechado em decisoes/2026-10-05-agente-
-     piloto-descoberta-pme.md (repositório Consultoria, seção "Nome,
-     página e posicionamento do agente"). Redesenho de UX em rodada
-     posterior: chat passou a ser acessível já na hero, sem exigir
-     rolagem (ver pedido explícito do fundador no mesmo arquivo de
-     decisões, "cliente precisa rolar a tela toda antes de poder
-     conversar" — rejeitado). Publicado SÓ em canal de preview do
-     Firebase Hosting para revisão visual — NÃO rodar
-     `firebase deploy --only hosting` para produção antes da aprovação.
+     Copy/visual desta página atualizados em 2026-10-07 (integração do
+     reposicionamento de engenharia de software/cloud/DevSecOps/automação
+     com IA) para o mesmo padrão da home real — ver ativos/marca/propostas-
+     site-2026-10/pagina-inicial-final-2026-10.html (repositório
+     Consultoria, protótipo aprovado, só leitura) e site/index.html
+     (mesma rodada). O widget em si (chat-widget.js/css) já tinha sido
+     redesenhado visualmente numa rodada anterior (rodada 29) — não foi
+     tocado aqui além de confirmação de integração (ver relatório de
+     entrega). `noindex` mantido: decisão de indexação/publicação de SEO
+     é do fundador, fora do escopo desta integração — e nenhum deploy de
+     produção foi feito nesta rodada (ver README/relatório de entrega).
      =================================================================== -->
-<title>Bússola: agente de IA da Refúgio Tech para dúvidas de TI</title>
-<meta name="description" content="A Bússola investiga o problema de TI da sua empresa com profundidade de analista sênior, consultando fontes oficiais ao vivo. Nada de chatbot genérico.">
+<title>Bússola: agente de IA da Refúgio Tech para arquitetura, cloud e segurança</title>
+<meta name="description" content="A Bússola investiga arquitetura, cloud, segurança e automação da sua empresa com profundidade de analista sênior, consultando fontes oficiais ao vivo. Nada de chatbot genérico.">
 <meta name="robots" content="noindex">
 
 <!-- Bug real (2026-10-06): mesma correção da home — ver styles.css :root e
@@ -57,7 +57,9 @@
       <img src="../assets/refugio-tech-mark.svg" alt="" aria-hidden="true" class="brand__mark">
       <span class="brand__name">Refúgio Tech</span>
     </a>
-    <nav class="site-header__nav" aria-label="Navegação">
+    <nav class="site-header__nav" aria-label="Navegação principal">
+      <a class="site-header__link site-header__link--extra" href="../#solucoes">Soluções</a>
+      <a class="site-header__link site-header__link--extra" href="../#pilares">Pilares</a>
       <a class="site-header__link" href="../#fale-com-a-gente">
         <span class="site-header__link-full">Fale com a gente</span>
         <span class="site-header__link-short">Contato</span>
@@ -89,16 +91,25 @@
        .bussola-hero__intro-text). Mesmo SVG do ícone, sem alteração de
        arte — só a aplicação mudou. Ver
        docs/agente-conversacional-descoberta.md (repositório Consultoria)
-       para o registro completo desta decisão. -->
+       para o registro completo desta decisão.
+
+       Rodada 2026-10-07 (integração do reposicionamento): copy do
+       kicker/h1/lede atualizada para o novo posicionamento de engenharia
+       (arquitetura, cloud, segurança/DevSecOps, automação/IA, integração
+       — as mesmas 5 frentes já usadas nos chips de sugestão abaixo desde
+       a rodada 28, e na home). Adicionado .bussola-hero__path (eyebrow
+       mono, mesmo idioma visual da seção escura da home) como elo visual
+       entre as duas páginas. Estrutura/IDs/widget intactos. -->
   <section class="bussola-hero" aria-labelledby="bussola-headline">
     <div class="bussola-hero__facet" aria-hidden="true"></div>
     <div class="container bussola-hero__inner">
 
       <div class="bussola-hero__intro">
         <div class="bussola-hero__intro-text">
+          <p class="bussola-hero__path">// refugio.tech/bussola</p>
           <p class="kicker">Bússola · agente de IA da Refúgio Tech<img src="../assets/bussola-icone.svg" alt=""          
       aria-hidden="true" class="bussola-hero__badge"></p> 
-          <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com a Bússola.</h1>
+          <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com quem mapeia arquitetura, cloud, segurança e automação de verdade.</h1>
         </div>
       </div>
 
@@ -143,7 +154,8 @@
                    descarte do teste A/B de ângulo de abertura (rodada 27) —
                    um único grupo de chips, sem mais variantes. Ver
                    docs/agente-conversacional-descoberta.md, repositório
-                   Consultoria, seção da rodada 28. -->
+                   Consultoria, seção da rodada 28. Copy já alinhada com o
+                   novo reposicionamento — não precisou mudar nesta rodada. -->
               <div class="chat-widget__chips">
                 <button type="button" class="chat-widget__chip" data-suggestion="Nosso sistema ficou difícil de mexer — toda mudança demora mais e acaba quebrando outra coisa.">Nosso sistema virou difícil de evoluir</button>
                 <button type="button" class="chat-widget__chip" data-suggestion="Não sei se os nossos dados e acessos estão realmente protegidos — nunca paramos pra olhar isso de verdade.">Não sei se estamos realmente protegidos</button>
@@ -176,7 +188,7 @@
         </div>
       </div>
 
-      <p class="bussola-hero__lede">A Bússola é a agente de inteligência artificial da Refúgio Tech. Ela não é um chatbot que devolve respostas de prateleira, nem substitui aquele parente ou conhecido que resolve na emergência. Ela foi feita para quem já tentou essas duas saídas e continuou sem resposta.</p>
+      <p class="bussola-hero__lede">A Bússola é a agente de inteligência artificial da Refúgio Tech. Em uma conversa, ela mapeia as 5 frentes que mais travam o crescimento técnico de uma operação — arquitetura e dívida técnica, segurança e DevSecOps, cloud e custo de infraestrutura, automação e IA aplicada ao negócio, integração de sistemas e dados fragmentados — e aponta o que resolver primeiro. Não é um chatbot genérico nem substitui a engenharia em si: é o diagnóstico que leva até ela.</p>
 
     </div>
   </section>
@@ -184,7 +196,11 @@
   <!-- ===================== LEITURA OPCIONAL: COMO A BÚSSOLA FUNCIONA =====================
        Não é pré-requisito para conversar — o chat já está disponível na
        hero, acima. Isso aqui é contexto extra para quem quiser entender
-       melhor antes (ou depois) de escrever. -->
+       melhor antes (ou depois) de escrever. Lista de situações (rodada
+       2026-10-07) atualizada para as 5 frentes de engenharia do novo
+       posicionamento — antes falava de "planilhas" e "suporte de TI"
+       genéricos, tom que não existe mais na home nem nos chips de
+       sugestão (já trocados na rodada 28). -->
   <section class="bussola-explicacao" aria-labelledby="bussola-explicacao-heading">
     <h2 id="bussola-explicacao-heading" class="visually-hidden">Como a Bússola funciona</h2>
     <div class="container bussola-explicacao__inner">
@@ -192,15 +208,15 @@
 
       <p class="bussola-explicacao__intro">Como funciona: você conta o que está travando na empresa, com suas próprias palavras, e a Bússola conduz a conversa para entender o problema de verdade antes de indicar um caminho.</p>
 
-      <p class="bussola-explicacao__lead-in">Ela ajuda a colocar em perspectiva situações como:</p>
+      <p class="bussola-explicacao__lead-in">Ela mapeia as 5 frentes que mais travam crescimento técnico:</p>
       <ul class="bussola-explicacao__list">
-        <li class="bussola-explicacao__item">Se os dados e sistemas da empresa estão protegidos e existe um plano para quando algo falhar.</li>
-        <li class="bussola-explicacao__item">Se a rede, os computadores e os equipamentos estão funcionando como deveriam, ou só sobrevivendo.</li>
-        <li class="bussola-explicacao__item">Se as planilhas e sistemas que controlam vendas, estoque ou financeiro ainda ajudam ou já se tornaram um problema à parte.</li>
-        <li class="bussola-explicacao__item">Se o suporte de TI contratado está resolvendo as coisas de fato ou só tampando buracos.</li>
-        <li class="bussola-explicacao__item">Se vale construir algo do zero quando já existe uma solução pronta e testada no mercado.</li>
+        <li class="bussola-explicacao__item">Se a arquitetura do seu sistema aguenta crescer, ou já acumulou dívida técnica que trava toda mudança.</li>
+        <li class="bussola-explicacao__item">Se os dados e acessos da empresa estão protegidos com segurança e DevSecOps de verdade, não só um antivírus.</li>
+        <li class="bussola-explicacao__item">Se a conta de cloud faz sentido pelo que a infraestrutura realmente usa, ou está sangrando dinheiro sem explicação.</li>
+        <li class="bussola-explicacao__item">Se existe processo manual demais no dia a dia que já poderia virar automação ou IA aplicada ao negócio.</li>
+        <li class="bussola-explicacao__item">Se os sistemas da empresa conversam entre si, ou cada um guarda uma versão diferente da mesma informação.</li>
       </ul>
-      <p class="bussola-explicacao__closing">A Bússola não decide por você. Ela organiza a dúvida e aponta a direção para a conversa certa com a Refúgio Tech.</p>
+      <p class="bussola-explicacao__closing">A Bússola não decide por você. Ela organiza o diagnóstico técnico e aponta a direção para a engenharia certa — a cargo da Refúgio Tech.</p>
 
       <a href="#refugio-chat-widget" class="bussola-explicacao__back-link" data-chat-reopen>↑ Voltar para a conversa com a Bússola</a>
     </div>
