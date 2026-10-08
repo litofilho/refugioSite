@@ -315,11 +315,15 @@
   color: rgba(242, 242, 242, 0.64);
   line-height: 1.55;
 }
+/* Correção de estrutura (2026-10-08): o bento tinha 4 cards (Bússola,
+   Bunker, "priorização por impacto", CTA da Bússola) espalhados em 2
+   linhas — Bunker virou seção própria (ver .bunker abaixo), o card de
+   "priorização" foi removido (não relevante) e o CTA da Bússola
+   (--4) passou a viver ao lado do card --1, na mesma linha, como um
+   bento de 2 peças (2/3 + 1/3) em vez de 4. */
 .solutions__card--1 { grid-column: 1 / span 2; grid-row: 1; }
-.solutions__card--2 { grid-column: 3; grid-row: 1; }
-.solutions__card--3 { grid-column: 1; grid-row: 2; }
 .solutions__card--4 {
-  grid-column: 2 / span 2; grid-row: 2;
+  grid-column: 3; grid-row: 1;
   display: flex; flex-direction: column; justify-content: center;
   background: rgba(217, 197, 131, 0.08);
   border-color: rgba(217, 197, 131, 0.3);
@@ -353,6 +357,147 @@
 .solutions__soft-link:hover,
 .solutions__soft-link:focus-visible {
   border-bottom-color: var(--verde-pastel);
+}
+
+/* ---------- Separador entre as 2 seções de produto (Bússola → Bunker) ----------
+   Ambas as seções são escuras — não é transição clara/escura (essas usam
+   .seam-to-dark/.seam-to-light com curva SVG), é só uma linha fina pra
+   marcar a troca de registro visual entre os 2 produtos. */
+.seam-products {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(217, 197, 131, 0.25) 50%, transparent);
+}
+
+/* ---------- Seção Bunker (escura, registro vigilância/fortaleza solo) ----------
+   Correção de estrutura e design (2026-10-08, autorizada pelo fundador
+   após revisão visual ao vivo): o Bunker deixa de ser 1 card dentro do
+   bento-grid da Bússola e passa a ser sua própria seção completa, com
+   identidade visual DIFERENTE da Bússola mas dentro do mesmo sistema de
+   marca — mesmos tokens de cor/tipografia (styles.css :root), sem criar
+   cor nova. Diferenças deliberadas em relação a .solutions:
+   1) Ênfase de cor invertida — Amarelo Suave é o acento dominante aqui
+      (eyebrow, status, borda, readout, link), não o Verde Pastel/mix da
+      Bússola.
+   2) Layout de bloco único, sem bento-grid — é 1 produto só, não precisa
+      comparar itens num grid.
+   3) Painel em formato de "log de sistema" (1 voz, monitoramento) em vez
+      do chat de 2 vozes (.console) da Bússola — reforça o conceito do
+      próprio nome Bunker (fortaleza solo, vigilância), sem ticker
+      animado (estático, "modo vigia" vs. o movimento cinético da
+      Bússola).
+   4) Fundo em gradiente sutil (--facet-6 → --preto-antifragil) em vez do
+      preto sólido da Bússola — perceptível ao lado, não uma cor nova.
+   CTA continua link suave (não botão sólido) — produto em piloto
+   privado, sem self-serve, mesma regra do fundador já registrada para o
+   antigo card do Bunker (ver histórico git desta seção). */
+.bunker {
+  position: relative;
+  background: linear-gradient(165deg, var(--facet-6) 0%, var(--preto-antifragil) 60%);
+  color: var(--off-white);
+  padding: var(--sp-10) 0 var(--sp-12);
+  overflow: hidden;
+}
+.bunker__facet {
+  position: absolute;
+  top: -15%; right: -8%;
+  width: 50%; height: 160%;
+  background: linear-gradient(185deg, rgba(217, 197, 131, 0.16), rgba(217, 197, 131, 0) 72%);
+  clip-path: polygon(32% 0, 100% 0, 100% 100%, 0% 100%);
+  pointer-events: none;
+}
+.bunker__inner { position: relative; z-index: 1; max-width: 740px; }
+.bunker__eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  color: var(--amarelo-suave);
+  margin-bottom: var(--sp-2);
+}
+.bunker__head h2 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--off-white);
+  font-size: clamp(1.75rem, 3.4vw, 2.625rem);
+  line-height: 1.2;
+  margin-bottom: var(--sp-3);
+}
+.bunker__head p {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: rgba(242, 242, 242, 0.72);
+  max-width: 620px;
+  margin-bottom: var(--sp-6);
+}
+.bunker__panel {
+  position: relative;
+  background: rgba(217, 197, 131, 0.05);
+  border: 1px solid rgba(217, 197, 131, 0.28);
+  border-left: 3px solid var(--amarelo-suave);
+  border-radius: var(--radius-md);
+  padding: var(--sp-5) var(--sp-4);
+  box-shadow: var(--shadow-lift);
+}
+.bunker__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amarelo-suave);
+  margin-bottom: var(--sp-3);
+}
+.bunker__status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--amarelo-suave);
+  animation: bunker-pulse 2s ease-out infinite;
+}
+@keyframes bunker-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(217, 197, 131, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(217, 197, 131, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(217, 197, 131, 0); }
+}
+.bunker__readout {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.9;
+  color: rgba(242, 242, 242, 0.8);
+  margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px dashed rgba(217, 197, 131, 0.22);
+}
+.bunker__readout-line { display: block; }
+.bunker__readout-line::before { content: "> "; color: var(--amarelo-suave); }
+.bunker__text {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(242, 242, 242, 0.85);
+  max-width: 60ch;
+  margin-bottom: var(--sp-3);
+}
+.bunker__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  color: var(--amarelo-suave);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(217, 197, 131, 0.4);
+  padding-bottom: 2px;
+  transition: border-color 0.2s var(--ease);
+}
+.bunker__link:hover,
+.bunker__link:focus-visible {
+  border-bottom-color: var(--amarelo-suave);
 }
 
 /* ticker kinético — único ponto de texto em movimento da página, igual
@@ -450,8 +595,13 @@
 /* ---------- Responsivo ---------- */
 @media (max-width: 1023px) {
   .solutions__bento { grid-template-columns: 1fr; grid-template-rows: auto; }
-  .solutions__card--1, .solutions__card--2, .solutions__card--3, .solutions__card--4 { grid-column: 1; grid-row: auto; }
+  .solutions__card--1, .solutions__card--4 { grid-column: 1; grid-row: auto; }
   .pillars__grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .bunker__panel { padding: var(--sp-4) var(--sp-3); }
+  .bunker__facet { width: 70%; }
 }
 
 @media (min-width: 600px) {

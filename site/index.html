@@ -190,13 +190,29 @@
     <svg viewBox="0 0 1200 72" preserveAspectRatio="none"><path d="M0,30 C300,68 900,0 1200,36 L1200,72 L0,72 Z" fill="#262E33"></path></svg>
   </div>
 
-  <!-- ===================== SOLUÇÕES / BÚSSOLA (escura) ===================== -->
+  <!-- ===================== SOLUÇÕES / BÚSSOLA + BUNKER =====================
+       Correção de estrutura (2026-10-08, autorizada pelo fundador após
+       revisão visual ao vivo): Bússola e Bunker deixam de ser 2 cards
+       dentro do mesmo bento-grid (ficavam visualmente misturados, sem
+       destaque próprio) e passam a ser 2 SEÇÕES COMPLETAS, uma embaixo
+       da outra, cada uma com identidade visual própria dentro do mesmo
+       sistema de marca (mesmos tokens de cor/tipografia, só varia
+       ênfase/combinação). O card "priorização por impacto" foi removido
+       (não relevante). O CTA de testar a Bússola (antigo card 4) foi
+       incorporado na própria seção da Bússola, já que é o mesmo produto.
+       Ver home.css — bloco ".solutions" (registro Bússola, inalterado) e
+       bloco ".bunker" (registro novo, ênfase em Amarelo Suave + layout de
+       bloco único) para a diferenciação visual. -->
+
+  <!-- ---- Bússola: mantém o registro já aprovado (fundo Preto Antifragil,
+       acento Verde Pastel nos elementos-chave, bento-grid, console de
+       chat de 2 vozes, ticker cinético). ---- -->
   <section class="solutions reveal" id="solucoes" aria-labelledby="solutions-heading">
     <div class="container">
       <div class="solutions__head">
-        <span class="solutions__eyebrow">// refugio.tech/solucoes</span>
-        <h2 id="solutions-heading">Duas portas de entrada para o mesmo refúgio.</h2>
-        <p>A Bússola existe para a pequena e média empresa que se sente perdida na própria operação de TI. O Bunker existe para o consultor de TI solo que sente a mesma sobrecarga tocando o próprio negócio sozinho. Produtos diferentes, público diferente — o mesmo refúgio por trás dos dois.</p>
+        <span class="solutions__eyebrow">// refugio.tech/bussola</span>
+        <h2 id="solutions-heading">A Bússola: você vê o que trava sua operação antes que vire crise.</h2>
+        <p>A Bússola existe para a pequena e média empresa que se sente perdida na própria operação de TI — conversa com seu negócio, mapeia as 5 frentes que mais travam o crescimento técnico e traduz cada achado numa decisão clara.</p>
       </div>
 
       <div class="console">
@@ -224,23 +240,52 @@
             <span class="solutions__ticker-item">revisando automação e integrações</span>
           </div>
         </div>
-        <div class="solutions__card solutions__card--2">
-          <span class="solutions__card-idx">02 · bunker · para quem toca o negócio sozinho</span>
-          <h3>A mesma estrutura de agentes, para quem está sozinho na própria operação.</h3>
-          <p>O Bunker empacota a estrutura de agentes de IA que já roda a Refúgio Tech por dentro, para o consultor de TI solo que sente a mesma sobrecarga que ajudamos nossos clientes a resolver. Em construção com os primeiros parceiros.</p>
-          <a href="#fale-com-a-gente" class="solutions__soft-link">Quero saber mais →</a>
-        </div>
-        <div class="solutions__card solutions__card--3">
-          <span class="solutions__card-idx">03 · priorização por impacto</span>
-          <h3>Prioridade por impacto no crescimento, não por volume de página.</h3>
-          <p>Cada achado vem ordenado pelo quanto está custando o crescimento do seu negócio. Você decide em minutos, não depois de ler um relatório de 40 páginas.</p>
-        </div>
         <div class="solutions__card solutions__card--4">
           <span class="solutions__card-idx">disponível agora em /bussola</span>
           <h3>Teste a Bússola antes de contratar.</h3>
           <p>A mesma Bússola que mapeia as 5 frentes do seu negócio está ativa agora — converse com ela e veja o diagnóstico acontecer, de graça.</p>
           <a href="bussola/" class="btn-primary solutions__cta">Testar a Bússola agora</a>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- Separador entre as 2 seções de produto (escura → escura, troca
+       de registro visual, não de fundo claro/escuro — por isso é uma
+       linha fina, não a curva de transição clara/escura usada acima). ---- -->
+  <div class="seam-products" aria-hidden="true"></div>
+
+  <!-- ---- Bunker: registro NOVO e deliberadamente diferente do da Bússola,
+       dentro da mesma família tipográfica (Jost + Roboto + JetBrains
+       Mono) e paleta oficial, sem cor nova. Ênfase de cor invertida —
+       Amarelo Suave dominante em vez de Verde Pastel — e layout de bloco
+       único (sem bento-grid: é 1 produto só, não precisa comparar itens).
+       Painel em formato de "log de sistema" (1 voz, monitoramento/
+       vigilância) em vez do chat de 2 vozes da Bússola, reforçando o
+       conceito do próprio nome Bunker (fortaleza solo). CTA continua link
+       suave, não botão sólido — produto em piloto privado, sem
+       self-serve (regra do fundador, já registrada no commit anterior
+       desta seção). ---- -->
+  <section class="bunker reveal" id="bunker" aria-labelledby="bunker-heading">
+    <div class="bunker__facet" aria-hidden="true"></div>
+    <div class="container bunker__inner">
+      <div class="bunker__head">
+        <span class="bunker__eyebrow">// refugio.tech/bunker · piloto privado</span>
+        <h2 id="bunker-heading">O Bunker: a mesma estrutura, para quem toca o negócio sozinho.</h2>
+        <p>O Bunker existe para o consultor de TI solo que sente a mesma sobrecarga de tocar o próprio negócio sozinho. Produto diferente da Bússola, mesmo refúgio por trás dos dois.</p>
+      </div>
+      <div class="bunker__panel">
+        <div class="bunker__status">
+          <span class="bunker__status-dot" aria-hidden="true"></span>
+          <span>sistema de agentes · operando em modo solo</span>
+        </div>
+        <div class="bunker__readout" aria-hidden="true">
+          <span class="bunker__readout-line">monitorando a operação 24/7</span>
+          <span class="bunker__readout-line">agentes ativos: diagnóstico, suporte, backoffice</span>
+          <span class="bunker__readout-line">piloto privado — vagas limitadas<span class="console__cursor"></span></span>
+        </div>
+        <p class="bunker__text">O Bunker empacota a mesma estrutura de agentes de IA que já roda a Refúgio Tech por dentro, para o consultor de TI solo que sente a mesma sobrecarga que ajudamos nossos clientes a resolver. Em construção com os primeiros parceiros.</p>
+        <a href="#fale-com-a-gente" class="bunker__link">Quero saber mais sobre o Bunker →</a>
       </div>
     </div>
   </section>
