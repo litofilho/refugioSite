@@ -223,43 +223,59 @@
              a uma página). O link, que antes levava a site/bussola/ (hoje
              removido, ver firebase.json "redirects"), agora é uma âncora
              interna para o widget real. -->
+        <!-- Reescrita do mock (2026-10-08, pós-revisão do fundador sobre o
+             commit 4394234 — ver repositório Website): o exemplo trocou de
+             um problema de cloud/infraestrutura para um de AUTOMAÇÃO DE
+             PROCESSO MANUAL (planilha → sistema de pedidos na mão), e o
+             preview da solução deixou de ser um wireframe de 3 blocos
+             ligados por seta (texto demais, pouco visual) para virar um
+             PAINEL LATERAL com um mockup de produto (janela de app/
+             dashboard: barra de título, status "automatizado", indicador
+             de horas recuperadas). Layout também mudou: .console__grid
+             organiza a conversa e o painel em 2 colunas no desktop (ver
+             home.css, breakpoint próprio de 860px) e empilha no mobile. -->
         <a href="#refugio-chat-widget" class="hero__preview-link" aria-label="Ver pré-visualização e ir até o widget real da Bússola, mais abaixo">
-          <div class="console console--light" role="img" aria-label="Pré-visualização de uma conversa de diagnóstico com a Bússola">
+          <div class="console console--light" role="img" aria-label="Pré-visualização de uma conversa de diagnóstico com a Bússola, incluindo preview visual da solução proposta">
             <div class="console__bar">
               <span>bússola — pré-visualização</span>
               <div class="console__dots"><span></span><span></span><span></span></div>
             </div>
             <div class="console__body">
-              <div class="console__line"><span class="tag">&gt;</span><span class="text">nossa fatura de nuvem triplicou em 6 meses e não sabemos por quê</span></div>
-              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Categoria: cloud e custo de infraestrutura. Indício de recursos superdimensionados sem autoscaling.</span></div>
-              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Prioridade 2 — ação recomendada nos próximos 30 dias.</span></div>
-              <!-- Pedido do fundador pós-revisão visual (commit 4f89e2d): o mock
-                   estático não deve parar no diagnóstico em texto — precisa
-                   emular também o PRÓXIMO passo da feature real de preview de
-                   solução (.chat-widget__preview-card/-label/-frame em
-                   chat-widget.css/js, ainda não publicada em produção — ver
-                   docs/agente-conversacional-descoberta.md, repositório
-                   Consultoria, seção 37). Aqui é só ilustração fixa: nenhum
-                   HTML é gerado/sanitizado de verdade, é um wireframe estático
-                   de 3 blocos (autoscaling → limite de custo → alertas)
-                   representando a arquitetura proposta pro caso do mock. -->
-              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Preview gerado da solução proposta:<span class="console__cursor"></span></span></div>
-              <div class="console__preview-card">
-                <p class="console__preview-card-label">preview gerado · esboço de arquitetura</p>
-                <div class="console__preview-frame">
-                  <div class="console__preview-frame-block">
-                    <span class="console__preview-frame-icon">⇅</span>
-                    <span>Autoscaling</span>
-                  </div>
-                  <span class="console__preview-frame-arrow">→</span>
-                  <div class="console__preview-frame-block">
-                    <span class="console__preview-frame-icon">$</span>
-                    <span>Limite de custo</span>
-                  </div>
-                  <span class="console__preview-frame-arrow">→</span>
-                  <div class="console__preview-frame-block">
-                    <span class="console__preview-frame-icon">⚠</span>
-                    <span>Alertas</span>
+              <div class="console__grid">
+                <div class="console__conversation">
+                  <div class="console__line"><span class="tag">&gt;</span><span class="text">minha equipe perde umas 6 horas por semana copiando pedido da planilha pro sistema, na mão</span></div>
+                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Categoria: automação e IA aplicada ao negócio. Indício de processo manual repetitivo sem integração entre planilha e sistema.</span></div>
+                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Prioridade 2 — ação recomendada nos próximos 30 dias.</span></div>
+                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Preview gerado da solução proposta:<span class="console__cursor"></span></span></div>
+                </div>
+                <!-- Painel lateral (Mudança 2): mockup visual de produto, não
+                     diagrama técnico. Inspirado na linguagem visual do
+                     .chat-widget__preview-card real (borda --verde-pastel,
+                     raio --radius-md, rótulo mono maiúsculo) mas o conteúdo
+                     interno é uma mini "janela" de app (barra + dots, status
+                     pill, KPI, mini gráfico) — sem ícones de seta/bloco. -->
+                <div class="console__preview-panel">
+                  <p class="console__preview-panel-label">preview gerado · mockup do painel</p>
+                  <div class="console__preview-panel-window">
+                    <div class="console__preview-panel-bar">
+                      <span class="console__preview-panel-bar-dots"><span></span><span></span><span></span></span>
+                      <span class="console__preview-panel-bar-title">painel — pedidos</span>
+                    </div>
+                    <div class="console__preview-panel-screen">
+                      <div class="console__preview-panel-status"><span class="console__preview-panel-status-dot"></span>automatizado</div>
+                      <div class="console__preview-panel-stat">
+                        <span class="console__preview-panel-stat-value">6h</span>
+                        <span class="console__preview-panel-stat-label">recuperadas por semana</span>
+                      </div>
+                      <div class="console__preview-panel-chart" aria-hidden="true">
+                        <span style="--bar-h: 85%"></span>
+                        <span style="--bar-h: 62%"></span>
+                        <span style="--bar-h: 40%"></span>
+                        <span style="--bar-h: 22%"></span>
+                        <span style="--bar-h: 10%"></span>
+                      </div>
+                      <p class="console__preview-panel-caption">horas manuais por semana, em queda</p>
+                    </div>
                   </div>
                 </div>
               </div>

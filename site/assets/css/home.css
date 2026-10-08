@@ -247,32 +247,61 @@
 .console--light .console__line.reply .tag { color: var(--preto-antifragil); }
 .console--light .console__line.hint { color: var(--cinza-chumbo); opacity: 0.85; }
 
-/* ---------- Mock estático do preview de solução (hero) ----------
-   Pedido do fundador pós-revisão visual do commit 4f89e2d: o mock do hero
-   (.console--light) precisava mostrar também o próximo passo da conversa —
-   não só o diagnóstico em texto, mas a Bússola oferecendo um preview visual
-   da solução. Visual deliberadamente alinhado ao card real da feature
-   (.chat-widget__preview-card/-label/-frame, chat-widget.css, feature ainda
-   não publicada em produção — ver docs/agente-conversacional-descoberta.md,
-   repositório Consultoria, seção 37): mesma borda --verde-pastel, mesmo
-   raio --radius-md, mesmo rótulo mono maiúsculo. Diferença: aqui não há
-   iframe/HTML gerado — é um wireframe estático de 3 blocos (ícone + rótulo)
-   simulando o esboço de arquitetura pro caso do mock (fatura de nuvem
-   triplicada → autoscaling, limite de custo, alertas). Escopo: só dentro de
-   .console--light (hero); não reaproveitado na seção #solucoes porque ali
-   o widget é o real, com dados reais. */
-.console__preview-card {
-  margin: var(--sp-1) 0 0 0;
+/* ---------- Mock do preview de solução (hero) — reescrita 2026-10-08 ----------
+   Revisão do fundador sobre o commit 4394234 (rodada anterior): o exemplo de
+   problema e o formato do preview não ficaram bons. Duas mudanças nesta
+   rodada:
+
+   1) Exemplo trocado de cloud/custo de infraestrutura para automação de
+      processo manual (planilha → sistema de pedidos na mão) — só o HTML
+      muda (ver index.html), nenhuma classe nova aqui por causa disso.
+
+   2) O preview deixou de ser um wireframe de 3 blocos ligados por seta
+      (.console__preview-card/-frame/-frame-block, texto demais, pouco
+      visual — REMOVIDO nesta rodada, histórico no git log deste arquivo)
+      e virou um PAINEL LATERAL (.console__preview-panel) com um mockup de
+      produto: uma mini "janela" de app (barra de título com dots, status
+      "automatizado", KPI de horas recuperadas, mini gráfico). Mantém a
+      mesma linguagem visual do card real da feature (.chat-widget__preview-
+      card, chat-widget.css, feature ainda não publicada em produção — ver
+      docs/agente-conversacional-descoberta.md, repositório Consultoria,
+      seção 37): borda --verde-pastel, raio --radius-md, rótulo mono
+      maiúsculo — mas o conteúdo interno agora parece screenshot de produto,
+      não diagrama técnico.
+
+   Mudança de LAYOUT que acompanha a troca de conteúdo: .console__grid
+   organiza conversa + painel em 2 colunas a partir de 860px de viewport
+   (breakpoint próprio deste componente — abaixo de 1024px o .hero__grid
+   externo ainda é 1 coluna, então o card já tem a largura cheia do
+   container disponível; a partir de 1024px ele divide espaço com o texto
+   do hero, mas ainda cabe um 1.3fr/1fr confortável). Abaixo de 860px
+   (inclui o mobile de referência, 390px) empilha: conversa em cima, painel
+   embaixo — ordem natural do DOM, sem reflow via grid-template-areas.
+   Escopo: só dentro de .console--light (hero); não reaproveitado em
+   #solucoes porque ali o widget é o real, com dados reais. */
+.console__grid {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
-  padding: var(--sp-2);
-  border: 1px solid var(--verde-pastel);
-  border-radius: var(--radius-md);
-  background: var(--off-white);
-  max-width: 360px;
+  gap: var(--sp-3);
 }
-.console__preview-card-label {
+@media (min-width: 860px) {
+  .console__grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    align-items: start;
+    gap: var(--sp-3);
+  }
+}
+.console__conversation { min-width: 0; }
+
+/* ---------- Painel lateral: mockup de produto (não diagrama) ---------- */
+.console__preview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.console__preview-panel-label {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 1rem;
@@ -281,41 +310,107 @@
   color: var(--cinza-chumbo);
   opacity: 0.85;
 }
-.console__preview-frame {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: var(--sp-1);
-  border: 1px solid rgba(69, 82, 89, 0.18);
-  border-radius: var(--radius-sm);
+/* "Janela" de app: moldura com borda --verde-pastel (mesmo tratamento do
+   card real da feature) + sombra leve para destacar o painel como um
+   elemento visual separado da conversa, não mais uma linha de texto. */
+.console__preview-panel-window {
+  border: 1px solid var(--verde-pastel);
+  border-radius: var(--radius-md);
+  overflow: hidden;
   background: #fff;
+  box-shadow: 0 16px 32px -18px rgba(38, 46, 51, 0.28);
 }
-.console__preview-frame-block {
+.console__preview-panel-bar {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
+  gap: 8px;
+  padding: 8px 10px;
   background: var(--off-white);
+  border-bottom: 1px solid rgba(69, 82, 89, 0.14);
+}
+.console__preview-panel-bar-dots { display: flex; gap: 4px; flex-shrink: 0; }
+.console__preview-panel-bar-dots span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(69, 82, 89, 0.25);
+}
+.console__preview-panel-bar-title {
   font-family: var(--font-mono);
   /* Piso de 16px em todos os seletores pequenos, mesma regra já aplicada
      ao resto deste componente (ver correções 2026-10-08 acima). */
   font-size: 1rem;
+  color: var(--cinza-chumbo);
+  opacity: 0.85;
+}
+.console__preview-panel-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: var(--sp-2);
+}
+/* Status "automatizado": pill verde com ponto, mesma lógica de affordance
+   já usada no dot de status do launcher do widget real (verde-pastel =
+   "processo ativo/saudável" na linguagem visual do produto). */
+.console__preview-panel-status {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill, 999px);
+  background: rgba(146, 193, 150, 0.18);
+  font-family: var(--font-mono);
+  font-size: 1rem;
   color: var(--preto-antifragil);
-  text-align: center;
-  line-height: 1.2;
 }
-.console__preview-frame-icon {
-  font-size: 1.125rem;
-  line-height: 1;
-}
-.console__preview-frame-arrow {
+.console__preview-panel-status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--verde-pastel);
   flex-shrink: 0;
+}
+.console__preview-panel-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.console__preview-panel-stat-value {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--preto-antifragil);
+}
+.console__preview-panel-stat-label {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.3;
+  color: var(--cinza-chumbo);
+  opacity: 0.85;
+}
+/* Mini gráfico decorativo (sparkline de barras) — ilustra "horas manuais
+   caindo", sem ser um diagrama de blocos/setas: é lido como um elemento de
+   dashboard comum (ver --bar-h inline em cada barra, no HTML). */
+.console__preview-panel-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 48px;
+  padding-top: 4px;
+}
+.console__preview-panel-chart span {
+  flex: 1;
+  height: var(--bar-h, 20%);
+  border-radius: 3px 3px 0 0;
+  background: var(--amarelo-suave);
+  opacity: 0.85;
+}
+.console__preview-panel-caption {
+  margin: 0;
+  font-family: var(--font-mono);
   font-size: 1rem;
   color: var(--cinza-chumbo);
-  opacity: 0.5;
+  opacity: 0.75;
 }
 
 /* ---------- Card de pré-visualização da Bússola no hero ----------
