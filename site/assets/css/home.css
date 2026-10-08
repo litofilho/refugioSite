@@ -328,6 +328,33 @@
   margin-top: var(--sp-2);
 }
 
+/* ---------- Correção de direção de copy (2026-10-07) ----------
+   CTA "suave" do card do Bunker (solutions__card--2): produto em piloto
+   privado, não validado — não leva botão de compra/signup self-serve
+   (regra do fundador), só um link de texto discreto que leva ao formulário
+   de contato real da home. Verde-pastel (cor do "refúgio" na paleta, ver
+   ativos/marca/branding.md) em vez do amarelo-suave usado nos CTAs fortes
+   (btn-primary), pra diferenciar visualmente maturidade dos dois produtos
+   sem inventar um novo componente de botão. */
+.solutions__soft-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--sp-2);
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--verde-pastel);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(178, 194, 185, 0.4);
+  padding-bottom: 2px;
+  transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+.solutions__soft-link:hover,
+.solutions__soft-link:focus-visible {
+  border-bottom-color: var(--verde-pastel);
+}
+
 /* ticker kinético — único ponto de texto em movimento da página, igual
    decisão do protótipo (1 só lugar com motion-type, resto estático) */
 .solutions__ticker {
