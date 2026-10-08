@@ -93,7 +93,11 @@
 .chat-widget__launcher-sub {
   font-family: var(--font-mono);
   font-weight: 400;
-  font-size: 0.75rem;
+  /* Correção 3 adicional (2026-10-08): era 0.75rem (12px) — subido para
+     1rem (16px). Texto é mais longo ("Sem cadastro · conversa privada ·
+     resposta na hora"); a 16px pode ocupar 2 linhas no launcher — aceitável
+     (container é flex, cresce em altura; confirmado na checagem visual). */
+  font-size: 1rem;
   letter-spacing: 0.02em;
   color: var(--cinza-chumbo);
   opacity: 0.8;
@@ -161,7 +165,9 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  /* Correção 3 adicional (2026-10-08): era 0.6875rem (11px) — subido para
+     1rem (16px). */
+  font-size: 1rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: rgba(242, 242, 242, 0.68);
@@ -274,7 +280,9 @@
    resposta), nunca no texto da conversa já entregue. */
 .chat-widget__typing-label {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  /* Correção 3 adicional (2026-10-08): era 0.75rem (12px) — subido para
+     1rem (16px). */
+  font-size: 1rem;
   letter-spacing: 0.02em;
   color: var(--cinza-chumbo);
   /* Correção 4 (2026-10-08): era 0.75 — contraste real medido de 3.92:1
@@ -343,7 +351,9 @@
 .chat-widget__preview-prompt-btn {
   align-self: flex-start;
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  /* Correção 3 adicional (2026-10-08): era 0.8125rem (13px) — subido para
+     1rem (16px). */
+  font-size: 1rem;
   letter-spacing: 0.02em;
   color: var(--preto-antifragil);
   background: var(--amarelo-suave);
@@ -374,7 +384,10 @@
 .chat-widget__preview-card-label {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  /* Correção 3 adicional (2026-10-08): era 0.6875rem (11px) — subido para
+     1rem (16px). Contraste (cinza-chumbo @0.85 sobre branco, 5.39:1, ver
+     comentário abaixo) não muda com o tamanho — já estava acima de AA. */
+  font-size: 1rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
@@ -409,7 +422,9 @@
 .chat-widget__suggestions-label {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 0.75rem;
+  /* Correção 3 adicional (2026-10-08): era 0.75rem (12px) — subido para
+     1rem (16px). */
+  font-size: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
@@ -502,7 +517,10 @@
   border: 1px solid rgba(69, 82, 89, 0.18);
   border-radius: var(--radius-pill, 999px);
   background: var(--off-white);
-  font-size: 0.8125rem;
+  /* Correção 3 adicional (2026-10-08): era 0.8125rem (13px) — subido para
+     1rem (16px). Contraste (preto-antifragil sobre off-white, 12.33:1)
+     não muda com o tamanho — já estava acima de AA. */
+  font-size: 1rem;
   color: var(--preto-antifragil);
 }
 .chat-widget__anexo-preview[hidden] { display: none; }
@@ -618,7 +636,10 @@
 /* ---------- Confiança/segurança (microcópia sob o launcher) ---------- */
 .chat-widget__trust {
   margin-top: var(--sp-2);
-  font-size: 0.8125rem;
+  /* Correção 3 adicional (2026-10-08): era 0.8125rem (13px) — subido para
+     1rem (16px). Contraste (cinza-chumbo solid sobre branco, 8.06:1) não
+     muda com o tamanho — já estava acima de AA. */
+  font-size: 1rem;
   color: var(--cinza-chumbo);
   display: flex;
   align-items: center;
@@ -708,7 +729,12 @@
     content: "Fechar";
     font-family: var(--font-body);
     font-weight: 500;
-    font-size: 0.875rem;
+    /* Correção 3 adicional (2026-10-08): era 0.875rem (14px) — subido para
+       1rem (16px), último dos 17 seletores abaixo do piso. Contraste
+       (off-white sobre o fundo composto do botão, rgba(255,255,255,0.14)
+       sobre o header #262E33) medido em 7.89:1 — não muda com o tamanho,
+       já estava bem acima de AA. */
+    font-size: 1rem;
     line-height: 1;
   }
 }

@@ -345,12 +345,22 @@
   <section class="solutions reveal" id="solucoes" aria-labelledby="solutions-heading">
     <div class="container">
       <div class="solutions__head">
-        <!-- Correção 2 (2026-10-08, autorizada pelo fundador): o rótulo
-             "produto ao vivo" explícito saiu daqui também — mesma lógica
-             do selo removido abaixo. O eyebrow volta a ser só a
-             identificação da seção, sem precisar anunciar que é real. -->
-        <span class="solutions__eyebrow">// bússola</span>
-        <h2 id="solutions-heading">A Bússola: você vê o que trava sua operação antes que vire crise.</h2>
+        <!-- Correção 3 adicional (2026-10-08, autorizada pelo fundador, achado
+             exato repassado por quem despachou a tarefa): o .solutions__eyebrow
+             ("// bússola") foi REMOVIDO por inteiro — mesma lógica já aplicada
+             ao .bunker-note__eyebrow (ver home.css): a seção não precisa de
+             rótulo técnico acima do H2. Regra de CSS removida junto (ver
+             home.css, nota na mesma correção).
+
+             Correção 3 adicional (2026-10-08): o H2 não deixava claro que a
+             Bússola é um agente de IA (achado do fundador em revisão visual).
+             Reescrito para citar "agente de IA" explicitamente logo no
+             headline, mantendo o tom de autoridade tranquila da marca (sem
+             ponto de exclamação — branding.md: "sem gritar") e sem perder o
+             aviso de "antes que vire crise" que já funcionava. O H3 do card 1
+             (abaixo, solutions__card--1) parava de ser um duplicado literal
+             deste H2 nesta mesma correção — ver nota lá. -->
+        <h2 id="solutions-heading">A Bússola: o agente de IA que guia você até o que trava o crescimento da sua operação, antes que vire crise.</h2>
         <p>A Bússola existe para quem se sente perdido na própria operação de TI — conversa com o seu negócio, mapeia as 5 frentes que mais travam o crescimento técnico e traduz cada achado numa decisão clara.</p>
       </div>
 
@@ -454,7 +464,12 @@
       <div class="solutions__bento">
         <div class="solutions__card solutions__card--1">
           <span class="solutions__card-idx">01 · bússola · para quem está perdido na própria operação de ti</span>
-          <h3>Você vê o que trava sua operação antes que vire crise.</h3>
+          <!-- Correção 3 adicional (2026-10-08): este H3 era um duplicado
+               literal do H2 da seção (ver comentário acima). Diferenciado
+               agora, mantendo a menção explícita a "agente de IA" também
+               aqui (o fundador pediu que isso ficasse claro em qualquer
+               headline/subheadline imediatamente visível, não só no H2). -->
+          <h3>Um agente de IA que mapeia onde sua operação trava antes que vire crise.</h3>
           <p>A Bússola conversa com sua empresa, mapeia as 5 frentes que mais travam o crescimento técnico — arquitetura, segurança, cloud, automação, integração — e traduz cada achado numa frase que qualquer dono de empresa entende e pode decidir.</p>
           <div class="solutions__ticker" aria-hidden="true">
             <span class="solutions__ticker-item">mapeando arquitetura e dívida técnica</span>

@@ -27,7 +27,11 @@
   display: block;
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.8125rem;
+  /* Correção 3 adicional (2026-10-08, autorizada pelo fundador — reverte a
+     exceção de "rótulo curto pode ficar pequeno" registrada na correção
+     anterior): era 0.8125rem (13px). Fundador quer tudo legível, sem
+     exceção para rótulo. Subido para 1rem (16px), nosso piso novo. */
+  font-size: 1rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
@@ -37,7 +41,10 @@
      sobre --off-white — abaixo do mínimo AA (4.5:1) para texto normal,
      mesmo sendo um rótulo pequeno (13px não qualifica como "texto grande"
      pela regra WCAG de tamanho, então o piso continua 4.5:1, não 3:1).
-     Subido para 0.85 — medido e confirmado em 4.96:1. */
+     Subido para 0.85 — medido e confirmado em 4.96:1. Tamanho mudou desde
+     (ver nota acima) mas 16px normal ainda não é "texto grande" pela WCAG
+     (precisaria 18.66px bold ou 24px normal) — piso de contraste continua
+     4.5:1, e 0.85 de opacidade nesta cor já entrega mais que isso. */
   opacity: 0.85;
 }
 
@@ -130,7 +137,9 @@
   gap: var(--sp-3);
   flex-wrap: wrap;
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  /* Correção 3 adicional (2026-10-08): era 0.75rem (12px) — subido para
+     1rem (16px), piso novo sem exceção de rótulo curto. */
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -171,7 +180,13 @@
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid rgba(217, 197, 131, 0.14);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  /* Correção 3 adicional (2026-10-08): era 0.75rem (12px) — subido para
+     1rem (16px). Nota: na prática só a variante .console--light é
+     instanciada hoje (ver index.html), que sobrescreve cor/bg desta
+     regra para cinza-chumbo sobre off-white (7.2:1, ok) — o texto
+     rgba(242,242,242,0.55) abaixo é só o fallback da variante escura,
+     hoje sem uso real na página. */
+  font-size: 1rem;
   color: rgba(242, 242, 242, 0.55);
 }
 .console__dots { display: flex; gap: 6px; flex-shrink: 0; }
@@ -182,21 +197,27 @@
   gap: 10px;
   margin-bottom: var(--sp-1);
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  /* Correção 3 adicional (2026-10-08): era 0.9375rem (15px) — subido para
+     1rem (16px). */
+  font-size: 1rem;
   line-height: 1.55;
   color: rgba(242, 242, 242, 0.88);
 }
 .console__line .tag {
   flex-shrink: 0;
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  /* Correção 3 adicional (2026-10-08): era 0.75rem (12px) — subido para
+     1rem (16px). */
+  font-size: 1rem;
   color: var(--verde-pastel);
   padding-top: 3px;
 }
 .console__line.reply .tag { color: var(--amarelo-suave); font-weight: 600; }
 .console__line.hint {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  /* Correção 3 adicional (2026-10-08): era 0.75rem (12px) — subido para
+     1rem (16px). */
+  font-size: 1rem;
   opacity: 0.6;
   margin-top: var(--sp-1);
   color: rgba(242, 242, 242, 0.7);
@@ -216,9 +237,15 @@
 .console--light .console__bar { background: var(--off-white); color: var(--cinza-chumbo); border-bottom: 1px solid rgba(69, 82, 89, 0.12); }
 .console--light .console__dots span { background: rgba(69, 82, 89, 0.18); }
 .console--light .console__line { color: var(--preto-antifragil); }
-.console--light .console__line .tag { color: var(--cinza-chumbo); opacity: 0.6; }
+/* Correção 3 adicional (2026-10-08): contraste reteste depois do ajuste de
+   fonte acima — cinza-chumbo a 0.6/0.65 de opacidade sobre fundo branco
+   media 2.96:1 e 3.31:1, abaixo do mínimo AA (4.5:1); o tamanho maior de
+   fonte não muda isso (16px normal ainda não é "texto grande" pela WCAG).
+   Subido para 0.85 nos dois — mesmo valor já usado em outros rótulos deste
+   projeto —, medido e confirmado em 5.39:1. */
+.console--light .console__line .tag { color: var(--cinza-chumbo); opacity: 0.85; }
 .console--light .console__line.reply .tag { color: var(--preto-antifragil); }
-.console--light .console__line.hint { color: var(--cinza-chumbo); opacity: 0.65; }
+.console--light .console__line.hint { color: var(--cinza-chumbo); opacity: 0.85; }
 
 /* ---------- Card de pré-visualização da Bússola no hero ----------
    Visual/estático por decisão de engenharia desta integração: representa
@@ -264,15 +291,11 @@
   padding: var(--sp-10) 0 var(--sp-12);
   overflow: hidden;
 }
-.solutions__eyebrow {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  letter-spacing: 0.1em;
-  text-transform: none;
-  color: var(--amarelo-suave);
-  margin-bottom: var(--sp-2);
-}
+/* Correção 3 adicional (2026-10-08, autorizada pelo fundador): regra de
+   .solutions__eyebrow REMOVIDA por inteiro junto com o <span> no HTML —
+   mesma lógica já aplicada ao .bunker-note__eyebrow (ver nota mais abaixo
+   neste arquivo). A seção não precisa de rótulo técnico acima do H2.
+   Se precisar recuperar o estilo antigo, ver histórico git deste arquivo. */
 .solutions__head { max-width: 680px; margin-bottom: var(--sp-6); }
 .solutions__head h2 {
   font-family: var(--font-display);
@@ -330,7 +353,11 @@
   border: 1px dashed rgba(242, 242, 242, 0.3);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  /* Correção 3 adicional (2026-10-08): era 0.9375rem (15px) — subido para
+     1rem (16px), último dos 17 seletores abaixo do piso. Contraste
+     (rgba(242,242,242,0.85) sobre fundo .solutions #262E33) medido em
+     9.35:1 — não muda com o tamanho, já estava bem acima de AA. */
+  font-size: 1rem;
   color: rgba(242, 242, 242, 0.85);
 }
 .chat-widget--embedded .chat-widget__noscript a { color: var(--amarelo-suave); text-decoration: underline; }
@@ -352,7 +379,11 @@
 .solutions__card-idx {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  /* Correção 3 adicional (2026-10-08): era 0.6875rem (11px) — subido para
+     1rem (16px). Rótulo é uma string longa (ver index.html); a 16px ocupa
+     mais de uma linha no card — aceitável, já é display:block e o card
+     tem altura flexível (confirmado na checagem visual desktop/mobile). */
+  font-size: 1rem;
   letter-spacing: 0.08em;
   color: var(--amarelo-suave);
   opacity: 0.9;
@@ -398,7 +429,11 @@
   margin-top: var(--sp-2);
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 0.875rem;
+  /* Correção 3 adicional (2026-10-08): era 0.875rem (14px) — subido para
+     1rem (16px). Nota: classe sem uso no HTML atual (verificado, nenhum
+     elemento a referencia hoje); ajustada mesmo assim por já estar listada
+     entre os seletores abaixo de 16px a corrigir. */
+  font-size: 1rem;
   color: var(--verde-pastel);
   text-decoration: none;
   border-bottom: 1px solid rgba(178, 194, 185, 0.4);
