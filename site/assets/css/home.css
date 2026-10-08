@@ -378,18 +378,43 @@
    1) Ênfase de cor invertida — Amarelo Suave é o acento dominante aqui
       (eyebrow, status, borda, readout, link), não o Verde Pastel/mix da
       Bússola.
-   2) Layout de bloco único, sem bento-grid — é 1 produto só, não precisa
-      comparar itens num grid.
-   3) Painel em formato de "log de sistema" (1 voz, monitoramento) em vez
-      do chat de 2 vozes (.console) da Bússola — reforça o conceito do
-      próprio nome Bunker (fortaleza solo, vigilância), sem ticker
-      animado (estático, "modo vigia" vs. o movimento cinético da
-      Bússola).
-   4) Fundo em gradiente sutil (--facet-6 → --preto-antifragil) em vez do
+   2) Layout ASSIMÉTRICO em 2 colunas (texto à esquerda, mais largo;
+      painel à direita, mais estreito, tipo "status strip") em vez do
+      empilhamento vertical bloco único/full-width da Bússola (head
+      acima, console abaixo, mesma largura). Colapsa para 1 coluna
+      (empilhado) abaixo de 1024px, mesmo breakpoint já usado pelo
+      bento da Bússola.
+   3) Painel SEM chrome de janela — sem borda ao redor, sem cantos
+      arredondados, sem sombra. Só uma régua de acento à esquerda
+      (border-left), lendo como um log/terminal cru, não um card. O
+      console da Bússola mantém borda+radius+barra de título com dots
+      (chrome de "janela de software") — a composição do Bunker
+      precisa ser visivelmente diferente disso, não só de cor.
+   4) Mono (JetBrains Mono) estendido ao corpo de texto e ao link do
+      painel (.bunker__text, .bunker__link), não só eyebrow/status/
+      readout — reforça o tom "técnico cru" do Bunker. A Bússola segue
+      com Jost/Roboto predominante fora da casca técnica pontual.
+   5) Fundo em gradiente sutil (--facet-6 → --preto-antifragil) em vez do
       preto sólido da Bússola — perceptível ao lado, não uma cor nova.
    CTA continua link suave (não botão sólido) — produto em piloto
    privado, sem self-serve, mesma regra do fundador já registrada para o
-   antigo card do Bunker (ver histórico git desta seção). */
+   antigo card do Bunker (ver histórico git desta seção).
+
+   Correção de bug (2026-10-08, revisão visual ao vivo): .bunker__inner
+   tinha max-width:740px aplicado SOBRE a classe .container no mesmo
+   elemento (<div class="container bunker__inner">). Como os 2 seletores
+   têm a mesma especificidade, o max-width de .bunker__inner (740px)
+   vencia o de .container (1200px, var(--container-max)) na cascata —
+   só que margin-inline:auto de .container continuava valendo, então a
+   caixa de 740px ficava CENTRALIZADA na viewport em vez de alinhada à
+   esquerda com o resto da página. Resultado: heading do Bunker
+   deslocado pra direita em relação ao heading da Bússola (mesmo
+   .container, largura diferente = início horizontal diferente).
+   Fix: remover o max-width de .bunker__inner — o elemento volta a
+   herdar só o max-width/padding-inline/margin-inline de .container,
+   idêntico ao de .solutions .container. Alinhamento horizontal
+   conferido por medição real (getBoundingClientRect) após o fix —
+   ver relatório de entrega. */
 .bunker {
   position: relative;
   background: linear-gradient(165deg, var(--facet-6) 0%, var(--preto-antifragil) 60%);
@@ -405,7 +430,15 @@
   clip-path: polygon(32% 0, 100% 0, 100% 100%, 0% 100%);
   pointer-events: none;
 }
-.bunker__inner { position: relative; z-index: 1; max-width: 740px; }
+.bunker__inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  column-gap: var(--sp-8);
+  row-gap: var(--sp-6);
+  align-items: start;
+}
 .bunker__eyebrow {
   display: block;
   font-family: var(--font-mono);
@@ -429,16 +462,15 @@
   line-height: 1.65;
   color: rgba(242, 242, 242, 0.72);
   max-width: 620px;
-  margin-bottom: var(--sp-6);
 }
 .bunker__panel {
   position: relative;
-  background: rgba(217, 197, 131, 0.05);
-  border: 1px solid rgba(217, 197, 131, 0.28);
-  border-left: 3px solid var(--amarelo-suave);
-  border-radius: var(--radius-md);
-  padding: var(--sp-5) var(--sp-4);
-  box-shadow: var(--shadow-lift);
+  background: rgba(217, 197, 131, 0.04);
+  border: none;
+  border-left: 2px solid var(--amarelo-suave);
+  border-radius: 0;
+  padding: var(--sp-5, 40px) var(--sp-4);
+  box-shadow: none;
 }
 .bunker__status {
   display: inline-flex;
@@ -474,10 +506,10 @@
 .bunker__readout-line { display: block; }
 .bunker__readout-line::before { content: "> "; color: var(--amarelo-suave); }
 .bunker__text {
-  font-family: var(--font-body);
-  font-weight: 300;
-  font-size: 1rem;
-  line-height: 1.6;
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 0.9375rem;
+  line-height: 1.7;
   color: rgba(242, 242, 242, 0.85);
   max-width: 60ch;
   margin-bottom: var(--sp-3);
@@ -486,9 +518,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   font-weight: 500;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--amarelo-suave);
   text-decoration: none;
   border-bottom: 1px solid rgba(217, 197, 131, 0.4);
@@ -597,6 +629,13 @@
   .solutions__bento { grid-template-columns: 1fr; grid-template-rows: auto; }
   .solutions__card--1, .solutions__card--4 { grid-column: 1; grid-row: auto; }
   .pillars__grid { grid-template-columns: 1fr; }
+  /* Bunker: colunas assimétricas (texto | painel) só fazem sentido com
+     espaço horizontal de desktop — abaixo de 1024px (mesmo breakpoint
+     do bento da Bússola) empilha em 1 coluna, texto acima, painel
+     abaixo, igual ao padrão de empilhamento do resto do site em telas
+     estreitas. */
+  .bunker__inner { grid-template-columns: 1fr; }
+  .bunker__head p { margin-bottom: var(--sp-6); }
 }
 
 @media (max-width: 600px) {
