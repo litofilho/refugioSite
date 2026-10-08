@@ -99,18 +99,33 @@
        — as mesmas 5 frentes já usadas nos chips de sugestão abaixo desde
        a rodada 28, e na home). Adicionado .bussola-hero__path (eyebrow
        mono, mesmo idioma visual da seção escura da home) como elo visual
-       entre as duas páginas. Estrutura/IDs/widget intactos. -->
+       entre as duas páginas. Estrutura/IDs/widget intactos.
+
+       Correção visual 2026-10-08 (autorizada pelo fundador, revisão em
+       produção): página ainda estava no padrão visual antigo — sem o
+       tratamento híbrido já aplicado na home (ver site/index.html +
+       home.css) e com o ícone literal de bússola/estrela (bussola-
+       icone.svg, rosa-dos-ventos) como badge grande no hero, fora do novo
+       idioma visual (facetas/polígonos da marca, mono técnico, não ícone
+       figurativo). Removido o <img> do badge; o rótulo "Bússola · agente
+       de IA..." virou uma pill mono com status-dot (mesma linguagem do
+       cabeçalho do chat-widget e dos rótulos .solutions__card-idx da
+       home), e o facet decorativo ganhou um segundo elemento (bottom-
+       left), espelhando .hero__facet--one/--two da home. Copy do hero
+       (path, kicker, H1) NÃO foi alterada — só a apresentação visual. Ver
+       bussola.css para os detalhes de cada regra. Texto do <img> do ícone
+       DENTRO do widget (.chat-widget__header-icon) foi mantido intacto —
+       faz parte do widget já redesenhado (chat-widget.css/js), fora do
+       escopo desta correção. -->
   <section class="bussola-hero" aria-labelledby="bussola-headline">
-    <div class="bussola-hero__facet" aria-hidden="true"></div>
+    <div class="bussola-hero__facet bussola-hero__facet--one" aria-hidden="true"></div>
+    <div class="bussola-hero__facet bussola-hero__facet--two" aria-hidden="true"></div>
     <div class="container bussola-hero__inner">
 
       <div class="bussola-hero__intro">
-        <div class="bussola-hero__intro-text">
-          <p class="bussola-hero__path">// refugio.tech/bussola</p>
-          <p class="kicker">Bússola · agente de IA da Refúgio Tech<img src="../assets/bussola-icone.svg" alt=""          
-      aria-hidden="true" class="bussola-hero__badge"></p> 
-          <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com quem mapeia arquitetura, cloud, segurança e automação de verdade.</h1>
-        </div>
+        <p class="bussola-hero__path">// refugio.tech/bussola</p>
+        <p class="kicker"><span class="kicker__dot" aria-hidden="true"></span>Bússola · agente de IA da Refúgio Tech</p>
+        <h1 id="bussola-headline" class="bussola-hero__headline">Antes de abrir mais um chat genérico ou chamar o sobrinho que entende de informática, fale com quem mapeia arquitetura, cloud, segurança e automação de verdade.</h1>
       </div>
 
       <!-- ===================== AGENTE CONVERSACIONAL "BÚSSOLA" (piloto) =====================
@@ -200,10 +215,23 @@
        2026-10-07) atualizada para as 5 frentes de engenharia do novo
        posicionamento — antes falava de "planilhas" e "suporte de TI"
        genéricos, tom que não existe mais na home nem nos chips de
-       sugestão (já trocados na rodada 28). -->
+       sugestão (já trocados na rodada 28).
+
+       Correção visual 2026-10-08: seção já era de fundo escuro, mas sem
+       nenhum traço do tratamento "console/produto rodando" que a home usa
+       na seção escura equivalente (.solutions, home.css — eyebrow mono,
+       cards em grid com índice mono/amarelo). Adicionado o eyebrow mono
+       "// como funciona" (mesma convenção estrutural do ".solutions__eyebrow"
+       da home, rótulo técnico, não é copy de marketing) e a lista das 5
+       frentes virou um grid de cards no estilo bento/console (índice
+       numérico mono + amarelo via counter CSS, cartão com borda sutil),
+       no lugar da lista com bolinha genérica. Nenhum texto das frases foi
+       alterado — só a apresentação. Ver bussola-explicacao__eyebrow/
+       __list/__item em bussola.css. -->
   <section class="bussola-explicacao" aria-labelledby="bussola-explicacao-heading">
     <h2 id="bussola-explicacao-heading" class="visually-hidden">Como a Bússola funciona</h2>
     <div class="container bussola-explicacao__inner">
+      <span class="bussola-explicacao__eyebrow">// como funciona</span>
       <p class="bussola-explicacao__paragraph">A conversa tem a profundidade de um analista técnico sênior: a Bússola investiga o problema real da sua empresa e, quando precisa, consulta ao vivo a documentação oficial de fornecedores como Microsoft, Google e fabricantes de equipamentos ou sistemas de gestão — sempre com a fonte citada. Nada de resposta genérica tirada da memória.</p>
 
       <p class="bussola-explicacao__intro">Como funciona: você conta o que está travando na empresa, com suas próprias palavras, e a Bússola conduz a conversa para entender o problema de verdade antes de indicar um caminho.</p>

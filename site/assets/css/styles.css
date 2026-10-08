@@ -340,30 +340,13 @@ button:focus-visible {
   align-items: start;
 }
 
-.kicker {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-1);
-  font-family: var(--font-body);
-  font-weight: 500;
-  /* Auditoria de acessibilidade rodada 19 (achado 1, baixa severidade):
-     era 0.8125rem (13px). Subiu para 0.875rem (14px) — ainda claramente
-     menor que título/corpo (hierarquia preservada), só sai da faixa
-     "pequeno demais mesmo sendo eyebrow em caixa alta". */
-  font-size: 1.125rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--cinza-chumbo);
-  margin-bottom: var(--sp-4);
-  justify-content: space-between;
-}
-.kicker__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--amarelo-suave);
-  flex-shrink: 0;
-}
+/* .kicker / .kicker__dot (rótulo "Bússola · agente de IA...") movidos
+   para bussola.css na correção visual 2026-10-08 — são específicos da
+   página /bussola (único lugar que os usa), não tokens genéricos.
+   Redesenhados lá como pill mono com status-dot, substituindo o
+   tratamento antigo (caixa alta grande + ícone de bússola/estrela). Ver
+   bussola.css e o histórico de site/bussola/index.html antes desta
+   data. */
 
 .hero__headline {
   font-family: var(--font-display);
