@@ -232,7 +232,37 @@
             <div class="console__body">
               <div class="console__line"><span class="tag">&gt;</span><span class="text">nossa fatura de nuvem triplicou em 6 meses e não sabemos por quê</span></div>
               <div class="console__line reply"><span class="tag">bússola</span><span class="text">Categoria: cloud e custo de infraestrutura. Indício de recursos superdimensionados sem autoscaling.</span></div>
-              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Prioridade 2 — ação recomendada nos próximos 30 dias.<span class="console__cursor"></span></span></div>
+              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Prioridade 2 — ação recomendada nos próximos 30 dias.</span></div>
+              <!-- Pedido do fundador pós-revisão visual (commit 4f89e2d): o mock
+                   estático não deve parar no diagnóstico em texto — precisa
+                   emular também o PRÓXIMO passo da feature real de preview de
+                   solução (.chat-widget__preview-card/-label/-frame em
+                   chat-widget.css/js, ainda não publicada em produção — ver
+                   docs/agente-conversacional-descoberta.md, repositório
+                   Consultoria, seção 37). Aqui é só ilustração fixa: nenhum
+                   HTML é gerado/sanitizado de verdade, é um wireframe estático
+                   de 3 blocos (autoscaling → limite de custo → alertas)
+                   representando a arquitetura proposta pro caso do mock. -->
+              <div class="console__line reply"><span class="tag">bússola</span><span class="text">Preview gerado da solução proposta:<span class="console__cursor"></span></span></div>
+              <div class="console__preview-card">
+                <p class="console__preview-card-label">preview gerado · esboço de arquitetura</p>
+                <div class="console__preview-frame">
+                  <div class="console__preview-frame-block">
+                    <span class="console__preview-frame-icon">⇅</span>
+                    <span>Autoscaling</span>
+                  </div>
+                  <span class="console__preview-frame-arrow">→</span>
+                  <div class="console__preview-frame-block">
+                    <span class="console__preview-frame-icon">$</span>
+                    <span>Limite de custo</span>
+                  </div>
+                  <span class="console__preview-frame-arrow">→</span>
+                  <div class="console__preview-frame-block">
+                    <span class="console__preview-frame-icon">⚠</span>
+                    <span>Alertas</span>
+                  </div>
+                </div>
+              </div>
               <div class="console__line hint">clique para conversar com a Bússola de verdade, aqui na página →</div>
             </div>
           </div>

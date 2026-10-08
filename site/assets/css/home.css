@@ -247,6 +247,77 @@
 .console--light .console__line.reply .tag { color: var(--preto-antifragil); }
 .console--light .console__line.hint { color: var(--cinza-chumbo); opacity: 0.85; }
 
+/* ---------- Mock estático do preview de solução (hero) ----------
+   Pedido do fundador pós-revisão visual do commit 4f89e2d: o mock do hero
+   (.console--light) precisava mostrar também o próximo passo da conversa —
+   não só o diagnóstico em texto, mas a Bússola oferecendo um preview visual
+   da solução. Visual deliberadamente alinhado ao card real da feature
+   (.chat-widget__preview-card/-label/-frame, chat-widget.css, feature ainda
+   não publicada em produção — ver docs/agente-conversacional-descoberta.md,
+   repositório Consultoria, seção 37): mesma borda --verde-pastel, mesmo
+   raio --radius-md, mesmo rótulo mono maiúsculo. Diferença: aqui não há
+   iframe/HTML gerado — é um wireframe estático de 3 blocos (ícone + rótulo)
+   simulando o esboço de arquitetura pro caso do mock (fatura de nuvem
+   triplicada → autoscaling, limite de custo, alertas). Escopo: só dentro de
+   .console--light (hero); não reaproveitado na seção #solucoes porque ali
+   o widget é o real, com dados reais. */
+.console__preview-card {
+  margin: var(--sp-1) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2);
+  border: 1px solid var(--verde-pastel);
+  border-radius: var(--radius-md);
+  background: var(--off-white);
+  max-width: 360px;
+}
+.console__preview-card-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cinza-chumbo);
+  opacity: 0.85;
+}
+.console__preview-frame {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--sp-1);
+  border: 1px solid rgba(69, 82, 89, 0.18);
+  border-radius: var(--radius-sm);
+  background: #fff;
+}
+.console__preview-frame-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--off-white);
+  font-family: var(--font-mono);
+  /* Piso de 16px em todos os seletores pequenos, mesma regra já aplicada
+     ao resto deste componente (ver correções 2026-10-08 acima). */
+  font-size: 1rem;
+  color: var(--preto-antifragil);
+  text-align: center;
+  line-height: 1.2;
+}
+.console__preview-frame-icon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+.console__preview-frame-arrow {
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: var(--cinza-chumbo);
+  opacity: 0.5;
+}
+
 /* ---------- Card de pré-visualização da Bússola no hero ----------
    Visual/estático por decisão de engenharia desta integração: representa
    a Bússola sem duplicar a infraestrutura do widget real (Turnstile,
