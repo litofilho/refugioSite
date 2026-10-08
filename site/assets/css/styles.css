@@ -491,7 +491,13 @@ button:focus-visible {
 }
 .contact__form textarea { resize: vertical; min-height: 104px; }
 .contact__form input::placeholder,
-.contact__form textarea::placeholder { color: rgba(38, 46, 51, 0.5); }
+.contact__form textarea::placeholder {
+  /* Correção 4 (2026-10-08, acessibilidade como premissa permanente):
+     era rgba(...,0.5) — contraste real medido de 2.88:1 sobre
+     --off-white, bem abaixo do mínimo AA (4.5:1). Subido para 0.72,
+     medido e confirmado em 5.29:1. */
+  color: rgba(38, 46, 51, 0.72);
+}
 .contact__form input:focus-visible,
 .contact__form textarea:focus-visible {
   outline: none;
@@ -511,7 +517,10 @@ button:focus-visible {
 
 .contact__form-status {
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  /* Correção 4 (2026-10-08): era 0.9375rem (15px) — mensagem de status
+     real (sucesso/erro do envio), corpo de texto nunca abaixo de 16px
+     (decisão de acessibilidade permanente). */
+  font-size: 1rem;
   color: var(--preto-antifragil);
   min-height: 1.3em;
 }

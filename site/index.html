@@ -191,10 +191,16 @@
           <a href="#fale-com-a-gente" class="btn-ghost">Agendar conversa</a>
         </div>
         <p class="hero__slogan">"Não somos apenas consultoria. Somos o fundamento sólido para a sua Transformação Tecnológica."</p>
+        <!-- Correção 3 (2026-10-08, autorizada pelo fundador — ver
+             ativos/marca/branding.md, repositório Consultoria, revisão de
+             2026-10-08): pilares renomeados. Antifragilidade/Maestria
+             Boutique/Vanguarda Estratégica eram jargão interno; os nomes
+             públicos agora são Solidez/Precisão/Visão — mesmas palavras já
+             usadas como "corpo" dos cards em #pilares, mais abaixo. -->
         <div class="hero__pillars-tag">
-          <span>Antifragilidade</span>
-          <span>Maestria Boutique</span>
-          <span>Vanguarda Estratégica</span>
+          <span>Solidez</span>
+          <span>Precisão</span>
+          <span>Visão</span>
         </div>
       </div>
 
@@ -334,15 +340,27 @@
   <section class="solutions reveal" id="solucoes" aria-labelledby="solutions-heading">
     <div class="container">
       <div class="solutions__head">
-        <span class="solutions__eyebrow">// bússola — produto ao vivo, aqui mesmo</span>
+        <!-- Correção 2 (2026-10-08, autorizada pelo fundador): o rótulo
+             "produto ao vivo" explícito saiu daqui também — mesma lógica
+             do selo removido abaixo. O eyebrow volta a ser só a
+             identificação da seção, sem precisar anunciar que é real. -->
+        <span class="solutions__eyebrow">// bússola</span>
         <h2 id="solutions-heading">A Bússola: você vê o que trava sua operação antes que vire crise.</h2>
         <p>A Bússola existe para quem se sente perdido na própria operação de TI — conversa com o seu negócio, mapeia as 5 frentes que mais travam o crescimento técnico e traduz cada achado numa decisão clara.</p>
       </div>
 
-      <div class="solutions__live-badge">
-        <span class="solutions__live-badge-dot" aria-hidden="true"></span>
-        <span>Produto ao vivo — não é ilustração nem mockup. Escreva abaixo e converse com a Bússola de verdade, agora.</span>
-      </div>
+      <!-- Correção 2 (2026-10-08, autorizada pelo fundador, racional do
+           fundador: "se precisamos dizer que o produto está ao vivo,
+           falhamos no design"): .solutions__live-badge (selo "Produto ao
+           vivo" com ponto pulsante) foi REMOVIDO. No lugar, o próprio
+           widget comunica por design que é um chat de verdade: abre com o
+           campo já focado (abrirPainel() chama input.focus() no load do
+           modo embutido — ver chat-widget.js, bloco final "if (embedded)")
+           dando o cursor piscando real do navegador sem precisar de
+           clique; placeholder convidativo e em forma de convite (ver
+           abaixo); indicador de "Bússola está respondendo…" quando
+           aplicável (chat-widget.js, showTyping/hideTyping, já existia).
+           Ver histórico git deste arquivo para o selo removido. -->
 
       <!-- Widget real da Bússola (chat-widget.js/css) — mesma infraestrutura
            de site/bussola/index.html (removida, ver Mudança 4), agora
@@ -401,11 +419,11 @@
             <label for="chat-widget-input" class="visually-hidden">Sua mensagem para a Bússola</label>
             <input type="file" id="chat-widget-file" class="chat-widget__file-input" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,audio/mpeg,audio/wav,audio/ogg,audio/webm" hidden>
             <button type="button" class="chat-widget__attach" aria-label="Anexar imagem, vídeo ou áudio" title="Anexar imagem, vídeo ou áudio">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M16.5 6.5 8.4 14.6a3 3 0 1 0 4.24 4.24l7.07-7.07a5 5 0 0 0-7.07-7.07L5.5 11.84" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M16.5 6.5 8.4 14.6a3 3 0 1 0 4.24 4.24l7.07-7.07a5 5 0 0 0-7.07-7.07L5.5 11.84" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
-            <textarea id="chat-widget-input" class="chat-widget__input" rows="1" placeholder="Escreva o que está travando na sua empresa…"></textarea>
+            <textarea id="chat-widget-input" class="chat-widget__input" rows="1" placeholder="Pergunte alguma coisa sobre o seu negócio…"></textarea>
             <button type="submit" class="chat-widget__send" aria-label="Enviar mensagem">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M3 11 21 4l-7 18-2.5-7.5L3 11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true"><path d="M3 11 21 4l-7 18-2.5-7.5L3 11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
             </button>
           </form>
         </div>
@@ -423,11 +441,14 @@
             <span class="solutions__ticker-item">revisando automação e integrações</span>
           </div>
         </div>
-        <div class="solutions__card solutions__card--4">
-          <span class="solutions__card-idx">produto ao vivo · sem mockup</span>
-          <h3>Essa conversa aí em cima é real.</h3>
-          <p>Não é demonstração estática: a Bússola é o mesmo agente, rodando no mesmo backend, que atende diagnósticos reais — com verificação Turnstile e sessão de verdade. Sem cadastro, sem custo. Escreva e veja a resposta chegar.</p>
-        </div>
+        <!-- Correção 2 (2026-10-08): o card solutions__card--4 ("Essa
+             conversa aí em cima é real") só existia para reforçar por
+             texto o selo "produto ao vivo" removido acima — sem o selo,
+             o card perdeu a função (o widget de verdade já está embutido
+             bem ali em cima, auto-aberto; não precisa de um segundo card
+             dizendo "confie, é real"). Removido. Ver histórico git deste
+             arquivo e home.css (.solutions__bento/.solutions__card--4)
+             para o registro anterior. -->
       </div>
     </div>
   </section>
@@ -467,11 +488,24 @@
     <svg viewBox="0 0 1200 72" preserveAspectRatio="none"><path d="M0,36 C300,0 900,68 1200,30 L1200,0 L0,0 Z" fill="#F2F2F2"></path></svg>
   </div>
 
-  <aside class="bunker-note" id="bunker" aria-labelledby="bunker-note-heading">
+  <!-- ---- Correção 1 (2026-10-08, autorizada pelo fundador após revisão
+       visual ao vivo): o fundador achou a faixa anterior ilegível e a
+       copy fraca. O EYEBROW ("Também em construção") foi REMOVIDO por
+       inteiro — fica só a frase principal + link, sem rótulo acima. A
+       frase foi reescrita (abria com "Também estamos construindo o
+       Bunker", redundante e fraca) para abrir já pelo público ("Para o
+       consultor de TI que toca o negócio inteiro sozinho"), mantendo o
+       tom calmo da marca e a honestidade de piloto privado/não
+       disponível ainda. Como a faixa perdeu o heading visual, o <aside>
+       passa a tirar o nome acessível do próprio texto principal
+       (aria-labelledby agora aponta para o <p>, não para um eyebrow que
+       não existe mais). Contraste e tamanho de fonte também revisados
+       nesta correção — ver nota de acessibilidade em home.css
+       (.bunker-note__text/.bunker-note__link). -->
+  <aside class="bunker-note" id="bunker" aria-labelledby="bunker-note-text">
     <div class="container bunker-note__inner">
-      <span class="bunker-note__eyebrow" id="bunker-note-heading">Também em construção</span>
-      <p class="bunker-note__text">Também estamos construindo o <strong>Bunker</strong> — a mesma estrutura de agentes de IA da Refúgio Tech, empacotada para o consultor de TI solo. Em piloto privado.</p>
-      <a href="#fale-com-a-gente" class="bunker-note__link">Saiba mais sobre o Bunker →</a>
+      <p class="bunker-note__text" id="bunker-note-text">Para o consultor de TI que toca o negócio inteiro sozinho, existe o <strong>Bunker</strong> — a mesma estrutura de agentes de IA da Refúgio Tech, hoje em piloto privado e ainda não aberta ao público.</p>
+      <a href="#fale-com-a-gente" class="bunker-note__link">Falar sobre o Bunker →</a>
     </div>
   </aside>
 
@@ -483,19 +517,24 @@
         <h2 id="pillars-heading">Três pilares, uma única disciplina</h2>
         <p>Toda decisão de engenharia que tomamos por um cliente passa pelo mesmo filtro: a solução é robusta o suficiente para aguentar pressão, e o negócio cresce de verdade por causa dela. Qualidade de engenharia é meio. Crescimento real do cliente é o critério de sucesso.</p>
       </div>
+      <!-- Correção 3 (2026-10-08, autorizada pelo fundador — decisão de
+           marca registrada em ativos/marca/branding.md, repositório
+           Consultoria, revisão de 2026-10-08): a tag pequena acima do
+           word grande (Antifragilidade/Maestria Boutique/Vanguarda
+           Estratégica) foi REMOVIDA — eram os nomes antigos, agora
+           jargão interno. O word grande (Solidez/Precisão/Visão) já era
+           o "corpo" de cada card antes; agora é o ÚNICO rótulo do
+           pilar, sem precisar de tag duplicada acima. -->
       <div class="pillars__grid">
         <div class="pillar-card">
-          <span class="pillar-card__tag">Antifragilidade</span>
           <div class="pillar-card__word">Solidez</div>
           <p>Sistemas que não só resistem a falhas, mas prosperam sob pressão e crescem de forma sustentável.</p>
         </div>
         <div class="pillar-card">
-          <span class="pillar-card__tag">Maestria Boutique</span>
           <div class="pillar-card__word">Precisão</div>
           <p>Profundidade técnica de elite — especialista humano apoiado por agentes de IA especializados, sem perder o cuidado artesanal.</p>
         </div>
         <div class="pillar-card">
-          <span class="pillar-card__tag">Vanguarda Estratégica</span>
           <div class="pillar-card__word">Visão</div>
           <p>Direção clara, inovação com fundamento. Não vende buzzwords, vende a arquitetura para o futuro.</p>
         </div>

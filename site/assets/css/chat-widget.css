@@ -238,7 +238,11 @@
   align-self: center;
   background: transparent;
   color: var(--cinza-chumbo);
-  font-size: 0.82rem;
+  /* Correção 4 (2026-10-08): era 0.82rem (~13px) — são mensagens reais da
+     conversa (ex.: confirmações, erros), corpo de texto nunca abaixo de
+     16px (decisão de acessibilidade permanente). Mesmo tamanho das
+     demais bolhas (.chat-widget__bubble), já em 1rem. */
+  font-size: 1rem;
   text-align: center;
 }
 
@@ -273,7 +277,10 @@
   font-size: 0.75rem;
   letter-spacing: 0.02em;
   color: var(--cinza-chumbo);
-  opacity: 0.75;
+  /* Correção 4 (2026-10-08): era 0.75 — contraste real medido de 3.92:1
+     sobre --off-white, abaixo do mínimo AA (4.5:1). Subido para 0.85,
+     medido e confirmado em 4.96:1. */
+  opacity: 0.85;
 }
 @keyframes chat-widget-typing {
   0%, 80%, 100% { opacity: 0.35; transform: translateY(0); }
@@ -290,7 +297,9 @@
 }
 .chat-widget__satisfacao-texto {
   margin: 0;
-  font-size: 0.9375rem;
+  /* Correção 4 (2026-10-08): era 0.9375rem (15px) — pergunta real da
+     conversa, corpo de texto nunca abaixo de 16px. */
+  font-size: 1rem;
 }
 .chat-widget__satisfacao-botoes {
   display: flex;
@@ -369,7 +378,10 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
-  opacity: 0.7;
+  /* Correção 4 (2026-10-08): era 0.7 — contraste real medido de 3.72:1
+     sobre o branco do card, abaixo do mínimo AA (4.5:1). Subido para
+     0.85, medido e confirmado em 5.39:1. */
+  opacity: 0.85;
 }
 .chat-widget__preview-frame {
   width: 100%;
@@ -380,7 +392,9 @@
 }
 .chat-widget__preview-card-esboco {
   margin: 0;
-  font-size: 0.9375rem;
+  /* Correção 4 (2026-10-08): era 0.9375rem (15px) — conteúdo real gerado
+     pra leitura, corpo de texto nunca abaixo de 16px. */
+  font-size: 1rem;
   line-height: 1.55;
   white-space: pre-wrap;
   color: var(--preto-antifragil);
@@ -399,7 +413,10 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--cinza-chumbo);
-  opacity: 0.75;
+  /* Correção 4 (2026-10-08): era 0.75 — contraste real medido de 3.92:1
+     sobre --off-white, abaixo do mínimo AA (4.5:1). Subido para 0.85,
+     medido e confirmado em 4.96:1. */
+  opacity: 0.85;
   margin-bottom: var(--sp-2);
   display: flex;
   align-items: center;
@@ -429,7 +446,9 @@
   width: 100%;
   text-align: left;
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  /* Correção 4 (2026-10-08): era 0.9375rem (15px) — frases completas que
+     o visitante lê e escolhe, corpo de texto nunca abaixo de 16px. */
+  font-size: 1rem;
   color: var(--preto-antifragil);
   background: #fff;
   border: 1px solid rgba(69, 82, 89, 0.18);
@@ -564,6 +583,17 @@
   outline: none;
   border-color: var(--cinza-chumbo);
   box-shadow: 0 0 0 3px rgba(69, 82, 89, 0.16);
+}
+/* Correção 4 (2026-10-08): placeholder explícito — sem esta regra, o
+   navegador usa um cinza padrão (UA-dependente, não auditável). Cor
+   escolhida e medida: preto-antifragil a 0.72 de opacidade sobre
+   --off-white (fundo real do campo) dá 5.29:1, acima do mínimo AA
+   (4.5:1). Também é o convite real ("Pergunte alguma coisa sobre o seu
+   negócio…", ver index.html) que substitui o selo "produto ao vivo"
+   removido na Correção 2 — parte da comunicação por affordance, não por
+   rótulo. */
+.chat-widget__input::placeholder {
+  color: rgba(38, 46, 51, 0.72);
 }
 .chat-widget__send {
   flex: none;
