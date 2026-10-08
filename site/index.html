@@ -15,7 +15,18 @@
      central") e decisoes/2026-10-06-empresa-de-um-homem-so-piloto1.md
      (nome e natureza do Bunker: piloto privado, não validado). -->
 <title>Refúgio Tech — Um refúgio para quem se sente perdido na tecnologia</title>
-<meta name="description" content="Refúgio Tech é o refúgio para pequenas e médias empresas e consultores de TI que se sentem perdidos ou sobrecarregados pela tecnologia. Conheça a Bússola e o Bunker, as duas portas de entrada.">
+<!-- Correção de copy (2026-10-08, rodada "Mudança 1" — autorizada pelo
+     fundador após revisão visual ao vivo das seções Bússola/Bunker já
+     separadas, commit 5b45634): removida toda menção a "PME"/"pequena e
+     média empresa" da home. A linguagem passa a ser genérica/direta sobre
+     o que a Bússola faz ("seu negócio", "sua operação"), sem especificar
+     porte de empresa — pedido explícito do fundador, não uma preferência
+     de estilo deste diretor. Mesma correção aplicada em: JSON-LD
+     Organization (description abaixo), .hero__eyebrow, .solutions__head p,
+     .solutions__card-idx — eram os outros 3 pontos da home com a mesma
+     menção fora da seção da Bússola (o pedido original também mandava
+     verificar isso). -->
+<meta name="description" content="Refúgio Tech é o refúgio para quem sente a tecnologia pesar no negócio — da sua operação ao consultor de TI que toca tudo sozinho. Conheça a Bússola e o Bunker, as duas portas de entrada.">
 
 <!-- Bug real (2026-10-06): sem color-scheme/theme-color, o Chrome/Android
      aplica força-escuro (auto-darkening) por heurística própria, invertendo
@@ -39,6 +50,19 @@
 
 <link rel="stylesheet" href="assets/css/styles.css">
 <link rel="stylesheet" href="assets/css/home.css">
+<!-- Widget real da Bússola, embutido na seção #solucoes (Mudança 3,
+     2026-10-08 — ver nota completa na seção .solutions mais abaixo).
+     Mesmos chat-widget.css/js e script do Turnstile que já rodavam em
+     site/bussola/index.html (removida nesta rodada, ver Mudança 4 e
+     firebase.json "redirects"). Nenhuma config de Turnstile/CORS mudou:
+     confirmado via API da Cloudflare (GET /accounts/{id}/challenges/widgets)
+     que o site key é associado a DOMÍNIOS (refugio.tech, www.refugio.tech,
+     refugio-tech.web.app + canais de preview), nunca a um path — e
+     functions/index.js (origemPermitida) também decide só pelo header
+     Origin (scheme+host), nunca pelo path da requisição. Mover o widget de
+     /bussola para / não exige nenhum ajuste de backend. -->
+<link rel="stylesheet" href="assets/css/chat-widget.css">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
 <!-- Dados estruturados — adaptados do protótipo aprovado (ativos/marca/
      propostas-site-2026-10/pagina-inicial-final-2026-10.html, repositório
@@ -49,7 +73,7 @@
   "@type": "Organization",
   "name": "Refúgio Tech",
   "alternateName": "Bússola",
-  "description": "Refúgio Tech é o refúgio para quem se sente perdido ou sobrecarregado pela tecnologia. Duas portas de entrada: a Bússola, agente de diagnóstico por IA para a pequena e média empresa, e o Bunker, a mesma estrutura de agentes de IA da Refúgio empacotada para o consultor de TI solo (em piloto privado). Quando a profundidade de engenharia de software, cloud, segurança e automação com IA faz sentido, a Refúgio Tech entra para resolver de verdade.",
+  "description": "Refúgio Tech é o refúgio para quem se sente perdido ou sobrecarregado pela tecnologia. Duas portas de entrada: a Bússola, agente de diagnóstico por IA para o seu negócio, e o Bunker, a mesma estrutura de agentes de IA da Refúgio empacotada para o consultor de TI solo (em piloto privado). Quando a profundidade de engenharia de software, cloud, segurança e automação com IA faz sentido, a Refúgio Tech entra para resolver de verdade.",
   "url": "https://refugio.tech",
   "logo": "https://refugio.tech/assets/refugio-tech.svg",
   "areaServed": "BR",
@@ -68,7 +92,7 @@
       "name": "O que é a Bússola da Refúgio Tech?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "A Bússola é o agente de diagnóstico por IA da Refúgio Tech, disponível em /bussola. Em uma conversa, ela mapeia as 5 frentes que mais travam o crescimento técnico de uma empresa — arquitetura, segurança, cloud, automação e integração — e devolve uma lista priorizada do que resolver primeiro."
+        "text": "A Bússola é o agente de diagnóstico por IA da Refúgio Tech, embutido ao vivo na própria página inicial (seção Bússola). Em uma conversa, ela mapeia as 5 frentes que mais travam o crescimento técnico de uma empresa — arquitetura, segurança, cloud, automação e integração — e devolve uma lista priorizada do que resolver primeiro."
       }
     },
     {
@@ -111,7 +135,12 @@
     </a>
     <nav class="site-header__nav" aria-label="Navegação principal">
       <a class="site-header__link site-header__link--extra" href="#solucoes">Soluções</a>
-      <a class="site-header__link site-header__link--extra-narrow" href="bussola/">Bússola</a>
+      <!-- Mudança 4 (2026-10-08): /bussola deixou de existir como página —
+           a Bússola real agora vive embutida em #solucoes. Link do header
+           aponta direto pra seção (era "bussola/"; a rota antiga continua
+           respondendo com 301 para "/", ver firebase.json "redirects", só
+           não deve ser usada como link interno). -->
+      <a class="site-header__link site-header__link--extra-narrow" href="#solucoes">Bússola</a>
       <a class="site-header__link site-header__link--extra" href="#pilares">Pilares</a>
       <a class="site-header__link" href="#fale-com-a-gente">
         <span class="site-header__link-full">Fale com a gente</span>
@@ -139,18 +168,26 @@
              produção): o eyebrow repetia ao pé da letra a mesma frase do H1
              logo abaixo ("Um refúgio para quem se sente perdido na
              tecnologia" / "...encontra um porto seguro"), redundante na
-             leitura visual. Trocado por uma linha curta de público-alvo
-             (mesmo recorte já usado na meta description/schema.org:
-             "pequenas e médias empresas e consultores de TI"), que soma
-             contexto novo em vez de repetir "refúgio"/"perdido"/"porto
-             seguro". Título (<title>) e meta description mantidos como
-             estavam — não têm o mesmo problema de redundância visual, e o
-             fundador autorizou manter se fizesse sentido para SEO. -->
-        <span class="eyebrow hero__eyebrow">Para pequenas e médias empresas e consultores de TI</span>
+             leitura visual. Trocado por uma linha curta de público-alvo,
+             que soma contexto novo em vez de repetir "refúgio"/"perdido"/
+             "porto seguro". Título (<title>) e meta description mantidos
+             como estavam.
+
+             Correção de copy (2026-10-08, Mudança 1): a linha de
+             público-alvo usava "pequenas e médias empresas e consultores de
+             TI" — removida por pedido explícito do fundador (nenhuma menção
+             a PME/porte de empresa na home). Generalizado para quem toca a
+             própria operação, com ou sem equipe, preservando as duas
+             audiências reais (negócio com time e consultor solo) sem
+             nomear porte. -->
+        <span class="eyebrow hero__eyebrow">Para quem toca a tecnologia da própria operação — sozinho ou em equipe</span>
         <h1 id="hero-headline" class="hero__headline">Onde a tecnologia encontra um <mark>porto seguro</mark>.</h1>
         <p class="hero__lede">Sistema que você não entende mais, decisão que depende de alguém de confiança, sensação de estar exposto sem saber onde — se a tecnologia virou um peso para o seu negócio, você não precisa resolver isso sozinho. A Refúgio Tech existe para ser esse ponto firme. A profundidade técnica entra depois, como prova, quando é hora de agir — não como a primeira coisa que você precisa entender.</p>
         <div class="hero__ctas">
-          <a href="bussola/" class="btn-primary">Falar com a Bússola</a>
+          <!-- Mudança 4: "bussola/" não existe mais como página — aponta
+               direto para a seção #solucoes, onde o widget real agora vive
+               embutido (ver Mudança 3 mais abaixo). -->
+          <a href="#solucoes" class="btn-primary">Falar com a Bússola</a>
           <a href="#fale-com-a-gente" class="btn-ghost">Agendar conversa</a>
         </div>
         <p class="hero__slogan">"Não somos apenas consultoria. Somos o fundamento sólido para a sua Transformação Tecnológica."</p>
@@ -162,12 +199,18 @@
       </div>
 
       <div class="hero__cta reveal">
-        <!-- Pré-visualização estática da Bússola — decisão de engenharia desta
-             integração: em vez de embutir o widget funcional (Turnstile,
-             sessão, chamadas de rede) duplicado na home, o card é só visual
-             e inteiro clicável para site/bussola/, onde o widget real já
-             funciona. Ver nota de adaptação no relatório de entrega. -->
-        <a href="bussola/" class="hero__preview-link" aria-label="Ver pré-visualização e conversar com a Bússola de verdade">
+        <!-- Pré-visualização estática da Bússola no hero: mantida como
+             ilustração rápida acima da rolagem (o widget FUNCIONAL de
+             verdade mora na seção #solucoes, mais abaixo — ver Mudança 3).
+             Decisão de engenharia (2026-10-08, revisão desta rodada): não
+             duplicar Turnstile/sessão/chamadas de rede aqui também — uma
+             segunda instância do widget no hero criaria duas sessões/
+             tokens de Turnstile concorrentes na mesma página, sem ganho
+             real (a seção de produto já está a um scroll de distância, não
+             a uma página). O link, que antes levava a site/bussola/ (hoje
+             removido, ver firebase.json "redirects"), agora é uma âncora
+             interna para o widget real. -->
+        <a href="#refugio-chat-widget" class="hero__preview-link" aria-label="Ver pré-visualização e ir até o widget real da Bússola, mais abaixo">
           <div class="console console--light" role="img" aria-label="Pré-visualização de uma conversa de diagnóstico com a Bússola">
             <div class="console__bar">
               <span>bússola — pré-visualização</span>
@@ -177,7 +220,7 @@
               <div class="console__line"><span class="tag">&gt;</span><span class="text">nossa fatura de nuvem triplicou em 6 meses e não sabemos por quê</span></div>
               <div class="console__line reply"><span class="tag">bússola</span><span class="text">Categoria: cloud e custo de infraestrutura. Indício de recursos superdimensionados sem autoscaling.</span></div>
               <div class="console__line reply"><span class="tag">bússola</span><span class="text">Prioridade 2 — ação recomendada nos próximos 30 dias.<span class="console__cursor"></span></span></div>
-              <div class="console__line hint">clique para conversar com a Bússola de verdade →</div>
+              <div class="console__line hint">clique para conversar com a Bússola de verdade, aqui na página →</div>
             </div>
           </div>
         </a>
@@ -205,33 +248,173 @@
        bloco único) para a diferenciação visual. -->
 
   <!-- ---- Bússola: mantém o registro já aprovado (fundo Preto Antifragil,
-       acento Verde Pastel nos elementos-chave, bento-grid, console de
-       chat de 2 vozes, ticker cinético). ---- -->
+       acento Verde Pastel nos elementos-chave, bento-grid, ticker cinético).
+
+       MUDANÇA ESTRUTURAL GRANDE (2026-10-08, autorizada pelo fundador após
+       revisão visual ao vivo do commit 5b45634 — 3 mudanças nesta seção):
+
+       Mudança 1 (copy): removida a menção a "PME"/"pequena e média
+       empresa" do parágrafo da seção e do rótulo .solutions__card-idx
+       (eram os 2 pontos dentro desta seção; os outros 2 pontos fora dela
+       — meta description e hero__eyebrow — foram corrigidos lá). Linguagem
+       generalizada para "seu negócio"/"sua operação".
+
+       Mudança 2 (diagramação "isso é produto real"): a antiga .console
+       estática (mockup de conversa, sem interação real) foi REMOVIDA desta
+       seção — ela só existia para simular visualmente uma conversa.
+       Substituída por .solutions__live-badge (rótulo "produto ao vivo" com
+       indicador pulsante, acima do widget) + um 4º card no bento
+       (solutions__card--4, reaproveitado) que diz explicitamente que a
+       conversa é real, sem CTA de link (não tem mais link — é o próprio
+       widget, ali). Hierarquia: badge "ao vivo" → widget funcional → prova
+       escrita de que não é mockup. Decisão de produto do fundador; este
+       diretor só executou o reposicionamento visual.
+
+       Mudança 3 (funcionalidade real — A MAIS IMPORTANTE): o widget
+       FUNCIONAL de verdade (chat-widget.js/css, Turnstile, sessão,
+       chamadas reais a functions/index.js) passa a viver embutido AQUI,
+       dentro da home — não mais um link/mockup que leva para
+       site/bussola/ (removida, ver Mudança 4 abaixo e firebase.json).
+
+       Decisão técnica deste diretor sobre COMO embutir — launcher
+       flutuante global vs. embutido inline na seção — optou-se por
+       EMBUTIDO INLINE, não pelo launcher flutuante global sobre a home
+       inteira, por 3 razões:
+         1) A Mudança 2 pede EXPLICITAMENTE que fique evidente, na própria
+            seção, que isso é produto real — um launcher flutuante global
+            (FAB no canto da tela) quebra esse vínculo visual: o widget
+            apareceria desconectado da seção/badge "ao vivo" que prova
+            que é real, voltando a si parecer um chatbot de suporte
+            genérico colado em qualquer canto do site.
+         2) Só existe UM widget na página agora (a página /bussola, que
+            tinha a outra instância, foi removida — Mudança 4). Não há
+            problema de "2 widgets abertos ao mesmo tempo" a resolver com
+            posicionamento flutuante global.
+         3) Tecnicamente mais simples e mais seguro: reaproveita a MESMA
+            marcação/CSS/JS do widget que já roda em produção (chat-
+            widget.js/css, inalterados em sua lógica central — sessão,
+            Turnstile, fetch para /chat, /anexoUrl, /satisfacao,
+            /previewSolucao), só adiciona um modo "embutido" (atributo
+            data-embed="inline" no elemento raiz) que: (a) abre o painel
+            automaticamente ao carregar a página, em vez de esperar clique
+            no launcher — é o próprio produto da seção, não algo escondido
+            atrás de um botão; (b) NÃO aciona o hack de "tela cheia no
+            celular" (reparenting do painel pra <body>, ver chat-
+            widget.js) que existia especificamente para a hero de
+            /bussola ocupar a tela inteira no mobile — aqui o widget é só
+            mais um bloco dentro do fluxo normal da seção, em qualquer
+            tamanho de tela, sem precisar escapar de nenhum ancestral.
+            Ver chat-widget.js, bloco "if (embedded)", para o código.
+
+       ATENÇÃO TÉCNICA verificada ANTES desta mudança (não presumida — ver
+       relatório de entrega para o passo a passo):
+         - Cloudflare Turnstile: consultado via API
+           (GET /accounts/{id}/challenges/widgets) o site key
+           0x4AAAAAAFOdF-ZOtkuLF9u6 usado pelo widget. O campo "domains"
+           lista refugio.tech, www.refugio.tech, refugio-tech.web.app e 2
+           canais de preview — associado por DOMÍNIO, nunca por path.
+           Mover o widget de /bussola para / não exige nenhuma mudança
+           nessa configuração.
+         - CORS do backend (functions/index.js, função origemPermitida):
+           decide só pelo header Origin da requisição (scheme + host),
+           que o navegador preenche com "https://refugio.tech" tanto numa
+           página em /bussola quanto na home — o path da página nunca
+           entra nessa checagem. Confirmado lendo o código, não só
+           supondo. Nenhuma mudança de CORS foi necessária.
+       Ou seja: o risco que o fundador pediu para verificar NÃO se
+       materializou — é uma mudança de HTML/CSS/JS de apresentação, sem
+       nenhum ajuste de infraestrutura/configuração do backend.
+
+       Teste funcional real feito (não só visual) antes deste commit: ver
+       relatório de entrega — mensagem real enviada ao widget embutido
+       rodando localmente (Turnstile mockado só para rodar fora de
+       refugio.tech/localhost whitelisted, mesma técnica já usada em
+       rodada anterior), resposta real do backend recebida e renderizada
+       na tela. -->
   <section class="solutions reveal" id="solucoes" aria-labelledby="solutions-heading">
     <div class="container">
       <div class="solutions__head">
-        <span class="solutions__eyebrow">// refugio.tech/bussola</span>
+        <span class="solutions__eyebrow">// bússola — produto ao vivo, aqui mesmo</span>
         <h2 id="solutions-heading">A Bússola: você vê o que trava sua operação antes que vire crise.</h2>
-        <p>A Bússola existe para a pequena e média empresa que se sente perdida na própria operação de TI — conversa com seu negócio, mapeia as 5 frentes que mais travam o crescimento técnico e traduz cada achado numa decisão clara.</p>
+        <p>A Bússola existe para quem se sente perdido na própria operação de TI — conversa com o seu negócio, mapeia as 5 frentes que mais travam o crescimento técnico e traduz cada achado numa decisão clara.</p>
       </div>
 
-      <div class="console">
-        <div class="console__bar">
-          <span>bussola — sessão de diagnóstico</span>
-          <div class="console__dots"><span></span><span></span><span></span></div>
+      <div class="solutions__live-badge">
+        <span class="solutions__live-badge-dot" aria-hidden="true"></span>
+        <span>Produto ao vivo — não é ilustração nem mockup. Escreva abaixo e converse com a Bússola de verdade, agora.</span>
+      </div>
+
+      <!-- Widget real da Bússola (chat-widget.js/css) — mesma infraestrutura
+           de site/bussola/index.html (removida, ver Mudança 4), agora
+           embutida direto na home. data-embed="inline" liga o modo
+           "embutido" em chat-widget.js: abre sozinho ao carregar a página
+           e não aciona o modo tela-cheia do celular (ver nota grande
+           acima e o próprio chat-widget.js). -->
+      <div id="refugio-chat-widget" class="chat-widget chat-widget--embedded" data-embed="inline">
+        <button type="button" class="chat-widget__launcher" aria-expanded="false" aria-controls="refugio-chat-panel">
+          <span class="chat-widget__launcher-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none"><path d="M4 5.5h16v10H9.5l-4.5 3.6V15.5H4v-10Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="chat-widget__launcher-text">
+            <span class="chat-widget__launcher-title">Falar com a Bússola</span>
+            <span class="chat-widget__launcher-sub">Sem cadastro · conversa privada · resposta na hora</span>
+          </span>
+          <span class="chat-widget__launcher-arrow" aria-hidden="true">→</span>
+        </button>
+
+        <div class="chat-widget__panel" id="refugio-chat-panel" hidden>
+          <div class="chat-widget__header">
+            <div class="chat-widget__header-id">
+              <img src="assets/bussola-icone.svg" alt="" aria-hidden="true" class="chat-widget__header-icon">
+              <div class="chat-widget__header-text">
+                <p class="chat-widget__header-title">Bússola</p>
+                <p class="chat-widget__header-tag"><span class="chat-widget__status-dot" aria-hidden="true"></span>sessão ativa</p>
+              </div>
+            </div>
+            <button type="button" class="chat-widget__close" aria-label="Minimizar conversa">×</button>
+          </div>
+
+          <div class="chat-widget__body">
+            <div class="chat-widget__messages" role="log" aria-live="polite" aria-label="Conversa com a Bússola"></div>
+
+            <div class="chat-widget__suggestions" role="group" aria-label="Sugestões para começar">
+              <p class="chat-widget__suggestions-label">Pode começar por aqui:</p>
+              <div class="chat-widget__chips">
+                <button type="button" class="chat-widget__chip" data-suggestion="Nosso sistema ficou difícil de mexer — toda mudança demora mais e acaba quebrando outra coisa.">Nosso sistema virou difícil de evoluir</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Não sei se os nossos dados e acessos estão realmente protegidos — nunca paramos pra olhar isso de verdade.">Não sei se estamos realmente protegidos</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Nossa conta de nuvem só sobe e eu não entendo direito por quê, nem se dá pra gastar menos.">Minha conta de nuvem só sobe, sem explicação</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Tem processo manual demais no dia a dia e eu queria entender onde dá pra usar automação ou IA de verdade.">Queria automatizar processo manual com IA</button>
+                <button type="button" class="chat-widget__chip" data-suggestion="Uso vários sistemas que não conversam entre si e fico com retrabalho ou perdendo informação.">Meus sistemas não conversam entre si</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-widget__turnstile"></div>
+
+          <div class="chat-widget__anexo-preview" hidden>
+            <span class="chat-widget__anexo-preview-icon" aria-hidden="true">📎</span>
+            <span class="chat-widget__anexo-preview-nome"></span>
+            <button type="button" class="chat-widget__anexo-remover" aria-label="Remover anexo">×</button>
+          </div>
+
+          <form class="chat-widget__form">
+            <label for="chat-widget-input" class="visually-hidden">Sua mensagem para a Bússola</label>
+            <input type="file" id="chat-widget-file" class="chat-widget__file-input" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,audio/mpeg,audio/wav,audio/ogg,audio/webm" hidden>
+            <button type="button" class="chat-widget__attach" aria-label="Anexar imagem, vídeo ou áudio" title="Anexar imagem, vídeo ou áudio">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M16.5 6.5 8.4 14.6a3 3 0 1 0 4.24 4.24l7.07-7.07a5 5 0 0 0-7.07-7.07L5.5 11.84" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <textarea id="chat-widget-input" class="chat-widget__input" rows="1" placeholder="Escreva o que está travando na sua empresa…"></textarea>
+            <button type="submit" class="chat-widget__send" aria-label="Enviar mensagem">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M3 11 21 4l-7 18-2.5-7.5L3 11Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+            </button>
+          </form>
         </div>
-        <div class="console__body">
-          <div class="console__line"><span class="tag">&gt;</span><span class="text">iniciar diagnóstico de arquitetura e cloud</span></div>
-          <div class="console__line hint">mapeando arquitetura, segurança, cloud e integrações…</div>
-          <div class="console__line reply"><span class="tag">bússola</span><span class="text">5 frentes mapeadas. 2 travando crescimento agora.</span></div>
-          <div class="console__line"><span class="tag">&gt;</span><span class="text">qual o de maior impacto?</span></div>
-          <div class="console__line reply"><span class="tag">bússola</span><span class="text">Dívida técnica na arquitetura core limitando throughput. Prioridade 1.<span class="console__cursor"></span></span></div>
-        </div>
+        <noscript><p class="chat-widget__noscript">A Bússola precisa de JavaScript para conversar em tempo real. Sem ele, escreva direto para <a href="mailto:contato@refugio.tech">contato@refugio.tech</a> ou use o formulário mais abaixo.</p></noscript>
       </div>
 
       <div class="solutions__bento">
         <div class="solutions__card solutions__card--1">
-          <span class="solutions__card-idx">01 · bússola · para a pme perdida na própria operação de ti</span>
+          <span class="solutions__card-idx">01 · bússola · para quem está perdido na própria operação de ti</span>
           <h3>Você vê o que trava sua operação antes que vire crise.</h3>
           <p>A Bússola conversa com sua empresa, mapeia as 5 frentes que mais travam o crescimento técnico — arquitetura, segurança, cloud, automação, integração — e traduz cada achado numa frase que qualquer dono de empresa entende e pode decidir.</p>
           <div class="solutions__ticker" aria-hidden="true">
@@ -241,10 +424,9 @@
           </div>
         </div>
         <div class="solutions__card solutions__card--4">
-          <span class="solutions__card-idx">disponível agora em /bussola</span>
-          <h3>Teste a Bússola antes de contratar.</h3>
-          <p>A mesma Bússola que mapeia as 5 frentes do seu negócio está ativa agora — converse com ela e veja o diagnóstico acontecer, de graça.</p>
-          <a href="bussola/" class="btn-primary solutions__cta">Testar a Bússola agora</a>
+          <span class="solutions__card-idx">produto ao vivo · sem mockup</span>
+          <h3>Essa conversa aí em cima é real.</h3>
+          <p>Não é demonstração estática: a Bússola é o mesmo agente, rodando no mesmo backend, que atende diagnósticos reais — com verificação Turnstile e sessão de verdade. Sem cadastro, sem custo. Escreva e veja a resposta chegar.</p>
         </div>
       </div>
     </div>
@@ -360,7 +542,7 @@
       <div class="faq__list">
         <div class="faq-item">
           <h3>O que é a Bússola da Refúgio Tech?</h3>
-          <p>A Bússola é o agente de diagnóstico por IA da Refúgio Tech, disponível em /bussola. Em uma conversa, ela mapeia as 5 frentes que mais travam o crescimento técnico de uma empresa — arquitetura, segurança, cloud, automação e integração — e devolve uma lista priorizada do que resolver primeiro.</p>
+          <p>A Bússola é o agente de diagnóstico por IA da Refúgio Tech, embutido ao vivo na própria página inicial (seção Bússola, acima). Em uma conversa, ela mapeia as 5 frentes que mais travam o crescimento técnico de uma empresa — arquitetura, segurança, cloud, automação e integração — e devolve uma lista priorizada do que resolver primeiro.</p>
         </div>
         <div class="faq-item">
           <h3>A Bússola substitui a engenharia da Refúgio Tech?</h3>
@@ -429,12 +611,16 @@
 
 <script src="assets/js/main.js"></script>
 
-<!-- O agente conversacional "Bússola" tem página própria
-     (site/bussola/index.html) — ver decisoes/2026-10-05-agente-piloto-
-     descoberta-pme.md (repositório Consultoria, "Achado do primeiro teste
-     manual"). O widget de chat não fica solto na home — a home só mostra
-     uma pré-visualização estática que linka para a página real (ver
-     .hero__preview-link acima). -->
+<!-- Mudança 3/4 (2026-10-08): o agente conversacional "Bússola" deixou de
+     ter página própria (site/bussola/index.html, removida — ver Mudança 4
+     e firebase.json "redirects" para o 301 de /bussola para /). O widget
+     de chat REAL (não mais pré-visualização estática) agora mora embutido
+     na seção #solucoes, acima — ver o comentário grande ali para as 3
+     mudanças desta seção e a verificação de Turnstile/CORS por domínio
+     (não por path). chat-widget.js é o MESMO arquivo que já rodava em
+     produção em /bussola; só ganhou suporte ao modo "embutido"
+     (data-embed="inline") usado aqui. -->
+<script src="assets/js/chat-widget.js"></script>
 
 <!-- Cloudflare Web Analytics — beacon sem cookie, sem fingerprint por
      IP/User-Agent (decisão do fundador, aprovada em cima da proposta de

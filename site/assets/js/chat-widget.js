@@ -33,6 +33,21 @@
    repositório Consultoria, seção da rodada 28, e functions/roteiro.js).
    Não existe mais parâmetro `angulo`, nem mais de um grupo de chips: um
    único conjunto de sugestões, refletindo as cinco categorias novas.
+
+   MUDANÇA 3 (2026-10-08, autorizada pelo fundador — ver comentário grande
+   em index.html, seção #solucoes): o widget passou a ser embutido direto
+   na home, além de continuar podendo existir em páginas próprias. Este
+   arquivo é o MESMO usado em produção (nenhuma lógica de sessão/Turnstile/
+   rede foi alterada) — só ganhou um modo "embutido", ativado por
+   data-embed="inline" no elemento raiz (#refugio-chat-widget):
+     - abre o painel sozinho ao carregar a página (é o produto da seção,
+       não algo escondido atrás de um clique no launcher);
+     - nunca aciona o reparenting de "tela cheia no celular" (pensado
+       originalmente para a hero de /bussola ocupar a viewport inteira no
+       mobile) — embutido, o widget é só mais um bloco no fluxo normal da
+       seção, em qualquer tamanho de tela.
+   Fora isso, todo o resto (fechar/reabrir, Turnstile, anexos, chips,
+   preview de solução) funciona exatamente igual ao modo não-embutido.
    =================================================================== */
 (function () {
   'use strict';
@@ -68,6 +83,7 @@
     if (!root) return;
 
     var sessionId = getSessionId();
+    var embedded = root.hasAttribute('data-embed'); // Mudança 3 — ver header do arquivo
     var turnstileToken = null;
     var turnstileWidgetId = null;
     var enviouPrimeiraMensagem = false;
@@ -376,7 +392,10 @@
         return;
       }
       atualizarAlturaHeaderFullscreen();
-      if (dentroDoBreakpointMobileFullscreen()) {
+      // Mudança 3: widget embutido na home nunca usa o hack de tela cheia
+      // no celular (ver header do arquivo) — fica sempre inline, como
+      // qualquer outro bloco da seção.
+      if (!embedded && dentroDoBreakpointMobileFullscreen()) {
         moverPainelParaFullscreen();
       }
       root.classList.add('is-open');
@@ -605,5 +624,15 @@
         enviarMensagem(texto, 'chip');
       });
     });
+
+    // Mudança 3 (2026-10-08): instância embutida na home abre direto, sem
+    // esperar clique no launcher — é o próprio produto da seção (ver
+    // comentário grande em index.html, #solucoes, e no header deste
+    // arquivo). abrirPainel() já guarda `!embedded` antes de acionar o
+    // hack de tela cheia do celular, então isso aqui é seguro em qualquer
+    // tamanho de tela.
+    if (embedded) {
+      abrirPainel();
+    }
   });
 })();

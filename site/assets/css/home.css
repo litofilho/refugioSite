@@ -275,7 +275,75 @@
   max-width: 620px;
 }
 
-.solutions .console { margin-bottom: var(--sp-6); }
+/* .solutions .console (regra do antigo mockup estático) foi REMOVIDA nesta
+   rodada (Mudança 2/3, 2026-10-08) — a seção não usa mais o componente
+   .console: o widget real (chat-widget.css/js) ocupa o lugar dele. Ver
+   .solutions__live-badge e .chat-widget--embedded abaixo, e o comentário
+   grande em index.html (seção #solucoes) para o racional completo. Se
+   precisar recuperar a regra antiga, ver histórico git deste arquivo. */
+
+/* ---------- Badge "produto ao vivo" (Mudança 2, 2026-10-08) ----------
+   Fica entre o parágrafo de abertura da seção e o widget real — existe
+   para que a hierarquia visual deixe claro, ANTES do visitante interagir,
+   que o que vem a seguir não é uma ilustração: é o produto rodando agora.
+   Ponto pulsante em Verde Pastel (cor do "refúgio"/produto calmo e
+   confiável na paleta), não Amarelo Suave — reserva o amarelo para
+   CTA/acento de decisão, como já é o padrão no resto do site. */
+.solutions__live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--sp-3);
+  padding: 8px var(--sp-3) 8px 10px;
+  border: 1px solid rgba(178, 194, 185, 0.4);
+  border-radius: var(--radius-pill);
+  background: rgba(178, 194, 185, 0.1);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: rgba(242, 242, 242, 0.92);
+}
+.solutions__live-badge-dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--verde-pastel);
+  animation: solutions-live-pulse 2s ease-out infinite;
+}
+@keyframes solutions-live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(178, 194, 185, 0.6); }
+  70% { box-shadow: 0 0 0 9px rgba(178, 194, 185, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(178, 194, 185, 0); }
+}
+
+/* ---------- Widget real embutido (Mudança 3, 2026-10-08) ----------
+   .chat-widget já é 100% estilizado em chat-widget.css (chrome branco,
+   independente do fundo em volta) — aqui só o necessário para ele viver
+   dentro da seção escura: largura/respiro consistentes com o resto do
+   bento, e um contorno sutil em Verde Pastel (mesma lógica de "aceno à
+   marca por fora, produto com cara própria por dentro" já usada no
+   .hero__preview-link). O branco do painel contra o fundo escuro É
+   proposital: funciona como "janela" que se destaca da composição de
+   marketing ao redor — reforça que aquilo é uma aplicação de verdade, não
+   parte do mesmo pano gráfico/ilustrativo da página. */
+.chat-widget--embedded {
+  margin-bottom: var(--sp-6);
+}
+.chat-widget--embedded .chat-widget__panel,
+.chat-widget--embedded .chat-widget__launcher {
+  box-shadow: 0 0 0 1px rgba(178, 194, 185, 0.35), var(--shadow-lift);
+}
+.chat-widget--embedded .chat-widget__noscript {
+  margin: 0;
+  padding: var(--sp-3);
+  border: 1px dashed rgba(242, 242, 242, 0.3);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  color: rgba(242, 242, 242, 0.85);
+}
+.chat-widget--embedded .chat-widget__noscript a { color: var(--amarelo-suave); text-decoration: underline; }
 
 .solutions__bento {
   display: grid;

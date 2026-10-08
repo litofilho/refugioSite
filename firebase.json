@@ -7,7 +7,19 @@
       "**/node_modules/**"
     ],
     "cleanUrls": true,
-    "trailingSlash": false
+    "trailingSlash": false,
+    "redirects": [
+      {
+        "source": "/bussola",
+        "destination": "/",
+        "type": 301
+      },
+      {
+        "source": "/bussola/**",
+        "destination": "/",
+        "type": 301
+      }
+    ]
   },
   "functions": [
     {
