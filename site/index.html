@@ -14,7 +14,23 @@
      Ver ativos/marca/branding.md (repositório Consultoria, "Visão
      central") e decisoes/2026-10-06-empresa-de-um-homem-so-piloto1.md
      (nome e natureza do Bunker: piloto privado, não validado). -->
-<title>Refúgio Tech — Um refúgio para quem se sente perdido na tecnologia</title>
+<!-- Revisão de SEO on-page (2026-10-08, rodada "Mudança 5" — despachada pelo
+     diretor de engenharia, skill seo-audit, achado confirmado com pesquisa
+     real de concorrentes via web_search, não suposição): o title/description
+     anteriores comunicavam só a camada emocional da marca ("perdido na
+     tecnologia"), sem nenhum termo de categoria que bate com busca real
+     (concorrentes reais rankeiam por "consultoria de IA para PME",
+     "diagnóstico de IA"/"diagnóstico de TI", "agente de IA" — ver pesquisa
+     web_search desta rodada). Title trocado para incluir "diagnóstico de
+     TI com IA" (termo de categoria real) mantendo o gancho emocional
+     ("sem perder o rumo", eco do novo H1 da Mudança 1) — 58 caracteres,
+     dentro da faixa 50-60 recomendada. Description reduzida de 187 para
+     147 caracteres (estava acima da faixa 150-160) e ganhou "consultoria
+     de TI", "agente de IA", "diagnostica" — mesmos termos de categoria —
+     mantendo a menção à Bússola e ao Bunker como as duas portas de entrada.
+     Sem menção a "PME"/porte de empresa (regra do fundador, ver nota
+     histórica abaixo, ainda válida). -->
+<title>Refúgio Tech — Diagnóstico de TI com IA, sem perder o rumo</title>
 <!-- Correção de copy (2026-10-08, rodada "Mudança 1" — autorizada pelo
      fundador após revisão visual ao vivo das seções Bússola/Bunker já
      separadas, commit 5b45634): removida toda menção a "PME"/"pequena e
@@ -26,7 +42,31 @@
      .solutions__card-idx — eram os outros 3 pontos da home com a mesma
      menção fora da seção da Bússola (o pedido original também mandava
      verificar isso). -->
-<meta name="description" content="Refúgio Tech é o refúgio para quem sente a tecnologia pesar no negócio — da sua operação ao consultor de TI que toca tudo sozinho. Conheça a Bússola e o Bunker, as duas portas de entrada.">
+<meta name="description" content="Refúgio Tech é consultoria de TI com um agente de IA: a Bússola diagnostica o que trava seu negócio e aponta a prioridade. Conheça também o Bunker.">
+
+<!-- Canonical (2026-10-08, Mudança 5 — seo-audit): página única, auto-
+     referenciada. Achado real confirmado por curl antes desta rodada:
+     refugio.tech não tinha nenhuma tag <link rel="canonical">. -->
+<link rel="canonical" href="https://refugio.tech/">
+
+<!-- Open Graph / Twitter Card (2026-10-08, Mudança 5 — achado adicional
+     não listado no pedido original, mas dentro do escopo de SEO on-page:
+     a home não tinha nenhuma meta de preview social, então qualquer
+     compartilhamento em WhatsApp/LinkedIn/Slack cai num card genérico sem
+     título/descrição da marca. Sem imagem OG dedicada (1200x630) ainda —
+     usar o ícone pequeno como fallback seria pior que não ter nenhuma
+     imagem (preview cortado/pixelado); og:image fica de fora por
+     honestidade, não esquecimento — [FALTA: imagem OG dedicada 1200x630,
+     pendência de design para rodada futura]. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Refúgio Tech">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:url" content="https://refugio.tech/">
+<meta property="og:title" content="Refúgio Tech — Diagnóstico de TI com IA, sem perder o rumo">
+<meta property="og:description" content="Refúgio Tech é consultoria de TI com um agente de IA: a Bússola diagnostica o que trava seu negócio e aponta a prioridade. Conheça também o Bunker.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Refúgio Tech — Diagnóstico de TI com IA, sem perder o rumo">
+<meta name="twitter:description" content="Refúgio Tech é consultoria de TI com um agente de IA: a Bússola diagnostica o que trava seu negócio e aponta a prioridade. Conheça também o Bunker.">
 
 <!-- Bug real (2026-10-06): sem color-scheme/theme-color, o Chrome/Android
      aplica força-escuro (auto-darkening) por heurística própria, invertendo
@@ -108,7 +148,7 @@
       "name": "A Refúgio Tech é consultoria de TI genérica?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Não. A Refúgio Tech existe para ser um ponto firme para quem se sente perdido ou exposto na própria tecnologia — primeiro com diagnóstico claro, depois, quando faz sentido, com engenharia de verdade: software, integração, automação ou IA, com o crescimento real do cliente como critério de sucesso, não um relatório para guardar na gaveta."
+        "text": "Não. A tecnologia hoje é demais — ferramentas, atualizações e decisões técnicas se acumulam mais rápido do que qualquer dono de negócio consegue acompanhar sozinho. A Refúgio Tech existe pra ser o lugar estável nesse cenário: primeiro com diagnóstico claro, depois, quando faz sentido, com engenharia de verdade — software, integração, automação ou IA —, com o crescimento real do cliente como critério de sucesso, não um relatório para guardar na gaveta."
       }
     },
     {
@@ -188,8 +228,32 @@
              junto — não sobra respiro extra entre a faceta decorativa do
              topo e o H1. Conferido visualmente em 1280px e 390px, sem
              buraco no layout. -->
-        <h1 id="hero-headline" class="hero__headline">Onde a tecnologia encontra um <mark>porto seguro</mark>.</h1>
-        <p class="hero__lede">Sistema que você não entende mais, decisão que depende de alguém de confiança, sensação de estar exposto sem saber onde — se a tecnologia virou um peso para o seu negócio, você não precisa resolver isso sozinho. A Refúgio Tech existe para ser esse ponto firme. A profundidade técnica entra depois, como prova, quando é hora de agir — não como a primeira coisa que você precisa entender.</p>
+        <!-- MUDANÇA 1 (2026-10-08, decisão já fechada do fundador, só
+             implementação): H1 e lede trocados por texto literal recebido.
+             O <mark> do H1 anterior ("porto seguro") não foi recriado — o
+             texto novo é uma pergunta direta, sem uma única palavra-chave
+             óbvia pra destacar, e o pedido foi pra implementar o texto
+             como veio, não pra inventar ênfase nova. A regra CSS
+             `.hero__headline mark` (home.css) fica sem uso agora — mantida
+             sem alteração, é inofensiva e barata de reaproveitar se um H1
+             futuro voltar a usar <mark>.
+
+             hero__slogan (citação do slogan institucional, em itálico) foi
+             CORTADO por inteiro, não só por redundância com a nova
+             subheadline curta (como o pedido já sinalizava), mas por um
+             motivo técnico adicional encontrado ao aplicar a skill
+             copywriting: o próprio texto do slogan ("Não somos apenas
+             consultoria. Somos...") é um reveal de contraste clássico
+             ("não é X, é Y") — item 1 da lista de "cara de IA" que a skill
+             pede pra evitar. Mover o slogan pra outro lugar da página só
+             teria deslocado esse problema, não resolvido; por isso a
+             escolha técnica foi remover, não realocar. O slogan continua
+             preservado como metadado estrutural (JSON-LD Organization,
+             campo "slogan", mais abaixo) — isso é lido por máquina, não é
+             copy visível pro visitante, então a crítica da skill não se
+             aplica ali. -->
+        <h1 id="hero-headline" class="hero__headline">Perdido em meio a tanta tecnologia, sem saber pra que lado ir?</h1>
+        <p class="hero__lede">A Bússola mostra a direção. A Refúgio Tech é o lugar seguro pra você chegar lá.</p>
         <div class="hero__ctas">
           <!-- Mudança 4: "bussola/" não existe mais como página — aponta
                direto para a seção #solucoes, onde o widget real agora vive
@@ -197,7 +261,6 @@
           <a href="#solucoes" class="btn-primary">Falar com a Bússola</a>
           <a href="#fale-com-a-gente" class="btn-ghost">Agendar conversa</a>
         </div>
-        <p class="hero__slogan">"Não somos apenas consultoria. Somos o fundamento sólido para a sua Transformação Tecnológica."</p>
         <!-- Correção 3 (2026-10-08, autorizada pelo fundador — ver
              ativos/marca/branding.md, repositório Consultoria, revisão de
              2026-10-08): pilares renomeados. Antifragilidade/Maestria
@@ -542,7 +605,34 @@
                até a solução dos seus problemas") — não precisou de edição
                nesta rodada, só verificação de que não ficou idêntico. -->
           <h3>Um agente de IA que mapeia onde sua operação trava antes que vire crise.</h3>
-          <p>A Bússola conversa com sua empresa, mapeia as 5 frentes que mais travam o crescimento técnico — arquitetura, segurança, cloud, automação, integração — e traduz cada achado numa frase que qualquer dono de empresa entende e pode decidir.</p>
+          <!-- MUDANÇA 2 (2026-10-08, skill cro — framework de análise, item 4
+               "hierarquia visual e escaneabilidade"): a Bússola já é a
+               seção dominante da página (resolvido em rodada anterior); o
+               fundador pediu reforçar ainda mais esse destaque. Avaliado
+               contra o framework completo da skill: proposta de valor (1),
+               headline (2) e CTA (3) já estavam resolvidos nesta seção;
+               prova social (5) foi descartada de propósito — a skill cro
+               proíbe fabricar depoimento/selo que a Refúgio Tech não tem, e
+               reintroduzir um selo tipo "produto ao vivo" contradiria a
+               Correção 2 já registrada acima ("se precisamos dizer que o
+               produto está ao vivo, falhamos no design"). O item de maior
+               impacto real e honesto disponível era o (4): o parágrafo
+               enumerava as 5 frentes dentro de uma frase corrida — rápido
+               de ler em voz alta, lento de escanear com o olho. Reescrito
+               em 2 partes: frase curta de benefício (sem a enumeração) +
+               lista de 5 pills abaixo (mesmo padrão visual já usado em
+               .hero__pillars-tag, adaptado pra fundo escuro) — lista
+               escaneável > frase longa pra enumeração, mesmo princípio que
+               a skill ai-seo recomenda para extrabilidade de conteúdo
+               (ganho duplo: CRO e estrutura legível por agente de IA). -->
+          <p>A Bússola conversa com sua empresa e traduz cada achado numa frase que qualquer dono de negócio entende e pode decidir. As 5 frentes que ela mapeia:</p>
+          <ul class="solutions__frentes" aria-label="As 5 frentes que a Bússola mapeia">
+            <li>Arquitetura</li>
+            <li>Segurança</li>
+            <li>Cloud</li>
+            <li>Automação</li>
+            <li>Integração</li>
+          </ul>
           <div class="solutions__ticker" aria-hidden="true">
             <span class="solutions__ticker-item">mapeando arquitetura e dívida técnica</span>
             <span class="solutions__ticker-item">auditando segurança e devsecops</span>
@@ -612,7 +702,22 @@
        (.bunker-note__text/.bunker-note__link). -->
   <aside class="bunker-note" id="bunker" aria-labelledby="bunker-note-text">
     <div class="container bunker-note__inner">
-      <p class="bunker-note__text" id="bunker-note-text">Para o consultor de TI que toca o negócio inteiro sozinho, existe o <strong>Bunker</strong> — a mesma estrutura de agentes de IA da Refúgio Tech, hoje em piloto privado e ainda não aberta ao público.</p>
+      <!-- MUDANÇA 4 (2026-10-08, skill copywriting — "benefício antes de
+           característica"): a frase anterior só dizia O QUE o Bunker é
+           (feature: "mesma estrutura de agentes de IA, em piloto
+           privado"), sem dizer o benefício real pro consultor de TI solo.
+           Reescrita pra abrir pela dor/benefício específico, não pela
+           feature — mesma tese documentada em
+           decisoes/2026-10-06-empresa-de-um-homem-so-piloto1.md
+           (repositório Consultoria, leitura apenas): o profissional
+           liberal de TI gasta a maior parte do tempo fazendo a própria
+           operação girar (marketing, vendas, suporte, financeiro) em vez
+           de focar no que sabe fazer de verdade. A feature (estrutura de
+           agentes de IA) entra depois, como explicação de COMO isso
+           acontece, não como abertura. Honestidade mantida: "piloto
+           privado, ainda não aberto ao público" continua explícito, sem
+           suavizar. -->
+      <p class="bunker-note__text" id="bunker-note-text">Para o consultor de TI que hoje faz tudo sozinho — marketing, vendas, suporte, financeiro — e não sobra tempo pra o que ele sabe fazer de verdade, existe o <strong>Bunker</strong>: a mesma estrutura de agentes de IA que já toca a Refúgio Tech por dentro, pensada pra devolver esse tempo. Hoje em piloto privado, ainda não aberto ao público.</p>
       <a href="#fale-com-a-gente" class="bunker-note__link">Falar sobre o Bunker →</a>
     </div>
   </aside>
@@ -668,7 +773,21 @@
         </div>
         <div class="faq-item">
           <h3>A Refúgio Tech é consultoria de TI genérica?</h3>
-          <p>Não. A Refúgio Tech existe para ser um ponto firme para quem se sente perdido ou exposto na própria tecnologia — primeiro com diagnóstico claro, depois, quando faz sentido, com engenharia de verdade: software, integração, automação ou IA, com o crescimento real do cliente como critério de sucesso, não um relatório para guardar na gaveta.</p>
+          <!-- MUDANÇA 3 (2026-10-08, pedido do fundador): o conceito "refúgio
+               contra o apocalipse de tecnologia" vivia só implícito na
+               escolha de palavras (refúgio, porto seguro, perdido) — nunca
+               nomeado de forma direta em lugar nenhum da página. Esta
+               pergunta do FAQ já era o lugar natural (pergunta mais
+               próxima do "por que a Refúgio Tech existe"). Duas frases
+               novas inseridas no meio da resposta, nomeando o conceito sem
+               jargão: tecnologia hoje é demais/confusa, a Refúgio existe
+               pra ser o lugar estável nesse cenário. Tom calmo mantido
+               ("autoridade tranquila", ativos/marca/branding.md,
+               repositório Consultoria) — sem hipérbole, sem ponto de
+               exclamação. Mesmo texto replicado no FAQPage JSON-LD acima
+               (schema e HTML precisam ficar idênticos, convenção já em uso
+               neste arquivo). -->
+          <p>Não. A tecnologia hoje é demais — ferramentas, atualizações e decisões técnicas se acumulam mais rápido do que qualquer dono de negócio consegue acompanhar sozinho. A Refúgio Tech existe pra ser o lugar estável nesse cenário: primeiro com diagnóstico claro, depois, quando faz sentido, com engenharia de verdade — software, integração, automação ou IA —, com o crescimento real do cliente como critério de sucesso, não um relatório para guardar na gaveta.</p>
         </div>
         <div class="faq-item">
           <h3>O que é o Bunker?</h3>

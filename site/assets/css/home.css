@@ -116,21 +116,12 @@
   background: rgba(69, 82, 89, 0.06);
 }
 
-.hero__slogan {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  /* Correção 4 (2026-10-08): era 0.9375rem (15px) — é uma frase de verdade
-     (o slogan citado), não um rótulo. Corpo de texto nunca abaixo de 16px
-     (decisão de acessibilidade permanente, repositório Consultoria). */
-  font-size: 1rem;
-  color: var(--cinza-chumbo);
-  opacity: 0.85;
-  max-width: 460px;
-  border-left: 2px solid var(--verde-pastel);
-  padding-left: var(--sp-2);
-  margin-bottom: var(--sp-4);
-}
+/* .hero__slogan foi REMOVIDA nesta rodada (Mudança 1, 2026-10-08, skill
+   copywriting — ver comentário em index.html, seção hero, para o
+   racional completo: o slogan é um reveal de contraste clássico, item 1
+   da lista de "cara de IA" que a skill pede pra evitar). Regra de CSS
+   removida junto por não ter mais elemento no HTML que a use. Se precisar
+   recuperar, ver histórico git deste arquivo. */
 
 .hero__pillars-tag {
   display: flex;
@@ -571,6 +562,39 @@
   font-size: 1rem;
   color: rgba(242, 242, 242, 0.64);
   line-height: 1.55;
+}
+/* ---------- MUDANÇA 2 (2026-10-08, skill cro) ----------
+   Lista de pills das 5 frentes que a Bússola mapeia — ver comentário em
+   index.html (seção #solucoes, card--1) para o racional completo:
+   substitui a enumeração que antes vivia dentro da frase corrida do
+   parágrafo, pra ganhar escaneabilidade sem precisar de prova social
+   fabricada. Mesmo padrão visual de .hero__pillars-tag (ponto + texto
+   maiúsculo com tracking), adaptado pra fundo escuro: ponto em Verde
+   Pastel em vez de Amarelo Suave (o amarelo já é o acento do CTA/idx
+   dentro deste mesmo card — usar outra cor evita os dois competirem pela
+   atenção no mesmo bloco). */
+.solutions__frentes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  list-style: none;
+  margin: 0 0 var(--sp-3);
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--off-white);
+}
+.solutions__frentes li { position: relative; padding-left: 14px; }
+.solutions__frentes li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--verde-pastel);
+  transform: translateY(-50%);
 }
 /* Correção 2 (2026-10-08): o bento tinha 2 peças (card da Bússola +
    card--4 "Essa conversa aí em cima é real", reforço textual do selo

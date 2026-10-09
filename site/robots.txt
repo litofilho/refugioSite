@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://refugio.tech/sitemap.xml

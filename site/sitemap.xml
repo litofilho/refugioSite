@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Sitemap mínimo (2026-10-08, Mudança 5 — seo-audit): o site é
+     basicamente uma página só (home). /bussola existe apenas como
+     redirect 301 pra "/" (ver firebase.json "redirects") e não é
+     conteúdo canônico próprio — não entra aqui. Quando o site crescer
+     para mais páginas reais, adicionar <url> por página. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://refugio.tech/</loc>
+    <lastmod>2026-10-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
