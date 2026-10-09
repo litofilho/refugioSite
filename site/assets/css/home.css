@@ -425,6 +425,73 @@
   box-shadow: 0 30px 64px -16px rgba(38, 46, 51, 0.32);
 }
 
+/* ---------- Esconder o mock em telas que não comportam o layout 2
+   colunas interno (.console__grid) ----------
+   Pedido do fundador (2026-10-08, revisão do preview, commit b754558): o
+   mock quebra de forma feia em telas estreitas — texto cortado no meio da
+   palavra dentro do painel preview. Em vez de tentar caber espremido,
+   esconder o mock inteiro abaixo do ponto em que ele garantidamente cabe
+   bem, e mandar o usuário direto pro CTA real ("Falar com a Bússola" →
+   #solucoes).
+
+   Teste de verdade feito via CDP/DevTools (larguras de 320 a 1440px,
+   medindo scrollWidth/clientWidth dos elementos, não só olhando) antes de
+   escolher o corte — achado importante: o mobile empilhado NÃO é onde o
+   mock quebra. Abaixo de 860px .console__grid empilha (conversa em cima,
+   painel embaixo, ver acima) e o card ocupa a largura cheia do container
+   em qualquer resolução — conferido visualmente em 320/360/390/430/480/
+   600px, sem corte de palavra, sem overflow, sem sobreposição em nenhuma
+   delas. O problema real está no intervalo 1024px–~1209px: é exatamente
+   aí que .hero__grid (styles.css, bloco "Desktop ≥ 1024px") vira 2
+   colunas e a coluna do card desaba de ~944px (quase a largura cheia do
+   container, com 1 coluna) pra ~375px — mas .console__grid já tinha virado
+   2 colunas internamente desde 860px (ver regra acima), então nesse
+   intervalo o painel lateral tenta encaixar pill "automatizado" + título
+   "painel — pedidos" numa coluna que não tem espaço, e como a janela do
+   painel usa overflow:hidden, o resultado visual é texto cortado no meio
+   (ex.: "automatizado" vira "automatizad", o resto escondido). Medido com
+   precisão: overflow de até 35px logo depois de 1024px, caindo a zero só
+   perto de 1210px, quando o container já bateu no teto de
+   --container-max (1200px) e o card volta a ter ~461px de largura.
+
+   Corte escolhido: 1200px — bate com --container-max (token já existente
+   no projeto, ver styles.css :root), e cobre com folga o intervalo medido
+   como quebrado (1024–1209px). Abaixo de 1200px (todo o mobile real, todo
+   tablet, e a faixa 1024–1199 que hoje quebra) o mock fica oculto; a
+   partir de 1200px nada muda — mesmo card, mesmo layout de sempre
+   (confirmado visualmente em 1200/1280/1440px: sem corte, só quebra de
+   linha normal dentro das caixas). .hero__cta (o wrapper que só contém o
+   link do mock, ver index.html) também é escondido, não só o link — assim
+   o grid da hero não sobra com uma linha vazia + gap (var(--sp-4)) no fim
+   da seção; sem isso dava um respiro em branco esquisito depois dos CTAs/
+   pilares. O ajuste de .hero__grid para 1 coluna nessa mesma faixa (abaixo)
+   cobre o intervalo 1024–1199px que o bloco "Desktop ≥ 1024px" de
+   styles.css vira 2 colunas por padrão — sem isso sobraria uma coluna
+   vazia de ~0.9fr à direita do texto nessa faixa específica. Abaixo de
+   1024px o hero__grid de styles.css já é 1 coluna por padrão (nenhuma
+   mudança necessária ali). CTA primário ("Falar com a Bússola",
+   .btn-primary) e os demais elementos de texto da hero (H1, lede, CTAs,
+   pilares) não são tocados por este bloco — continuam exatamente como já
+   eram, só ganham mais espaço vertical por não dividir a seção com o
+   card. */
+@media (max-width: 1199.98px) {
+  .hero__cta,
+  .hero__preview-link {
+    display: none;
+  }
+
+  /* Sem o card, volta pro layout 1 coluna de sempre (mesmo comportamento
+     que já existe nativamente abaixo de 1024px) também na faixa
+     1024–1199px, onde styles.css normalmente já teria virado 2 colunas. */
+  .hero__grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+  }
+  .hero__content {
+    grid-area: auto;
+  }
+}
+
 /* ---------- Transições entre seções claro/escuro ---------- */
 .seam-to-dark {
   position: relative;
