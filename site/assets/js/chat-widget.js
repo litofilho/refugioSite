@@ -114,6 +114,37 @@
    no botão de fechar, foco devolvido pro botão que abriu quando fecha.
    Ver o bloco de comentário grande junto das funções, mais abaixo, para o
    racional completo.
+
+   MUDANÇA 4 (2026-10-08, pedido direto do fundador após teste real em
+   celular: "fica inutilizável, precisa se adaptar como app de chat"): a
+   MUDANÇA 3 (acima) tinha desligado DELIBERADAMENTE o hack de tela cheia
+   mobile pro modo embutido — ficava sempre inline, em qualquer tamanho de
+   tela, mesmo no momento de digitar. Certo pro estado de repouso (painel
+   pequeno dentro do fluxo da seção), errado pro momento de interagir de
+   verdade: no celular, o painel pequeno+inline fica inutilizável pra
+   digitar (teclado cobre o campo). Reverte a decisão só nesse momento,
+   reaproveitando o MESMO mecanismo de reparenting pra <body> que já existe
+   e já corrigiu o bug de clipping (BUG 1, mais abaixo) — não reinventa
+   nada:
+     - gatilho: foco no campo de texto (input.focus) OU clique num chip de
+       sugestão — os dois jeitos reais de alguém começar a "usar" o painel
+       embutido (entrarFullscreenEmbutido, junto de
+       moverPainelParaFullscreen, mais abaixo);
+     - saída: só pelo botão de fechar (mesmo affordance "Fechar" que o
+       modo launcher já usa em tela cheia) — nunca por blur (perder foco
+       tocando num chip ou rolando a lista de mensagens não deve "fechar"
+       nada, por isso não existe nenhum listener de blur neste arquivo);
+     - ao sair, o painel embutido volta pro tamanho inline normal da
+       seção (devolverPainelAoLugarOriginal) — NUNCA fica escondido, ele é
+       o produto da seção (diferente do modo launcher, onde fechar
+       esconde o painel). Por isso a saída usa uma função própria
+       (sairDoFullscreenEmbutido), não fecharPainel();
+     - é o MESMO nó do painel sendo reparentado (não um clone), então a
+       conversa e o texto já digitado no campo são preservados ao entrar/
+       sair — confirmado por teste real via CDP, não só presumido pelo
+       mecanismo (ver notas de teste no commit).
+   Ver o comentário grande junto de entrarFullscreenEmbutido/
+   sairDoFullscreenEmbutido, mais abaixo, para o racional completo.
    =================================================================== */
 (function () {
   'use strict';
@@ -620,6 +651,17 @@
     input.addEventListener('input', autoResizeInput);
     autoResizeInput(); // altura inicial correta mesmo antes de digitar
 
+    // MUDANÇA 4 (ver comentário grande junto de entrarFullscreenEmbutido,
+    // mais abaixo): foco no campo de texto é um dos dois gatilhos reais de
+    // "começar a usar" o painel embutido no celular (o outro é clique num
+    // chip de sugestão, no forEach de chipButtons, mais abaixo). No modo
+    // launcher (!embedded) é no-op (entrarFullscreenEmbutido já retorna
+    // cedo se !embedded) — o launcher continua usando o fluxo de tela
+    // cheia de sempre, acionado em abrirPainel.
+    input.addEventListener('focus', function () {
+      entrarFullscreenEmbutido({ restaurarFoco: true });
+    });
+
     // --- BUG 1: Turnstile precisa colapsar/desaparecer assim que a
     // verificação passa, não só quando a conversa escala. ---
     function colapsarTurnstile() {
@@ -709,6 +751,85 @@
       panelParentOriginal.appendChild(panel);
       panel.classList.remove('chat-widget__panel--fullscreen');
       panelEstaFullscreen = false;
+    }
+
+    // MUDANÇA 4 (2026-10-08, pedido direto do fundador pós-teste real em
+    // celular: "fica inutilizável, precisa se adaptar como app de chat"):
+    // o modo embutido (home) tinha o hack de tela cheia DELIBERADAMENTE
+    // desligado (ver MUDANÇA 3, header do arquivo) — ficava sempre inline,
+    // em qualquer tamanho de tela. Isso é certo pro estado de REPOUSO (o
+    // painel pequeno dentro do fluxo da seção), mas o fundador testou o
+    // momento de INTERAGIR de verdade (focar o campo pra digitar, ou tocar
+    // num chip de sugestão) com o painel ainda pequeno e inline: no
+    // celular, o painel embutido some atrás do teclado virtual, campo
+    // minúsculo — inutilizável. Reverte a decisão só pra esse momento: ao
+    // focar o campo OU clicar num chip, com tela <1024px, o painel embutido
+    // entra em tela cheia reaproveitando o MESMO mecanismo acima
+    // (moverPainelParaFullscreen), que já corrigiu o bug de clipping
+    // (BUG 1, comentário grande acima) — não reinventa nada, só aciona o
+    // reparenting pra <body> também no caso embutido, condicionado à
+    // interação real em vez de ligado sempre (que é exatamente o que a
+    // MUDANÇA 3 queria evitar: nenhuma mudança de layout chamativa só por
+    // a página ter carregado).
+    //
+    // Saída é uma função PRÓPRIA (sairDoFullscreenEmbutido), não
+    // fecharPainel(): fecharPainel() existe pro modo launcher, onde
+    // "fechar" significa esconder o painel inteiro (panel.hidden = true,
+    // ver finalizarFechamentoPainel) — errado aqui, porque no modo
+    // embutido o painel É o produto da seção (ver MUDANÇA 3) e nunca pode
+    // ficar escondido. Sair da tela cheia embutida só devolve o painel
+    // pro lugar original (devolverPainelAoLugarOriginal, mesmo mecanismo
+    // de sempre) e mantém root.is-open/panel.is-open como já estavam —
+    // o painel continua visível, só que de volta ao tamanho inline normal
+    // do fluxo da página.
+    //
+    // Importante (ver pedido do fundador, item 2): a saída SÓ acontece
+    // pelo botão de fechar (closeBtn, mesmo affordance "Fechar" que já
+    // existe pro modo launcher em tela cheia — CSS em
+    // .chat-widget__panel--fullscreen .chat-widget__close, chat-widget.css,
+    // não depende de onde o painel está no DOM). NUNCA por perda de foco
+    // (blur) — não existe nenhum listener de blur neste arquivo, de
+    // propósito: o usuário pode tocar num chip ou rolar a lista de
+    // mensagens sem querer "fechar".
+    // BUG encontrado NESTA rodada, ao testar de verdade via CDP (clique real
+    // no campo, não dispatchEvent sintético): mover um elemento FOCADO para
+    // um novo pai no DOM (appendChild, dentro de moverPainelParaFullscreen)
+    // zera o foco — document.activeElement volta pro <body> assim que o
+    // reparenting acontece (confirmado ao vivo, não presumido). Isso é grave
+    // justamente aqui porque a entrada em tela cheia É disparada pelo
+    // próprio evento `focus` do campo: sem corrigir, o teclado virtual
+    // chegaria a abrir e fechar na mesma interação — exatamente o problema
+    // original ("teclado cobre a área") que esta mudança existe pra
+    // resolver, só que de um jeito diferente (perda de foco em vez de
+    // clipping). O modo launcher nunca bateu nesse bug porque lá a ordem já
+    // era a certa por acaso: moverPainelParaFullscreen() roda dentro de
+    // abrirPainel() e SÓ DEPOIS vem `if (foco) input.focus()` — reparenta
+    // primeiro, foca depois. Aqui é o oposto (o foco já aconteceu, é ele
+    // que dispara o reparenting), então precisa restaurar o foco
+    // explicitamente depois de mover o nó.
+    // opts.restaurarFoco só é passado true pelo listener de `focus` do
+    // campo (abaixo) — NUNCA pelo clique em chip: ali o campo nunca foi
+    // focado pra começar (mesmo padrão do resto do arquivo: clique em chip
+    // não força abertura de teclado, ver enviarMensagem/enviarMensagemReal,
+    // nenhum input.focus() ali).
+    function entrarFullscreenEmbutido(opts) {
+      if (!embedded || panelEstaFullscreen) return;
+      if (!dentroDoBreakpointMobileFullscreen()) return;
+      atualizarAlturaHeaderFullscreen();
+      moverPainelParaFullscreen();
+      document.body.classList.add('is-chat-fullscreen-open');
+      if (opts && opts.restaurarFoco) {
+        input.focus();
+      }
+    }
+    function sairDoFullscreenEmbutido() {
+      if (!panelEstaFullscreen) return;
+      devolverPainelAoLugarOriginal();
+      document.body.classList.remove('is-chat-fullscreen-open');
+      // Propositalmente NÃO toca panel.hidden nem root/panel.classList
+      // 'is-open' — o painel embutido continua aberto/visível, só volta a
+      // ser um bloco inline normal da seção (requisito do fundador: nunca
+      // esconder o painel embutido).
     }
 
     // AJUSTE DE UX (2026-10-08, pedido do fundador pós-revisão em produção,
@@ -894,7 +1015,23 @@
         abrirPainel();
       }
     });
-    closeBtn.addEventListener('click', fecharPainel);
+    // MUDANÇA 4 (ver comentário grande junto de entrarFullscreenEmbutido/
+    // sairDoFullscreenEmbutido, acima): o mesmo botão físico (closeBtn, já
+    // reaproveitado do modo launcher — affordance "Fechar" em
+    // chat-widget.css) precisa de dois comportamentos diferentes conforme
+    // o contexto. Se o painel embutido está em tela cheia (entrou por foco
+    // no campo ou clique num chip), fechar significa só devolver ao
+    // tamanho inline normal da seção — NUNCA esconder o painel (ele é o
+    // produto da seção). Em qualquer outro caso (modo launcher, ou
+    // embutido já no tamanho normal) o comportamento é o de sempre:
+    // fecharPainel() esconde o painel inteiro.
+    closeBtn.addEventListener('click', function () {
+      if (embedded && panelEstaFullscreen) {
+        sairDoFullscreenEmbutido();
+      } else {
+        fecharPainel();
+      }
+    });
 
     // Qualquer elemento da página (ex.: link de "voltar para a conversa"
     // mais abaixo no texto institucional) pode reabrir/focar o mesmo chat
@@ -1092,6 +1229,12 @@
     chipButtons.forEach(function (btn) {
       btn.addEventListener('click', function () {
         if (btn.disabled) return;
+        // MUDANÇA 4 (ver comentário grande junto de
+        // entrarFullscreenEmbutido, acima): clique num chip é o segundo
+        // gatilho real de "começar a usar" o painel embutido no celular
+        // (o outro é foco no campo, registrado acima). No modo launcher
+        // é no-op.
+        entrarFullscreenEmbutido();
         var texto = btn.getAttribute('data-suggestion') || btn.textContent;
         enviarMensagem(texto, 'chip');
       });
