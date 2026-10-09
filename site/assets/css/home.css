@@ -892,6 +892,32 @@
   .pillars__grid { grid-template-columns: 1fr; }
 }
 
+/* Bug reportado pelo fundador (revisão mobile, 2026-10-08): .solutions__
+   ticker tinha height:26px fixo pensado pra 1 linha; em telas estreitas
+   as 3 frases do ticker quebram em 2 ou 3 linhas (o "→ " do ::before
+   vira um item flex à parte, reduzindo a largura disponível pro texto —
+   por isso quebra mais cedo do que pareceria num parágrafo normal) e a
+   altura fixa + overflow:hidden cortava o texto. Medido de verdade via
+   CDP (altura natural do texto, não estimativa): tickerWidth <= 216px
+   (viewport <= ~330px, ex. iPhone SE 320px) quebra em 3 linhas (~84px);
+   tickerWidth 221–391px (viewport ~335–505px, cobre 375 e 430 — as
+   larguras de teste pedidas pelo fundador) quebra em 2 linhas (~56px);
+   tickerWidth >= 396px (viewport >= ~510px) cabe em 1 linha (as 2
+   colunas do bento em desktop/tablet ≥700px dão bastante largura, nunca
+   quebram). Opção escolhida: (a) aumentar a altura do container pra
+   caber todas as linhas — (b) reduzir font-size o bastante pra caber 1
+   linha em 320px exigiria cair bem abaixo de 16px (ilegível num
+   mono-font) e (c) truncar com ellipsis cortaria a frase (ela é o
+   conteúdo, não decoração). O keyframe de slide (translateY) não muda —
+   desliza o item inteiro, independe de quantas linhas o texto ocupa. */
+@media (max-width: 520px) {
+  .solutions__ticker { height: 56px; }
+  .solutions__ticker-item { align-items: flex-start; }
+}
+@media (max-width: 330px) {
+  .solutions__ticker { height: 84px; }
+}
+
 /* Faixa do Bunker (.bunker-note): só precisa de 1 ajuste em mobile —
    eyebrow, texto e link empilham em coluna em vez da linha única de
    desktop (o layout flex com flex-wrap já cuida da quebra de linha;
