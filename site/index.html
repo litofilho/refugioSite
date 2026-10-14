@@ -253,12 +253,12 @@
              copy visível pro visitante, então a crítica da skill não se
              aplica ali. -->
         <h1 id="hero-headline" class="hero__headline">Perdido em meio a tanta tecnologia, sem saber pra que lado ir?</h1>
-        <p class="hero__lede">A Bússola mostra a direção. A Refúgio Tech é o lugar seguro pra você chegar lá.</p>
+        <p class="hero__lede">A Bússola é um agente de IA que conversa com você agora, mapeia os 5 pontos que travam sua operação e aponta por onde começar. Grátis, sem cadastro.</p>
         <div class="hero__ctas">
           <!-- Mudança 4: "bussola/" não existe mais como página — aponta
                direto para a seção #solucoes, onde o widget real agora vive
                embutido (ver Mudança 3 mais abaixo). -->
-          <a href="#solucoes" class="btn-primary">Falar com a Bússola</a>
+          <a href="#solucoes" class="btn-primary">Falar com a Bússola agora</a>
           <a href="#fale-com-a-gente" class="btn-ghost">Agendar conversa</a>
         </div>
         <!-- Correção 3 (2026-10-08, autorizada pelo fundador — ver
@@ -275,74 +275,51 @@
       </div>
 
       <div class="hero__cta reveal">
-        <!-- Pré-visualização estática da Bússola no hero: mantida como
-             ilustração rápida acima da rolagem (o widget FUNCIONAL de
-             verdade mora na seção #solucoes, mais abaixo — ver Mudança 3).
-             Decisão de engenharia (2026-10-08, revisão desta rodada): não
-             duplicar Turnstile/sessão/chamadas de rede aqui também — uma
-             segunda instância do widget no hero criaria duas sessões/
-             tokens de Turnstile concorrentes na mesma página, sem ganho
-             real (a seção de produto já está a um scroll de distância, não
-             a uma página). O link, que antes levava a site/bussola/ (hoje
-             removido, ver firebase.json "redirects"), agora é uma âncora
-             interna para o widget real. -->
-        <!-- Reescrita do mock (2026-10-08, pós-revisão do fundador sobre o
-             commit 4394234 — ver repositório Website): o exemplo trocou de
-             um problema de cloud/infraestrutura para um de AUTOMAÇÃO DE
-             PROCESSO MANUAL (planilha → sistema de pedidos na mão), e o
-             preview da solução deixou de ser um wireframe de 3 blocos
-             ligados por seta (texto demais, pouco visual) para virar um
-             PAINEL LATERAL com um mockup de produto (janela de app/
-             dashboard: barra de título, status "automatizado", indicador
-             de horas recuperadas). Layout também mudou: .console__grid
-             organiza a conversa e o painel em 2 colunas no desktop (ver
-             home.css, breakpoint próprio de 860px) e empilha no mobile. -->
-        <a href="#refugio-chat-widget" class="hero__preview-link" aria-label="Ver pré-visualização e ir até o widget real da Bússola, mais abaixo">
-          <div class="console console--light" role="img" aria-label="Pré-visualização de uma conversa de diagnóstico com a Bússola, incluindo preview visual da solução proposta">
-            <div class="console__bar">
-              <span>bússola — pré-visualização</span>
-              <div class="console__dots"><span></span><span></span><span></span></div>
-            </div>
-            <div class="console__body">
-              <div class="console__grid">
-                <div class="console__conversation">
-                  <div class="console__line"><span class="tag">&gt;</span><span class="text">minha equipe perde umas 6 horas por semana copiando pedido da planilha pro sistema, na mão</span></div>
-                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Categoria: automação e IA aplicada ao negócio. Indício de processo manual repetitivo sem integração entre planilha e sistema.</span></div>
-                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Prioridade 2 — ação recomendada nos próximos 30 dias.</span></div>
-                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Preview gerado da solução proposta:<span class="console__cursor"></span></span></div>
-                </div>
-                <!-- Painel lateral (Mudança 2): mockup visual de produto, não
-                     diagrama técnico. Inspirado na linguagem visual do
-                     .chat-widget__preview-card real (borda --verde-pastel,
-                     raio --radius-md, rótulo mono maiúsculo) mas o conteúdo
-                     interno é uma mini "janela" de app (barra + dots, status
-                     pill, KPI, mini gráfico) — sem ícones de seta/bloco. -->
-                <div class="console__preview-panel">
-                  <p class="console__preview-panel-label">preview gerado · mockup do painel</p>
-                  <div class="console__preview-panel-window">
-                    <div class="console__preview-panel-bar">
-                      <span class="console__preview-panel-bar-dots"><span></span><span></span><span></span></span>
-                      <span class="console__preview-panel-bar-title">painel — pedidos</span>
-                    </div>
-                    <div class="console__preview-panel-screen">
-                      <div class="console__preview-panel-status"><span class="console__preview-panel-status-dot"></span>automatizado</div>
-                      <div class="console__preview-panel-stat">
-                        <span class="console__preview-panel-stat-value">6h</span>
-                        <span class="console__preview-panel-stat-label">recuperadas por semana</span>
-                      </div>
-                      <div class="console__preview-panel-chart" aria-hidden="true">
-                        <span style="--bar-h: 85%"></span>
-                        <span style="--bar-h: 62%"></span>
-                        <span style="--bar-h: 40%"></span>
-                        <span style="--bar-h: 22%"></span>
-                        <span style="--bar-h: 10%"></span>
-                      </div>
-                      <p class="console__preview-panel-caption">horas manuais por semana, em queda</p>
-                    </div>
-                  </div>
-                </div>
+        <!-- Revisão 2026-10-13 (ver nota grande em home.css, bloco
+             "Revisão 2026-10-13 — nova ilustração do hero"): troca do mock
+             de console/terminal por uma conversa de chat comum em que a
+             Bússola "manda" uma ilustração de bússola de verdade apontando
+             a prioridade entre as 5 frentes — motivada por feedback real de
+             teste de usuário (não-técnico, não reconheceu a metáfora de
+             console nem o que a ilustração anterior queria comunicar). -->
+        <a href="#refugio-chat-widget" class="hero__preview-link" aria-label="Ver pré-visualização de uma conversa com a Bússola e ir até o widget real, mais abaixo">
+          <div class="chatcard" role="img" aria-label="Pré-visualização de uma conversa de chat com a Bússola, que mostra uma ilustração de bússola apontando a prioridade entre 5 áreas">
+            <div class="chatcard__header">
+              <span class="chatcard__avatar">
+                <img src="assets/bussola-icone.svg" alt="" aria-hidden="true">
+              </span>
+              <div class="chatcard__header-text">
+                <p class="chatcard__header-name">Bússola</p>
+                <p class="chatcard__header-status">on-line agora</p>
               </div>
-              <div class="console__line hint">clique para conversar com a Bússola de verdade, aqui na página →</div>
+            </div>
+            <div class="chatcard__body">
+              <p class="bubble bubble--pme">minha equipe perde umas 6 horas por semana copiando pedido da planilha pro sistema, na mão</p>
+              <p class="bubble bubble--bussola">Entendi — isso é bem comum. Deixa eu te mostrar rapidinho como tá sua operação, no geral:</p>
+              <div class="bubble bubble--card">
+                <div class="compass-illustration">
+                  <div class="compass-illustration__dial"></div>
+                  <div class="compass-illustration__stop" style="top: -4px; left: 50%; transform: translateX(-50%);" title="Arquitetura">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12M9 21v-6h6v6M4 21h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="compass-illustration__stop" style="top: 34px; right: -10px;" title="Segurança">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="compass-illustration__stop" style="bottom: 34px; right: -10px;" title="Cloud e custo">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 18a4 4 0 0 1-.4-7.98A5 5 0 0 1 16.5 9a3.5 3.5 0 0 1 .5 6.98" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 18h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                  </div>
+                  <div class="compass-illustration__stop compass-illustration__stop--destaque" style="bottom: -4px; left: 50%; transform: translateX(-50%);" title="Automação e IA">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="compass-illustration__stop" style="bottom: 34px; left: -10px;" title="Integração">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M10 14a4 4 0 0 1 0-5.66l3-3a4 4 0 1 1 5.66 5.66l-1.5 1.5M14 10a4 4 0 0 1 0 5.66l-3 3a4 4 0 1 1-5.66-5.66l1.5-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="compass-illustration__needle" aria-hidden="true"></div>
+                  <div class="compass-illustration__hub" aria-hidden="true"></div>
+                </div>
+                <p class="bubble--card__caption">Olhei <strong>arquitetura</strong>, <strong>segurança</strong>, <strong>nuvem</strong>, <strong>automação</strong> e <strong>integração</strong> — tudo certo, menos um ponto.</p>
+              </div>
+              <p class="bubble bubble--bussola bubble--result">Por aqui: dá pra automatizar esse lançamento manual com IA. Te mostro como?</p>
             </div>
           </div>
         </a>

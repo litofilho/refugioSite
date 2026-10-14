@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<title>Proposta — Opção C: Processo de pensamento da Bússola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Roboto:wght@300;400;500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../site/assets/css/styles.css">
+<link rel="stylesheet" href="../../site/assets/css/home.css">
+<style>
+  body { background: var(--off-white); }
+  .proposta-banner {
+    background: var(--preto-antifragil);
+    color: var(--off-white);
+    padding: var(--sp-2) var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  .variant-switch {
+    display: flex;
+    gap: var(--sp-2);
+    justify-content: center;
+    padding: var(--sp-3);
+    background: var(--off-white);
+    border-bottom: 1px solid rgba(69,82,89,0.14);
+    flex-wrap: wrap;
+  }
+  .variant-switch button {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--cinza-chumbo);
+    background: transparent;
+    color: var(--cinza-chumbo);
+    cursor: pointer;
+  }
+  .variant-switch button.active {
+    background: var(--preto-antifragil);
+    color: var(--off-white);
+    border-color: var(--preto-antifragil);
+  }
+
+  /* ===================================================================
+     Opção C — "processo de pensamento": em vez de mostrar só o
+     RESULTADO do diagnóstico (opções A/B), este painel anima as ETAPAS
+     que a Bússola percorre até apontar uma direção:
+       1) relato do PME chega
+       2) ela "varre" as 5 frentes em sequência, uma de cada vez
+          (estado neutro -> analisando -> concluída/com status)
+       3) conclusão: a agulha assenta na frente prioritária e um cartão
+          de direção sobe
+     Loop contínuo (~9s) para a pré-visualização sempre estar "viva" —
+     respeita prefers-reduced-motion (regra global já existe em
+     styles.css, zera a duração de toda animação do site nesse caso).
+     =================================================================== */
+  .thought-panel {
+    border: 1px solid var(--verde-pastel);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: 0 16px 32px -18px rgba(38, 46, 51, 0.28);
+    background: #fff;
+  }
+  .thought-panel__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--off-white);
+    border-bottom: 1px solid rgba(69, 82, 89, 0.14);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--cinza-chumbo);
+  }
+  .thought-panel__bar-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .thought-panel__bar-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--amarelo-suave);
+    animation: pulseDot 1.1s ease-in-out infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 0.35; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  .thought-panel__steps {
+    display: flex;
+    flex-direction: column;
+  }
+  .thought-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(69, 82, 89, 0.08);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: var(--cinza-chumbo);
+    opacity: 0.45;
+  }
+  .thought-step:last-child { border-bottom: none; }
+  .thought-step__icon {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(69, 82, 89, 0.3);
+    position: relative;
+  }
+  .thought-step__icon::after {
+    content: "";
+    position: absolute; inset: 3px;
+    border-radius: 50%;
+    background: transparent;
+  }
+  .thought-step__label { flex: 1; }
+  .thought-step__state {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    opacity: 0;
+  }
+
+  /* 5 frentes, cada uma com animation-delay escalonado pra criar o
+     efeito de "varredura sequencial". Ciclo total: 9s, timeline:
+       0.0–0.6s  neutro (opacity baixa, ícone vazio)
+       entra em "analisando" (pulso amarelo) por ~0.8s
+       resolve em "concluído" (ícone preenchido + status) e permanece
+     Cada item começa ~0.9s depois do anterior. */
+  .thought-step--1 { animation: stepReveal 9s ease-in-out infinite; animation-delay: 0s; }
+  .thought-step--2 { animation: stepReveal 9s ease-in-out infinite; animation-delay: 0.7s; }
+  .thought-step--3 { animation: stepReveal 9s ease-in-out infinite; animation-delay: 1.4s; }
+  .thought-step--4 { animation: stepReveal 9s ease-in-out infinite; animation-delay: 2.1s; }
+  .thought-step--5 { animation: stepReveal 9s ease-in-out infinite; animation-delay: 2.8s; }
+
+  @keyframes stepReveal {
+    0%   { opacity: 0.4; }
+    4%   { opacity: 1; }
+    8%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { opacity: 0.4; }
+  }
+
+  .thought-step--1 .thought-step__icon,
+  .thought-step--2 .thought-step__icon,
+  .thought-step--3 .thought-step__icon,
+  .thought-step--4 .thought-step__icon,
+  .thought-step--5 .thought-step__icon {
+    animation: iconFill 9s ease-in-out infinite;
+  }
+  .thought-step--1 .thought-step__icon { animation-delay: 0s; }
+  .thought-step--2 .thought-step__icon { animation-delay: 0.7s; }
+  .thought-step--3 .thought-step__icon { animation-delay: 1.4s; }
+  .thought-step--4 .thought-step__icon { animation-delay: 2.1s; }
+  .thought-step--5 .thought-step__icon { animation-delay: 2.8s; }
+
+  @keyframes iconFill {
+    0%   { border-color: rgba(69, 82, 89, 0.3); background: transparent; }
+    4%   { border-color: var(--amarelo-suave); background: transparent; }
+    8%   { border-color: var(--amarelo-suave); background: var(--amarelo-suave); }
+    12%  { border-color: var(--verde-pastel); background: var(--verde-pastel); }
+    95%  { border-color: var(--verde-pastel); background: var(--verde-pastel); }
+    100% { border-color: rgba(69, 82, 89, 0.3); background: transparent; }
+  }
+  /* a frente prioritária (Automação, step 4) fica amarela no lugar de
+     verde — "achado que importa", não só "revisado e ok" */
+  .thought-step--4 .thought-step__icon {
+    animation-name: iconFillPrioridade;
+  }
+  @keyframes iconFillPrioridade {
+    0%   { border-color: rgba(69, 82, 89, 0.3); background: transparent; }
+    4%   { border-color: var(--amarelo-suave); background: transparent; }
+    8%   { border-color: var(--amarelo-suave); background: var(--amarelo-suave); }
+    95%  { border-color: var(--amarelo-suave); background: var(--amarelo-suave); }
+    100% { border-color: rgba(69, 82, 89, 0.3); background: transparent; }
+  }
+
+  .thought-step--1 .thought-step__state,
+  .thought-step--2 .thought-step__state,
+  .thought-step--3 .thought-step__state,
+  .thought-step--4 .thought-step__state,
+  .thought-step--5 .thought-step__state {
+    animation: stateReveal 9s ease-in-out infinite;
+  }
+  .thought-step--1 .thought-step__state { animation-delay: 0s; }
+  .thought-step--2 .thought-step__state { animation-delay: 0.7s; }
+  .thought-step--3 .thought-step__state { animation-delay: 1.4s; }
+  .thought-step--4 .thought-step__state { animation-delay: 2.1s; color: #8a6d1f; }
+  .thought-step--5 .thought-step__state { animation-delay: 2.8s; }
+  @keyframes stateReveal {
+    0%, 7%  { opacity: 0; }
+    11%, 95% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* cartão final de direção: some até o fim do ciclo, sobe e aparece
+     quando a varredura termina (~3.6s), some de novo no reset do loop */
+  .thought-panel__conclusion {
+    margin: 0 14px 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: rgba(217, 197, 131, 0.16);
+    border: 1px solid rgba(217, 197, 131, 0.5);
+    opacity: 0;
+    transform: translateY(6px);
+    animation: conclusionReveal 9s ease-in-out infinite;
+  }
+  @keyframes conclusionReveal {
+    0%, 39%  { opacity: 0; transform: translateY(6px); }
+    44%, 95% { opacity: 1; transform: translateY(0); }
+    100%     { opacity: 0; transform: translateY(6px); }
+  }
+  .thought-panel__conclusion-tag {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #8a6d1f;
+    margin-bottom: 4px;
+  }
+  .thought-panel__conclusion-text {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1rem;
+    color: var(--preto-antifragil);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .thought-step, .thought-step__icon, .thought-step__state,
+    .thought-panel__conclusion, .thought-panel__bar-dot {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .thought-step__icon { border-color: var(--verde-pastel); background: var(--verde-pastel); }
+    .thought-step--4 .thought-step__icon { border-color: var(--amarelo-suave); background: var(--amarelo-suave); }
+  }
+</style>
+</head>
+<body>
+
+<div class="proposta-banner">PROPOSTA DE REVISÃO — Opção C: "processo de pensamento" (animado) · não é a página de produção</div>
+
+<div class="variant-switch">
+  <button data-variant="1" class="active">Texto — Variação 1</button>
+  <button data-variant="2">Texto — Variação 2</button>
+  <button data-variant="3">Texto — Variação 3</button>
+</div>
+
+<header class="site-header" role="banner" id="topo">
+  <div class="container site-header__inner">
+    <a href="#topo" class="brand" aria-label="Refúgio Tech — página inicial">
+      <img src="../../site/assets/refugio-tech-mark.svg" alt="" aria-hidden="true" class="brand__mark">
+      <span class="brand__name">Refúgio Tech</span>
+    </a>
+    <nav class="site-header__nav" aria-label="Navegação principal">
+      <a class="site-header__link site-header__link--extra" href="#">Soluções</a>
+      <a class="site-header__link site-header__link--extra-narrow" href="#">Bússola</a>
+      <a class="site-header__link site-header__link--extra" href="#">Pilares</a>
+      <a class="site-header__link" href="#"><span class="site-header__link-full">Fale com a gente</span><span class="site-header__link-short">Contato</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+  <section class="hero" aria-labelledby="hero-headline">
+    <div class="hero__facet hero__facet--one" aria-hidden="true"></div>
+    <div class="hero__facet hero__facet--two" aria-hidden="true"></div>
+
+    <div class="container hero__grid">
+      <div class="hero__content reveal">
+        <h1 id="hero-headline" class="hero__headline" data-field="h1">Perdido em meio a tanta tecnologia, sem saber pra que lado ir?</h1>
+        <p class="hero__lede" data-field="lede">A Bússola mostra a direção. A Refúgio Tech é o lugar seguro pra você chegar lá.</p>
+        <div class="hero__ctas">
+          <a href="#" class="btn-primary" data-field="cta-primary">Falar com a Bússola</a>
+          <a href="#" class="btn-ghost">Agendar conversa</a>
+        </div>
+        <div class="hero__pillars-tag">
+          <span>Solidez</span>
+          <span>Precisão</span>
+          <span>Visão</span>
+        </div>
+      </div>
+
+      <div class="hero__cta reveal">
+        <a href="#" class="hero__preview-link" aria-label="Ver pré-visualização de como a Bússola pensa até apontar uma direção">
+          <div class="console console--light" role="img" aria-label="Pré-visualização da Bússola analisando as 5 frentes em sequência até apontar uma prioridade">
+            <div class="console__bar">
+              <span>bússola — analisando sua operação</span>
+              <div class="console__dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="console__body">
+              <div class="console__grid">
+                <div class="console__conversation">
+                  <div class="console__line"><span class="tag">&gt;</span><span class="text">minha equipe perde umas 6 horas por semana copiando pedido da planilha pro sistema, na mão</span></div>
+                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Entendi — deixa eu passar isso pelas 5 frentes que eu olho antes de apontar um caminho.</span></div>
+                </div>
+                <div class="console__preview-panel">
+                  <p class="console__preview-panel-label">como a bússola pensa</p>
+                  <div class="thought-panel">
+                    <div class="thought-panel__bar">
+                      <span>varredura das 5 frentes</span>
+                      <span class="thought-panel__bar-status"><span class="thought-panel__bar-dot"></span></span>
+                    </div>
+                    <div class="thought-panel__steps">
+                      <div class="thought-step thought-step--1">
+                        <span class="thought-step__icon"></span>
+                        <span class="thought-step__label">Arquitetura</span>
+                        <span class="thought-step__state">ok</span>
+                      </div>
+                      <div class="thought-step thought-step--2">
+                        <span class="thought-step__icon"></span>
+                        <span class="thought-step__label">Segurança</span>
+                        <span class="thought-step__state">ok</span>
+                      </div>
+                      <div class="thought-step thought-step--3">
+                        <span class="thought-step__icon"></span>
+                        <span class="thought-step__label">Cloud e custo</span>
+                        <span class="thought-step__state">ok</span>
+                      </div>
+                      <div class="thought-step thought-step--4">
+                        <span class="thought-step__icon"></span>
+                        <span class="thought-step__label">Automação e IA</span>
+                        <span class="thought-step__state">achado</span>
+                      </div>
+                      <div class="thought-step thought-step--5">
+                        <span class="thought-step__icon"></span>
+                        <span class="thought-step__label">Integração</span>
+                        <span class="thought-step__state">ok</span>
+                      </div>
+                    </div>
+                    <div class="thought-panel__conclusion">
+                      <span class="thought-panel__conclusion-tag">direção apontada</span>
+                      <p class="thought-panel__conclusion-text">→ comece por automação e IA aplicada ao negócio</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="console__line hint">clique para conversar com a Bússola de verdade, aqui na página →</div>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  var VARIANTS = {
+    1: {
+      h1: "Perdido em meio a tanta tecnologia, sem saber pra que lado ir?",
+      lede: "A Bússola é um agente de IA que conversa com você agora, mapeia os 5 pontos que travam sua operação e aponta por onde começar. Grátis, sem cadastro.",
+      cta: "Falar com a Bússola agora"
+    },
+    2: {
+      h1: "Sua operação de TI tem 5 pontos cegos. A Bússola te mostra onde eles estão.",
+      lede: "Converse agora com um agente de IA gratuito que diagnostica o que trava seu crescimento técnico — e já te dá o primeiro passo.",
+      cta: "Começar diagnóstico grátis"
+    },
+    3: {
+      h1: "Tecnologia virou demais pra acompanhar sozinho? A gente te ajuda a achar o caminho.",
+      lede: "Conte seu problema pra Bússola — nosso agente de IA — e em minutos você sabe exatamente por onde começar.",
+      cta: "Contar meu problema"
+    }
+  };
+  var buttons = document.querySelectorAll('.variant-switch button');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      buttons.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var v = VARIANTS[btn.getAttribute('data-variant')];
+      document.querySelector('[data-field="h1"]').textContent = v.h1;
+      document.querySelector('[data-field="lede"]').textContent = v.lede;
+      document.querySelector('[data-field="cta-primary"]').textContent = v.cta;
+    });
+  });
+</script>
+</body>
+</html>

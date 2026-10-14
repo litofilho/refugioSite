@@ -408,88 +408,277 @@
    Visual/estático por decisão de engenharia desta integração: representa
    a Bússola sem duplicar a infraestrutura do widget real (Turnstile,
    sessão, chamadas de rede) na home. O card inteiro é um link para a
-   página real do produto (site/bussola/), onde o widget funcional já
-   existe — ver nota de adaptação no relatório de entrega. */
+   seção real do produto (#solucoes), onde o widget funcional já existe. */
 .hero__preview-link {
   display: block;
   text-decoration: none;
   color: inherit;
   border-radius: var(--radius-lg);
 }
-.hero__preview-link .console {
+.hero__preview-link .chatcard {
   transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
-.hero__preview-link:hover .console,
-.hero__preview-link:focus-visible .console {
+.hero__preview-link:hover .chatcard,
+.hero__preview-link:focus-visible .chatcard {
   transform: translateY(-3px);
   box-shadow: 0 30px 64px -16px rgba(38, 46, 51, 0.32);
 }
 
-/* ---------- Esconder o mock em telas que não comportam o layout 2
-   colunas interno (.console__grid) ----------
-   Pedido do fundador (2026-10-08, revisão do preview, commit b754558): o
-   mock quebra de forma feia em telas estreitas — texto cortado no meio da
-   palavra dentro do painel preview. Em vez de tentar caber espremido,
-   esconder o mock inteiro abaixo do ponto em que ele garantidamente cabe
-   bem, e mandar o usuário direto pro CTA real ("Falar com a Bússola" →
-   #solucoes).
+/* ---------- Revisão 2026-10-13 — nova ilustração do hero (chatcard) ----------
+   Troca por inteiro o mock anterior (.console--light, um "console"/
+   terminal: barra de título com bolinhas, fonte mono, painel de dashboard
+   de uma automação específica). Motivo, de feedback real de teste de
+   usuário (André Rodrigues, 2026-10-10): 2 problemas apontados juntos —
+   (1) a ilustração não comunicava o que a Bússola faz (parecia um case de
+   automação isolado, não "diagnóstico que aponta uma direção entre 5
+   frentes"); (2) o público-alvo não é técnico e não tem repertório visual
+   de "console"/terminal — bolinhas de janela, barra mono, "painel —
+   pedidos" são pistas de interface técnica que não comunicam nada pra
+   quem nunca usou uma. Nova metáfora: uma conversa de chat comum (como
+   WhatsApp — repertório visual universal, não-técnico) em que a Bússola
+   "manda" uma ilustração simples de bússola de verdade (agulha + 5
+   paradas com ícone e nome em português comum, nunca rótulo técnico em
+   caixa alta/mono) apontando pra prioridade identificada. Variações
+   testadas com o cliente antes de aplicar — ver cache-propostas/
+   hero-refinamento/ (opções A–D) para o histórico de exploração.
 
-   Teste de verdade feito via CDP/DevTools (larguras de 320 a 1440px,
-   medindo scrollWidth/clientWidth dos elementos, não só olhando) antes de
-   escolher o corte — achado importante: o mobile empilhado NÃO é onde o
-   mock quebra. Abaixo de 860px .console__grid empilha (conversa em cima,
-   painel embaixo, ver acima) e o card ocupa a largura cheia do container
-   em qualquer resolução — conferido visualmente em 320/360/390/430/480/
-   600px, sem corte de palavra, sem overflow, sem sobreposição em nenhuma
-   delas. O problema real está no intervalo 1024px–~1209px: é exatamente
-   aí que .hero__grid (styles.css, bloco "Desktop ≥ 1024px") vira 2
-   colunas e a coluna do card desaba de ~944px (quase a largura cheia do
-   container, com 1 coluna) pra ~375px — mas .console__grid já tinha virado
-   2 colunas internamente desde 860px (ver regra acima), então nesse
-   intervalo o painel lateral tenta encaixar pill "automatizado" + título
-   "painel — pedidos" numa coluna que não tem espaço, e como a janela do
-   painel usa overflow:hidden, o resultado visual é texto cortado no meio
-   (ex.: "automatizado" vira "automatizad", o resto escondido). Medido com
-   precisão: overflow de até 35px logo depois de 1024px, caindo a zero só
-   perto de 1210px, quando o container já bateu no teto de
-   --container-max (1200px) e o card volta a ter ~461px de largura.
+   Responsividade: o card antigo (.console--light) era ESCONDIDO abaixo de
+   1200px (ver histórico git deste arquivo) por um bug de overflow dentro
+   do painel de dashboard em telas de 1024–1199px — a maioria dos
+   visitantes (mobile, tablet, a maior parte dos laptops) nunca via essa
+   ilustração. A nova estrutura (bolhas de chat, largura máxima com
+   wrap de texto normal, sem grid interno de 2 colunas forçado) não tem
+   esse problema — testado visualmente em 390/768/1024/1280/1440px sem
+   overflow/corte. Por isso o card agora aparece em QUALQUER largura de
+   tela, resolvendo de quebra um bug que também fazia parte do problema
+   original (ilustração relevante só visível pra uma fração do tráfego). */
+.chatcard {
+  background: #fff;
+  border: 1px solid rgba(69, 82, 89, 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.chatcard__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid rgba(69, 82, 89, 0.1);
+}
+.chatcard__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--verde-pastel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.chatcard__avatar img { width: 20px; height: 20px; }
+.chatcard__header-text { line-height: 1.25; }
+.chatcard__header-name {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--preto-antifragil);
+}
+.chatcard__header-status {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--cinza-chumbo);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chatcard__header-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4CAF50;
+  display: inline-block;
+  flex-shrink: 0;
+}
 
-   Corte escolhido: 1200px — bate com --container-max (token já existente
-   no projeto, ver styles.css :root), e cobre com folga o intervalo medido
-   como quebrado (1024–1209px). Abaixo de 1200px (todo o mobile real, todo
-   tablet, e a faixa 1024–1199 que hoje quebra) o mock fica oculto; a
-   partir de 1200px nada muda — mesmo card, mesmo layout de sempre
-   (confirmado visualmente em 1200/1280/1440px: sem corte, só quebra de
-   linha normal dentro das caixas). .hero__cta (o wrapper que só contém o
-   link do mock, ver index.html) também é escondido, não só o link — assim
-   o grid da hero não sobra com uma linha vazia + gap (var(--sp-4)) no fim
-   da seção; sem isso dava um respiro em branco esquisito depois dos CTAs/
-   pilares. O ajuste de .hero__grid para 1 coluna nessa mesma faixa (abaixo)
-   cobre o intervalo 1024–1199px que o bloco "Desktop ≥ 1024px" de
-   styles.css vira 2 colunas por padrão — sem isso sobraria uma coluna
-   vazia de ~0.9fr à direita do texto nessa faixa específica. Abaixo de
-   1024px o hero__grid de styles.css já é 1 coluna por padrão (nenhuma
-   mudança necessária ali). CTA primário ("Falar com a Bússola",
-   .btn-primary) e os demais elementos de texto da hero (H1, lede, CTAs,
-   pilares) não são tocados por este bloco — continuam exatamente como já
-   eram, só ganham mais espaço vertical por não dividir a seção com o
-   card. */
-@media (max-width: 1199.98px) {
-  .hero__cta,
-  .hero__preview-link {
-    display: none;
-  }
+.chatcard__body {
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
 
-  /* Sem o card, volta pro layout 1 coluna de sempre (mesmo comportamento
-     que já existe nativamente abaixo de 1024px) também na faixa
-     1024–1199px, onde styles.css normalmente já teria virado 2 colunas. */
-  .hero__grid {
-    grid-template-columns: 1fr;
-    grid-template-areas: none;
+.bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.bubble--pme {
+  align-self: flex-end;
+  background: var(--off-white);
+  color: var(--preto-antifragil);
+  border-bottom-right-radius: 4px;
+}
+.bubble--bussola {
+  align-self: flex-start;
+  background: rgba(178, 194, 185, 0.28);
+  color: var(--preto-antifragil);
+  border-bottom-left-radius: 4px;
+}
+
+/* "Figurinha" que a Bússola manda dentro da conversa: ilustração redonda
+   de bússola (não radar/painel técnico) com 5 paradas ao redor, cada uma
+   um ícone de linha simples (mesmo estilo dos ícones do widget real —
+   stroke, sem preenchimento sólido) + nome comum em português, sem
+   caixa alta nem fonte mono. */
+.bubble--card {
+  align-self: flex-start;
+  background: rgba(178, 194, 185, 0.28);
+  border-bottom-left-radius: 4px;
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  max-width: 92%;
+}
+.compass-illustration { position: relative; width: 180px; height: 180px; flex-shrink: 0; }
+.compass-illustration__dial {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--off-white);
+  box-shadow: 0 10px 24px -10px rgba(38, 46, 51, 0.3), inset 0 0 0 1px rgba(69, 82, 89, 0.08);
+}
+.compass-illustration__needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 58px;
+  margin-left: -2.5px;
+  margin-top: -58px;
+  transform-origin: 50% 58px;
+  animation: needleSettle 9s ease-in-out infinite;
+}
+.compass-illustration__needle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 17px solid var(--amarelo-suave);
+}
+.compass-illustration__needle::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 12px solid rgba(69, 82, 89, 0.3);
+}
+@keyframes needleSettle {
+  0%   { transform: rotate(140deg); }
+  30%  { transform: rotate(-35deg); }
+  42%  { transform: rotate(8deg); }
+  50%  { transform: rotate(0deg); }
+  88%  { transform: rotate(0deg); }
+  100% { transform: rotate(140deg); }
+}
+.compass-illustration__hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--preto-antifragil);
+}
+.compass-illustration__stop {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--off-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cinza-chumbo);
+  box-shadow: 0 4px 10px -4px rgba(38, 46, 51, 0.25);
+}
+.compass-illustration__stop svg { width: 18px; height: 18px; }
+.compass-illustration__stop--destaque {
+  border-color: var(--amarelo-suave);
+  color: #8a6d1f;
+  animation: stopGlow 9s ease-in-out infinite;
+}
+@keyframes stopGlow {
+  0%, 38%  { box-shadow: 0 4px 10px -4px rgba(38, 46, 51, 0.25); }
+  46%, 88% { box-shadow: 0 0 0 4px rgba(217, 197, 131, 0.35); }
+  100%     { box-shadow: 0 4px 10px -4px rgba(38, 46, 51, 0.25); }
+}
+
+.bubble--card__caption {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--preto-antifragil);
+}
+.bubble--card__caption strong { font-weight: 500; }
+
+.bubble--result {
+  align-self: flex-start;
+  background: rgba(217, 197, 131, 0.22);
+  border-bottom-left-radius: 4px;
+  opacity: 0;
+  animation: resultFade 9s ease-in-out infinite;
+}
+@keyframes resultFade {
+  0%, 44%  { opacity: 0; }
+  50%, 90% { opacity: 1; }
+  100%     { opacity: 0; }
+}
+
+/* Mesma regra global de prefers-reduced-motion (styles.css) já zera a
+   DURAÇÃO de toda transição/animação — isto aqui cobre o que duração zero
+   não resolve sozinho: estado final sempre visível/assentado, nunca o
+   quadro inicial do loop (opacity 0, agulha fora de posição). */
+@media (prefers-reduced-motion: reduce) {
+  .compass-illustration__needle,
+  .compass-illustration__stop--destaque,
+  .bubble--result {
+    animation: none !important;
+    opacity: 1 !important;
   }
-  .hero__content {
-    grid-area: auto;
-  }
+  .compass-illustration__needle { transform: rotate(0deg) !important; }
+}
+
+/* Card cabe numa única coluna em qualquer largura (ver nota grande acima
+   sobre a remoção do corte em 1200px) — só reduz um pouco o diâmetro da
+   bússola em telas bem estreitas, pra sobrar mais respiro lateral dentro
+   do card em smartphones pequenos. */
+@media (max-width: 420px) {
+  .compass-illustration { width: 150px; height: 150px; }
+  .compass-illustration__stop { width: 32px; height: 32px; }
+  .compass-illustration__stop svg { width: 15px; height: 15px; }
 }
 
 /* ---------- Transições entre seções claro/escuro ---------- */

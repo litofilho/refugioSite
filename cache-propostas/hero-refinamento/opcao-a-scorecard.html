@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<title>Proposta — Opção A: Scorecard de diagnóstico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Roboto:wght@300;400;500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../site/assets/css/styles.css">
+<link rel="stylesheet" href="../../site/assets/css/home.css">
+<style>
+  /* ---------- só desta página de proposta: variante switcher + scorecard ---------- */
+  body { background: var(--off-white); }
+  .proposta-banner {
+    background: var(--preto-antifragil);
+    color: var(--off-white);
+    padding: var(--sp-2) var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  .variant-switch {
+    display: flex;
+    gap: var(--sp-2);
+    justify-content: center;
+    padding: var(--sp-3);
+    background: var(--off-white);
+    border-bottom: 1px solid rgba(69,82,89,0.14);
+    flex-wrap: wrap;
+  }
+  .variant-switch button {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--cinza-chumbo);
+    background: transparent;
+    color: var(--cinza-chumbo);
+    cursor: pointer;
+  }
+  .variant-switch button.active {
+    background: var(--preto-antifragil);
+    color: var(--off-white);
+    border-color: var(--preto-antifragil);
+  }
+
+  /* ---------- Opção A: scorecard das 5 frentes ---------- */
+  .scorecard {
+    border: 1px solid var(--verde-pastel);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: 0 16px 32px -18px rgba(38, 46, 51, 0.28);
+    background: #fff;
+  }
+  .scorecard__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--off-white);
+    border-bottom: 1px solid rgba(69, 82, 89, 0.14);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--cinza-chumbo);
+  }
+  .scorecard__list {
+    display: flex;
+    flex-direction: column;
+  }
+  .scorecard__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(69, 82, 89, 0.1);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.3;
+    color: var(--preto-antifragil);
+  }
+  .scorecard__item:last-child { border-bottom: none; }
+  .scorecard__dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .scorecard__dot--ok { background: var(--verde-pastel); }
+  .scorecard__dot--atencao { background: var(--amarelo-suave); }
+  .scorecard__dot--alerta { background: #C96A4D; }
+  .scorecard__item--prioridade {
+    background: rgba(217, 197, 131, 0.16);
+    font-weight: 500;
+    position: relative;
+  }
+  .scorecard__item--prioridade::before {
+    content: "→";
+    color: var(--amarelo-suave);
+    font-weight: 700;
+    margin-right: 2px;
+  }
+  .scorecard__tag {
+    flex-basis: 100%;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--cinza-chumbo);
+    opacity: 0.8;
+  }
+  .scorecard__item--prioridade .scorecard__tag {
+    color: #8a6d1f;
+    opacity: 1;
+  }
+  .scorecard__foot {
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--cinza-chumbo);
+    background: var(--off-white);
+    border-top: 1px solid rgba(69, 82, 89, 0.12);
+  }
+</style>
+</head>
+<body>
+
+<div class="proposta-banner">PROPOSTA DE REVISÃO — Opção A: "scorecard de diagnóstico" · não é a página de produção</div>
+
+<div class="variant-switch">
+  <button data-variant="1" class="active">Texto — Variação 1</button>
+  <button data-variant="2">Texto — Variação 2</button>
+  <button data-variant="3">Texto — Variação 3</button>
+</div>
+
+<header class="site-header" role="banner" id="topo">
+  <div class="container site-header__inner">
+    <a href="#topo" class="brand" aria-label="Refúgio Tech — página inicial">
+      <img src="../../site/assets/refugio-tech-mark.svg" alt="" aria-hidden="true" class="brand__mark">
+      <span class="brand__name">Refúgio Tech</span>
+    </a>
+    <nav class="site-header__nav" aria-label="Navegação principal">
+      <a class="site-header__link site-header__link--extra" href="#">Soluções</a>
+      <a class="site-header__link site-header__link--extra-narrow" href="#">Bússola</a>
+      <a class="site-header__link site-header__link--extra" href="#">Pilares</a>
+      <a class="site-header__link" href="#"><span class="site-header__link-full">Fale com a gente</span><span class="site-header__link-short">Contato</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+  <section class="hero" aria-labelledby="hero-headline">
+    <div class="hero__facet hero__facet--one" aria-hidden="true"></div>
+    <div class="hero__facet hero__facet--two" aria-hidden="true"></div>
+
+    <div class="container hero__grid">
+      <div class="hero__content reveal">
+        <h1 id="hero-headline" class="hero__headline" data-field="h1">Perdido em meio a tanta tecnologia, sem saber pra que lado ir?</h1>
+        <p class="hero__lede" data-field="lede">A Bússola mostra a direção. A Refúgio Tech é o lugar seguro pra você chegar lá.</p>
+        <div class="hero__ctas">
+          <a href="#" class="btn-primary" data-field="cta-primary">Falar com a Bússola</a>
+          <a href="#" class="btn-ghost">Agendar conversa</a>
+        </div>
+        <div class="hero__pillars-tag">
+          <span>Solidez</span>
+          <span>Precisão</span>
+          <span>Visão</span>
+        </div>
+      </div>
+
+      <div class="hero__cta reveal">
+        <a href="#" class="hero__preview-link" aria-label="Ver pré-visualização do diagnóstico da Bússola">
+          <div class="console console--light" role="img" aria-label="Pré-visualização de um diagnóstico da Bússola nas 5 frentes">
+            <div class="console__bar">
+              <span>bússola — diagnóstico gerado</span>
+              <div class="console__dots"><span></span><span></span><span></span></div>
+            </div>
+            <div class="console__body">
+              <div class="console__grid">
+                <div class="console__conversation">
+                  <div class="console__line"><span class="tag">&gt;</span><span class="text">minha equipe perde umas 6 horas por semana copiando pedido da planilha pro sistema, na mão</span></div>
+                  <div class="console__line reply"><span class="tag">bússola</span><span class="text">Entendi — isso é algo que a gente já vê bastante por aqui. Já tenho o suficiente pra mapear onde isso te deixa exposto:</span></div>
+                </div>
+                <div class="console__preview-panel">
+                  <p class="console__preview-panel-label">diagnóstico · as 5 frentes</p>
+                  <div class="scorecard">
+                    <div class="scorecard__bar">
+                      <span>resultado do diagnóstico</span>
+                    </div>
+                    <div class="scorecard__list">
+                      <div class="scorecard__item scorecard__item--prioridade">
+                        Automação e IA <span class="scorecard__tag">prioridade 1</span>
+                      </div>
+                      <div class="scorecard__item">
+                        <span class="scorecard__dot scorecard__dot--atencao"></span>Integração de sistemas <span class="scorecard__tag">atenção</span>
+                      </div>
+                      <div class="scorecard__item">
+                        <span class="scorecard__dot scorecard__dot--ok"></span>Arquitetura <span class="scorecard__tag">estável</span>
+                      </div>
+                      <div class="scorecard__item">
+                        <span class="scorecard__dot scorecard__dot--ok"></span>Cloud e custo <span class="scorecard__tag">estável</span>
+                      </div>
+                      <div class="scorecard__item">
+                        <span class="scorecard__dot scorecard__dot--ok"></span>Segurança <span class="scorecard__tag">estável</span>
+                      </div>
+                    </div>
+                    <div class="scorecard__foot">→ comece por: automação e IA aplicada ao negócio</div>
+                  </div>
+                </div>
+              </div>
+              <div class="console__line hint">clique para conversar com a Bússola de verdade, aqui na página →</div>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  var VARIANTS = {
+    1: {
+      h1: "Perdido em meio a tanta tecnologia, sem saber pra que lado ir?",
+      lede: "A Bússola é um agente de IA que conversa com você agora, mapeia os 5 pontos que travam sua operação e aponta por onde começar. Grátis, sem cadastro.",
+      cta: "Falar com a Bússola agora"
+    },
+    2: {
+      h1: "Sua operação de TI tem 5 pontos cegos. A Bússola te mostra onde eles estão.",
+      lede: "Converse agora com um agente de IA gratuito que diagnostica o que trava seu crescimento técnico — e já te dá o primeiro passo.",
+      cta: "Começar diagnóstico grátis"
+    },
+    3: {
+      h1: "Tecnologia virou demais pra acompanhar sozinho? A gente te ajuda a achar o caminho.",
+      lede: "Conte seu problema pra Bússola — nosso agente de IA — e em minutos você sabe exatamente por onde começar.",
+      cta: "Contar meu problema"
+    }
+  };
+  var buttons = document.querySelectorAll('.variant-switch button');
+  buttons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      buttons.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var v = VARIANTS[btn.getAttribute('data-variant')];
+      document.querySelector('[data-field="h1"]').textContent = v.h1;
+      document.querySelector('[data-field="lede"]').textContent = v.lede;
+      document.querySelector('[data-field="cta-primary"]').textContent = v.cta;
+    });
+  });
+</script>
+</body>
+</html>
