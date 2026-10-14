@@ -681,6 +681,21 @@
   .compass-illustration__stop svg { width: 15px; height: 15px; }
 }
 
+/* ---------- Revisão 2026-10-13 (2) — esconder o hero__cta no celular ----------
+   Decisão deliberada de produto (não um bug de layout, ver nota grande
+   acima sobre a remoção do corte em 1200px — aquele era um bug real de
+   overflow, este é estratégia): no celular, a ilustração de prévia some e
+   o visitante vai direto pro CTA/pro widget real (#solucoes), sem parar
+   numa prévia estática no meio do caminho. Em telas ≥768px (tablet,
+   laptop, desktop) a ilustração continua aparecendo normalmente — a nova
+   estrutura (ver bloco "chatcard" acima) não tem nenhum problema de
+   overflow nessas larguras, a omissão abaixo de 768px é só de produto. */
+@media (max-width: 767.98px) {
+  .hero__cta {
+    display: none;
+  }
+}
+
 /* ---------- Transições entre seções claro/escuro ---------- */
 .seam-to-dark {
   position: relative;

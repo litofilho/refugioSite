@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<title>Proposta — Identidade visual + posicionamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=Roboto:wght@300;400;500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../site/assets/css/styles.css">
+<link rel="stylesheet" href="../../site/assets/css/home.css">
+<style>
+  body { background: var(--off-white); }
+  .proposta-banner {
+    background: var(--preto-antifragil);
+    color: var(--off-white);
+    padding: var(--sp-2) var(--sp-3);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  .switch-bar {
+    display: flex;
+    gap: var(--sp-2);
+    justify-content: center;
+    padding: var(--sp-3);
+    background: var(--off-white);
+    border-bottom: 1px solid rgba(69,82,89,0.14);
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .switch-bar span { font-family: var(--font-body); font-size: 0.82rem; color: var(--cinza-chumbo); align-self: center; margin-right: 4px; }
+  .switch-bar button {
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    padding: 7px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--cinza-chumbo);
+    background: transparent;
+    color: var(--cinza-chumbo);
+    cursor: pointer;
+  }
+  .switch-bar button.active {
+    background: var(--preto-antifragil);
+    color: var(--off-white);
+    border-color: var(--preto-antifragil);
+  }
+  .section-tag {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cinza-chumbo);
+    padding: var(--sp-2) 0;
+    background: var(--off-white);
+  }
+
+  /* ================= IDENTIDADE VISUAL: proposta "quente" =================
+     Só reutiliza tokens já existentes (nenhum hex novo — regra do projeto
+     "paleta oficial, não alterar"). O que muda é COMO os tokens se
+     combinam: em vez de preto-antifragil sólido cobrindo a seção inteira,
+     um gradiente que mistura preto-antifragil com verde-pastel em baixa
+     opacidade (ainda escuro o bastante pro contraste de texto continuar
+     válido — só mais quente/orgânico), cantos mais arredondados nos
+     cards (--radius-lg em vez de --radius-md) e um elemento humano (foto/
+     citação) que hoje não existe em lugar nenhum do site. */
+  .solutions.is-proposta {
+    background:
+      radial-gradient(ellipse 900px 500px at 15% 0%, rgba(178,194,185,0.16), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 100%, rgba(217,197,131,0.10), transparent 55%),
+      var(--preto-antifragil);
+  }
+  .solutions.is-proposta .solutions__card {
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,0.05);
+  }
+  .solutions.is-proposta .chat-widget--embedded .chat-widget__panel,
+  .solutions.is-proposta .chat-widget--embedded .chat-widget__launcher {
+    border-radius: var(--radius-lg);
+  }
+  .human-note {
+    display: none;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-top: var(--sp-4);
+    padding: var(--sp-3);
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(242,242,242,0.12);
+  }
+  .solutions.is-proposta .human-note { display: flex; }
+  .human-note__photo {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(217,197,131,0.6);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: rgba(242,242,242,0.5);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .human-note__text {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: rgba(242,242,242,0.82);
+    font-style: italic;
+  }
+  .human-note__text strong { font-style: normal; color: var(--off-white); display: block; font-size: 0.82rem; margin-top: 4px; }
+
+  /* ================= POSICIONAMENTO: toggle de headline ================= */
+</style>
+</head>
+<body>
+
+<div class="proposta-banner">PROPOSTA — identidade visual (seção Bússola) + variações de headline · não é a página de produção</div>
+
+<div class="switch-bar">
+  <span>Headline:</span>
+  <button data-h="1" class="active">1 — atual</button>
+  <button data-h="2">2 — direta ("5 pontos cegos")</button>
+  <button data-h="3">3 — acolhedora</button>
+</div>
+<div class="switch-bar">
+  <span>Seção Bússola:</span>
+  <button data-v="atual" class="active">Atual (preto sólido)</button>
+  <button data-v="proposta">Proposta (gradiente quente + nota humana)</button>
+</div>
+
+<header class="site-header" role="banner" id="topo">
+  <div class="container site-header__inner">
+    <a href="#topo" class="brand" aria-label="Refúgio Tech — página inicial">
+      <img src="../../site/assets/refugio-tech-mark.svg" alt="" aria-hidden="true" class="brand__mark">
+      <span class="brand__name">Refúgio Tech</span>
+    </a>
+    <nav class="site-header__nav" aria-label="Navegação principal">
+      <a class="site-header__link site-header__link--extra" href="#">Soluções</a>
+      <a class="site-header__link site-header__link--extra-narrow" href="#">Bússola</a>
+      <a class="site-header__link site-header__link--extra" href="#">Pilares</a>
+      <a class="site-header__link" href="#"><span class="site-header__link-full">Fale com a gente</span><span class="site-header__link-short">Contato</span></a>
+    </nav>
+  </div>
+</header>
+
+<main id="conteudo">
+  <section class="hero" aria-labelledby="hero-headline">
+    <div class="hero__facet hero__facet--one" aria-hidden="true"></div>
+    <div class="hero__facet hero__facet--two" aria-hidden="true"></div>
+    <div class="container hero__grid">
+      <div class="hero__content reveal">
+        <h1 id="hero-headline" class="hero__headline" data-field="h1">Perdido em meio a tanta tecnologia, sem saber pra que lado ir?</h1>
+        <p class="hero__lede" data-field="lede">A Bússola é um agente de IA que conversa com você agora, mapeia os 5 pontos que travam sua operação e aponta por onde começar. Grátis, sem cadastro.</p>
+        <div class="hero__ctas">
+          <a href="#" class="btn-primary" data-field="cta-primary">Falar com a Bússola agora</a>
+          <a href="#" class="btn-ghost">Agendar conversa</a>
+        </div>
+        <div class="hero__pillars-tag"><span>Solidez</span><span>Precisão</span><span>Visão</span></div>
+      </div>
+      <div class="hero__cta reveal">
+        <a href="#" class="hero__preview-link" aria-label="Pré-visualização">
+          <div class="chatcard" role="img" aria-label="Pré-visualização de conversa com a Bússola">
+            <div class="chatcard__header">
+              <span class="chatcard__avatar"><img src="../../site/assets/bussola-icone.svg" alt="" aria-hidden="true"></span>
+              <div class="chatcard__header-text"><p class="chatcard__header-name">Bússola</p><p class="chatcard__header-status">on-line agora</p></div>
+            </div>
+            <div class="chatcard__body">
+              <p class="bubble bubble--pme">minha equipe perde umas 6 horas por semana copiando pedido da planilha pro sistema, na mão</p>
+              <p class="bubble bubble--bussola">Entendi — isso é bem comum. Deixa eu te mostrar rapidinho como tá sua operação, no geral:</p>
+              <div class="bubble bubble--card">
+                <div class="compass-illustration">
+                  <div class="compass-illustration__dial"></div>
+                  <div class="compass-illustration__stop" style="top:-4px;left:50%;transform:translateX(-50%);"><svg viewBox="0 0 24 24" fill="none"><path d="M4 21V9l8-5 8 5v12M9 21v-6h6v6M4 21h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div class="compass-illustration__stop" style="top:34px;right:-10px;"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6l7-3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+                  <div class="compass-illustration__stop" style="bottom:34px;right:-10px;"><svg viewBox="0 0 24 24" fill="none"><path d="M7 18a4 4 0 0 1-.4-7.98A5 5 0 0 1 16.5 9a3.5 3.5 0 0 1 .5 6.98" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 18h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+                  <div class="compass-illustration__stop compass-illustration__stop--destaque" style="bottom:-4px;left:50%;transform:translateX(-50%);"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+                  <div class="compass-illustration__stop" style="bottom:34px;left:-10px;"><svg viewBox="0 0 24 24" fill="none"><path d="M10 14a4 4 0 0 1 0-5.66l3-3a4 4 0 1 1 5.66 5.66l-1.5 1.5M14 10a4 4 0 0 1 0 5.66l-3 3a4 4 0 1 1-5.66-5.66l1.5-1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div class="compass-illustration__needle" aria-hidden="true"></div>
+                  <div class="compass-illustration__hub" aria-hidden="true"></div>
+                </div>
+                <p class="bubble--card__caption">Olhei <strong>arquitetura</strong>, <strong>segurança</strong>, <strong>nuvem</strong>, <strong>automação</strong> e <strong>integração</strong> — tudo certo, menos um ponto.</p>
+              </div>
+              <p class="bubble bubble--bussola bubble--result">Por aqui: dá pra automatizar esse lançamento manual com IA. Te mostro como?</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="seam-to-dark" aria-hidden="true"><svg viewBox="0 0 1200 72" preserveAspectRatio="none"><path d="M0,30 C300,68 900,0 1200,36 L1200,72 L0,72 Z" fill="#262E33"></path></svg></div>
+
+  <section class="solutions reveal" id="solucoes-proposta">
+    <div class="container">
+      <div class="solutions__head">
+        <h2>A Bússola: o agente de IA que guia você até a solução dos seus problemas.</h2>
+        <p>A Bússola existe para quem se sente perdido na própria operação de TI — conversa com o seu negócio, mapeia as 5 frentes que mais travam o crescimento técnico e traduz cada achado numa decisão clara.</p>
+      </div>
+
+      <div style="background:#fff;border:1px solid rgba(242,242,242,0.15);border-radius:var(--radius-lg);padding:var(--sp-6);margin-bottom:var(--sp-6);text-align:center;font-family:var(--font-mono);font-size:0.8rem;color:var(--cinza-chumbo);">
+        [ widget real da Bússola fica aqui — omitido nesta proposta, só ilustrativo ]
+      </div>
+
+      <div class="human-note">
+        <div class="human-note__photo">foto<br>pendente</div>
+        <p class="human-note__text">"A gente constrói junto — não é um relatório pra guardar na gaveta."<strong>— fundador, Refúgio Tech</strong></p>
+      </div>
+
+      <div class="solutions__bento">
+        <div class="solutions__card solutions__card--1">
+          <span class="solutions__card-idx">Para quem está perdido na própria operação de TI</span>
+          <h3>Um agente de IA que mapeia onde sua operação trava antes que vire crise.</h3>
+          <p>A Bússola conversa com sua empresa e traduz cada achado numa frase que qualquer dono de negócio entende e pode decidir. As 5 frentes que ela mapeia:</p>
+          <ul class="solutions__frentes" aria-label="As 5 frentes que a Bússola mapeia">
+            <li>Arquitetura</li><li>Segurança</li><li>Cloud</li><li>Automação</li><li>Integração</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  var HEADLINES = {
+    1: { h1: "Perdido em meio a tanta tecnologia, sem saber pra que lado ir?", lede: "A Bússola é um agente de IA que conversa com você agora, mapeia os 5 pontos que travam sua operação e aponta por onde começar. Grátis, sem cadastro.", cta: "Falar com a Bússola agora" },
+    2: { h1: "Sua operação de TI tem 5 pontos cegos. A Bússola te mostra onde eles estão.", lede: "Converse agora com um agente de IA gratuito que diagnostica o que trava seu crescimento técnico — e já te dá o primeiro passo.", cta: "Começar diagnóstico grátis" },
+    3: { h1: "Tecnologia virou demais pra acompanhar sozinho? A gente te ajuda a achar o caminho.", lede: "Conte seu problema pra Bússola — nosso agente de IA — e em minutos você sabe exatamente por onde começar.", cta: "Contar meu problema" }
+  };
+  document.querySelectorAll('.switch-bar button[data-h]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.switch-bar button[data-h]').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var v = HEADLINES[btn.getAttribute('data-h')];
+      document.querySelector('[data-field="h1"]').textContent = v.h1;
+      document.querySelector('[data-field="lede"]').textContent = v.lede;
+      document.querySelector('[data-field="cta-primary"]').textContent = v.cta;
+    });
+  });
+  document.querySelectorAll('.switch-bar button[data-v]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.switch-bar button[data-v]').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var section = document.getElementById('solucoes-proposta');
+      section.classList.toggle('is-proposta', btn.getAttribute('data-v') === 'proposta');
+    });
+  });
+</script>
+</body>
+</html>
